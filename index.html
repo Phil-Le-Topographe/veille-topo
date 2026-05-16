@@ -82,10 +82,19 @@
             gap: 15px;
         }
 
+        /* JUSTIFICATION CSS : Utilisation de Flexbox pour aligner horizontalement la recherche 
+           et les nouveaux contrôles de dates de manière fluide et responsive. */
+        .search-zone-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            width: 100%;
+        }
+
         .search-wrapper {
             position: relative;
-            width: 100%;
-            max-width: 500px;
+            flex: 1 1 350px; /* Extensible, avec une base minimale de 350px */
         }
 
         .search-input {
@@ -102,6 +111,14 @@
         }
 
         .search-input:focus { border-color: var(--accent-red); }
+
+        /* Style spécifique pour les inputs de type Date et Selecteurs temporels */
+        .date-filter-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
 
         .category-group {
             display: flex;
@@ -317,9 +334,24 @@
     </header>
 
     <section class="control-panel">
-        <div class="search-wrapper">
-            <input type="text" id="search-bar" class="search-input" placeholder="Rechercher un mot-clé, un logiciel, un capteur...">
+        <div class="search-zone-wrapper">
+            <div class="search-wrapper">
+                <input type="text" id="search-bar" class="search-input" placeholder="Rechercher un mot-clé, un logiciel, un capteur...">
+            </div>
+            
+            <div class="date-filter-wrapper">
+                <select id="select-date-range" class="search-input" style="width: auto; padding: 9px 12px;">
+                    <option value="all">📅 Toutes les dates</option>
+                    <option value="24h">Dernières 24 heures</option>
+                    <option value="3d">Derniers 3 jours</option>
+                    <option value="1w">Depuis 1 semaine</option>
+                    <option value="1m">Depuis 1 mois</option>
+                    <option value="custom">Sélectionner une date limite...</option>
+                </select>
+                <input type="date" id="input-custom-date" class="search-input" style="width: auto; padding: 7px 12px; display: none;" title="Masquer les articles publiés avant cette date">
+            </div>
         </div>
+
         <div id="categories-filter-box">
             <div class="category-group">
                 <span class="category-label">Général :</span>
@@ -392,10 +424,14 @@
         let listeSourcesUniques = new Set();
         let sourcesActives = new Set();
         let termeRechercheGlobal = "";
+        
+        // Variable d'état retenant l'horodatage Unix minimal sous lequel masquer les fiches
+        let filtreDateSeuilGlobal = 0;
 
         document.addEventListener("DOMContentLoaded", () => {
             configurerCommutateurTheme();
             configurerBarreRecherche();
+            configurerFiltresTemporels();
             configurerBoutonRafraichissement();
             configurerEvenementsModaleAide();
             configurerBoutonsGlobauxEvaluation();
@@ -417,6 +453,61 @@
                 termeRechercheGlobal = e.target.value.toLowerCase().trim();
                 genererRenduInterface();
             });
+        }
+
+        /**
+         * @function configurerFiltresTemporels
+         * @description Attache les écouteurs d'événements sur le select d'intervalle et le calendrier manuel.
+         * Calcule le décalage mathématique temporel en millisecondes.
+         */
+        function configurerFiltresTemporels() {
+            const selectRange = document.getElementById("select-date-range");
+            const inputCalendar = document.getElementById("input-custom-date");
+
+            // Écouteur sur le menu déroulant
+            selectRange.addEventListener("change", (e) => {
+                const choix = e.target.value;
+                const instantMaintenant = Date.now();
+                inputCalendar.style.display = (choix === "custom") ? "inline-block" : "none";
+
+                // Logique algorithmique de calcul de constantes de temps (24h, 3j, 1sem, 1mois)
+                switch (choix) {
+                    case "all":
+                        filtreDateSeuilGlobal = 0;
+                        break;
+                    case "24h":
+                        filtreDateSeuilGlobal = instantMaintenant - (24 * 60 * 60 * 1000);
+                        break;
+                    case "3d":
+                        filtreDateSeuilGlobal = instantMaintenant - (3 * 24 * 60 * 60 * 1000);
+                        break;
+                    case "1w":
+                        filtreDateSeuilGlobal = instantMaintenant - (7 * 24 * 60 * 60 * 1000);
+                        break;
+                    case "1m":
+                        filtreDateSeuilGlobal = instantMaintenant - (30 * 24 * 60 * 60 * 1000);
+                        break;
+                    case "custom":
+                        // Repose sur la valeur saisie dans le calendrier
+                        evaluerCalendrierManuel();
+                        return;
+                }
+                genererRenduInterface();
+            });
+
+            // Écouteur sur l'input type date manuel
+            inputCalendar.addEventListener("input", evaluerCalendrierManuel);
+
+            function evaluerCalendrierManuel() {
+                if (inputCalendar.value) {
+                    // Analyse de la chaîne ISO YYYY-MM-DD renvoyée par l'élément input natif
+                    const dateSelectionnee = new Date(inputCalendar.value);
+                    filtreDateSeuilGlobal = dateSelectionnee.getTime();
+                } else {
+                    filtreDateSeuilGlobal = 0;
+                }
+                genererRenduInterface();
+            }
         }
 
         function configurerBoutonRafraichissement() {
@@ -598,28 +689,21 @@
         }
 
         /* ORECHESTRATION ET COMPILATION EN BULK */
-
-        /**
-         * @function executerCopieEnMasse
-         * @description Filtre les articles de la chronologie en appliquant les critères d'affichage,
-         * isole strictement ceux possédant au moins 1 étoile configurée, puis copie le rapport complet.
-         */
         function executerCopieEnMasse() {
-            // ALGORITHME DE TRADUCTION ET FILTRAGE COMBINÉ : Intègre la restriction des étoiles > 0
+            // ALGORITHME DE SÉLECTION REPRENANT EXCLUSIVEMENT LES TROIS COUCHES DE FILTRAGE DONT LE FILTRE DATE
             const articlesEtoilesVisibles = baseArticlesGlobal.filter(art => {
                 const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
                 const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
+                const passeFiltreDate = filtreDateSeuilGlobal === 0 || art.dateTimestamp >= filtreDateSeuilGlobal;
                 
-                // Extraction de l'état de la note locale pour restreindre la sélection
                 const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
                 const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
                 
-                return passeFiltreSource && passeFiltreTexte && noteActuelle > 0;
+                return passeFiltreSource && passeFiltreTexte && passeFiltreDate && noteActuelle > 0;
             });
 
             const boutonCopie = document.getElementById("btn-copy-all");
 
-            // Gestion de l'état de vacuité : avertit l'utilisateur si aucun article n'est étoilé
             if (articlesEtoilesVisibles.length === 0) {
                 const texteOriginal = boutonCopie.textContent;
                 boutonCopie.textContent = "⚠️ Aucun article étoilé";
@@ -637,7 +721,6 @@
                 const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
                 const notationEtoiles = "★".repeat(noteActuelle) + "☆".repeat(4 - noteActuelle);
 
-                // Détection de l'élément DOM pour récupérer le texte traduit si existant
                 const nœudVirtuelTitre = document.querySelector(`[data-url-origin="${art.lien}"]`);
                 const texteFinalTitre = nœudVirtuelTitre ? nœudVirtuelTitre.textContent.replace(/✨/g, "").trim() : art.titreArticle;
 
@@ -670,14 +753,19 @@
             if (loaderInitial) loaderInitial.remove();
             conteneurGrid.innerHTML = "";
             
+            // INTÉGRATION DE LA STRATÉGIE DE FILTRAGE QUADRIPLE MULTICRITÈRE
             const articlesFiltres = baseArticlesGlobal.filter(art => {
                 const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
                 const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
-                return passeFiltreSource && passeFiltreTexte;
+                
+                // FILTRAGE TEMPOREL : Exclut l'élément si son timestamp est obsolète par rapport au seuil actif
+                const passeFiltreDate = filtreDateSeuilGlobal === 0 || art.dateTimestamp >= filtreDateSeuilGlobal;
+                
+                return passeFiltreSource && passeFiltreTexte && passeFiltreDate;
             });
             
             if (articlesFiltres.length === 0) {
-                conteneurGrid.innerHTML = "<div class='loader'>Aucun résultat ne correspond à vos critères de recherche.</div>";
+                conteneurGrid.innerHTML = "<div class='loader'>Aucun article ne correspond aux critères temporels ou textuels sélectionnés.</div>";
                 return;
             }
             
@@ -727,7 +815,6 @@
                     etoile.addEventListener("click", (e) => {
                         const valeurNote = parseInt(e.target.getAttribute("data-value"));
                         localStorage.setItem(noteCleStorage, valeurNote);
-                        
                         boiteEtoiles.querySelectorAll(".star-item").forEach(s => {
                             const sVal = parseInt(s.getAttribute("data-value"));
                             s.classList.toggle("active", sVal <= valeurNote);
