@@ -213,11 +213,8 @@
         
         .translated-title { border-left: 2px solid #3182ce; padding-left: 6px; display: block; }
 
-        /* INTERFACE D'ÉVALUATION (FONCTIONNALITÉ ÉTOILES) 
-           JUSTIFICATION CSS : Alignement en ligne (flex) pour positionner les étoiles à gauche 
-           et le bouton d'exportation/copie à l'extrémité droite de la carte. */
         .card-evaluation-row {
-            margin-top: auto; /* Pousse le bloc d'évaluation vers le bas de la carte */
+            margin-top: auto; 
             border-top: 1px solid var(--border-light);
             padding-top: 12px;
             display: flex;
@@ -225,10 +222,7 @@
             align-items: center;
         }
 
-        .star-rating-box {
-            display: flex;
-            gap: 4px;
-        }
+        .star-rating-box { display: flex; gap: 4px; }
 
         .star-item {
             font-size: 1.15rem;
@@ -330,11 +324,15 @@
             <div class="category-group">
                 <span class="category-label">Général :</span>
                 <button class="filter-btn clear-all active" id="btn-master-clear">🗂️ Tout afficher</button>
+                <button class="filter-btn" id="btn-copy-all" style="border-color: var(--text-muted);" title="Compiler et copier toutes les fiches actuellement visibles à l'écran">📋 Tout copier</button>
+                <button class="filter-btn" id="btn-reset-stars" style="border-color: var(--text-muted);" title="Effacer définitivement toutes les étoiles attribuées">⭐ Réinitialiser les notes</button>
             </div>
         </div>
     </section>
 
-    <main id="timeline-container" class="timeline-grid"></main>
+    <main id="timeline-container" class="timeline-grid">
+        <div class="loader" id="main-loader">Initialisation du cache et chargement des flux...</div>
+    </main>
 
     <div id="help-modal" class="modal-overlay">
         <div class="modal-container">
@@ -400,6 +398,7 @@
             configurerBarreRecherche();
             configurerBoutonRafraichissement();
             configurerEvenementsModaleAide();
+            configurerBoutonsGlobauxEvaluation();
             gererCycleDeVieDonnees();
         });
 
@@ -439,6 +438,15 @@
             modal.addEventListener("click", (e) => {
                 if (e.target === modal) modal.classList.remove("open");
             });
+        }
+
+        /**
+         * @function configurerBoutonsGlobauxEvaluation
+         * @description Relie les écouteurs d'événements aux boutons d'action collective (Copie en lot et purge).
+         */
+        function configurerBoutonsGlobauxEvaluation() {
+            document.getElementById("btn-copy-all").addEventListener("click", executerCopieEnMasse);
+            document.getElementById("btn-reset-stars").addEventListener("click", purgerToutesLesEtoiles);
         }
 
         /* DATA PIPELINE */
@@ -593,9 +601,73 @@
             });
         }
 
+        /* ORECHESTRATION ET COMPILATION EN BULK */
+
+        /**
+         * @function executerCopieEnMasse
+         * @description Parse l'état des filtres graphiques, extrait uniquement les articles visibles,
+         * lit leurs notes respectives et compile le tout dans une chaîne textuelle formatée.
+         */
+        function executerCopieEnMasse() {
+            // Filtrage identique à celui appliqué à la grille d'affichage
+            const articlesVisibles = baseArticlesGlobal.filter(art => {
+                const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
+                const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
+                return passeFiltreSource && passeFiltreTexte;
+            });
+
+            if (articlesVisibles.length === 0) return;
+
+            let blocSyntheseTextuel = "==================================================\n";
+            blocSyntheseTextuel += `    RAPPORT DE VEILLE COLLABORATIVE - BTS MGTMN\n`;
+            blocSyntheseTextuel += `    Fiches compilées le ${new Date().toLocaleDateString('fr-FR')} - Total : ${articlesVisibles.length} fiches\n`;
+            blocSyntheseTextuel += "==================================================\n\n";
+
+            // Parcoours et structuration sémantique de chaque élément
+            articlesVisibles.forEach((art, idx) => {
+                const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
+                const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
+                const notationEtoiles = "★".repeat(noteActuelle) + "☆".repeat(4 - noteActuelle);
+
+                blocSyntheseTextuel += `${idx + 1}. [${art.titreSource}] ${art.titreArticle}\n`;
+                blocSyntheseTextuel += `   Évaluation de l'équipe : ${notationEtoiles} (${noteActuelle}/4)\n`;
+                blocSyntheseTextuel += `   Lien d'analyse : ${art.lien}\n\n`;
+            });
+
+            // Envoi de la chaîne formatée vers le presse-papiers système
+            navigator.clipboard.writeText(blocSyntheseTextuel).then(() => {
+                const boutonCopie = document.getElementById("btn-copy-all");
+                const texteOriginal = boutonCopie.textContent;
+                boutonCopie.textContent = "✅ Catalogue copié !";
+                setTimeout(() => boutonCopie.textContent = texteOriginal, 2500);
+            });
+        }
+
+        /**
+         * @function purgerToutesLesEtoiles
+         * @description Évalue les clés de la base locale, identifie les signatures d'étoiles,
+         * les efface puis commande une réactualisation immédiate de l'interface.
+         */
+        function purgerToutesLesEtoiles() {
+            const confirmationEnseignante = confirm("Voulez-vous réinitialiser définitivement toutes les évaluations attribuées par l'équipe pédagogique ? Cette action videra vos données d'étoiles locales.");
+            
+            if (confirmationEnseignante) {
+                // Algorithme de nettoyage : filtrage et suppression par motif de préfixe de clé
+                Object.keys(localStorage).forEach(clef => {
+                    if (clef.startsWith("note_art_")) {
+                        localStorage.removeItem(clef);
+                    }
+                });
+                // Rafraîchissement graphique immédiat
+                genererRenduInterface();
+            }
+        }
+
         /* INTERFACE RENDERING & TRANSLATION ENGINE */
         function genererRenduInterface() {
             const conteneurGrid = document.getElementById("timeline-container");
+            const loaderInitial = document.getElementById("main-loader");
+            if (loaderInitial) loaderInitial.remove();
             conteneurGrid.innerHTML = "";
             
             const articlesFiltres = baseArticlesGlobal.filter(art => {
@@ -610,8 +682,6 @@
             }
             
             articlesFiltres.forEach(art => {
-                // Création du conteneur de carte sous forme de div au lieu d'une ancre directe
-                // afin de permettre le clic indépendant sur les étoiles sans déclencher le lien.
                 const elementCarte = document.createElement("div");
                 elementCarte.className = "article-card";
                 
@@ -619,7 +689,6 @@
                 const idTitre = 't-' + jetonAleatoire;
                 const idExtrait = 'e-' + jetonAleatoire;
                 
-                // Récupération de la note persistée en LocalStorage pour cet article précis
                 const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
                 const noteEnregistree = parseInt(localStorage.getItem(noteCleStorage)) || 0;
 
@@ -629,7 +698,6 @@
                     </div>`;
                 if (art.urlImage) { blocMediaHTML = `<img src="${art.urlImage}" class="card-image" alt="Illustration" loading="lazy">`; }
                 
-                // RENDER DE LA CARTE GRAPHIQUE
                 elementCarte.innerHTML = `
                     <div class="card-image-wrapper">
                         ${blocMediaHTML}
@@ -654,17 +722,12 @@
                 `;
                 conteneurGrid.appendChild(elementCarte);
 
-                // ÉCOUTEURS D'ÉVÉNEMENTS INTERNES À LA CARTE (ÉTOILES)
                 const boiteEtoiles = elementCarte.querySelector(".star-rating-box");
                 boiteEtoiles.querySelectorAll(".star-item").forEach(etoile => {
                     etoile.addEventListener("click", (e) => {
                         const valeurNote = parseInt(e.target.getAttribute("data-value"));
-                        const urlArt = boiteEtoiles.getAttribute("data-url");
-                        
-                        // Enregistrement dans la mémoire locale du navigateur
                         localStorage.setItem(noteCleStorage, valeurNote);
                         
-                        // Mise à jour visuelle immédiate de la ligne d'étoiles
                         boiteEtoiles.querySelectorAll(".star-item").forEach(s => {
                             const sVal = parseInt(s.getAttribute("data-value"));
                             s.classList.toggle("active", sVal <= valeurNote);
@@ -672,7 +735,6 @@
                     });
                 });
 
-                // ÉCOUTEUR D'ÉVÉNEMENT DU BOUTON DE COPIE (REPRISE AILLEURS)
                 elementCarte.querySelector(".btn-copy-fiche").addEventListener("click", (e) => {
                     const btn = e.target;
                     const src = btn.getAttribute("data-source");
@@ -680,11 +742,9 @@
                     const url = btn.getAttribute("data-url");
                     const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
                     
-                    // Construction de la chaîne sémantique de veille
                     const etoilesTexte = "★".repeat(noteActuelle) + "☆".repeat(4 - noteActuelle);
                     const chaineDeVeille = `[VEILLE BTS MGTMN] [${src}] ${titre} - Évaluation : ${etoilesTexte} (${noteActuelle}/4) - Lien : ${url}`;
                     
-                    // Écriture système dans le presse-papiers
                     navigator.clipboard.writeText(chaineDeVeille).then(() => {
                         const texteOrigine = btn.textContent;
                         btn.textContent = "✅ Copié !";
@@ -713,11 +773,7 @@
                     const noeudCible = document.getElementById(idDOM);
                     if (noeudCible) {
                         const classeAppliquee = estUnTitre ? 'translated-title' : 'translated-text';
-                        if (estUnTitre) {
-                            noeudCible.innerHTML = `<span class="${classeAppliquee}" title="Traduit automatiquement">${texteTraduitUnifie} ✨</span>`;
-                        } else {
-                            noeudCible.innerHTML = `<span class="${classeAppliquee}" title="Traduit automatiquement">${texteTraduitUnifie} ✨</span>`;
-                        }
+                        noeudCible.innerHTML = `<span class="${classeAppliquee}" title="Traduit automatiquement du texte original">${texteTraduitUnifie} ✨</span>`;
                     }
                 }
             } catch (erreur) {}
