@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portail de Veille Dynamique - Géomatique & Topographie</title>
+    <title>Portail de Veille Dynamique Traduit - Géomatique & Topographie</title>
     
     <style>
         /* ==========================================================================
@@ -52,9 +52,8 @@
             margin: 0;
         }
 
-        /* BARRE DE FILTRAGE (FLEXBOX) : Positionnée sous le titre. Le choix de Flexbox avec 
-           'flex-wrap: wrap' permet aux boutons de se réorganiser proprement sur plusieurs lignes 
-           si le nombre de sources est élevé ou si l'écran est étroit. */
+        /* BARRE DE FILTRAGE (FLEXBOX) : Le choix de Flexbox avec 'flex-wrap: wrap' 
+           permet aux boutons de se réorganiser proprement sur plusieurs lignes sur support mobile. */
         .filter-bar {
             background-color: #ffffff;
             border-bottom: 1px solid var(--border-light);
@@ -64,7 +63,6 @@
             gap: 10px;
         }
 
-        /* BOUTON DE FILTRE STATIQUE */
         .filter-btn {
             background-color: var(--bg-main);
             color: var(--primary-dark);
@@ -75,7 +73,7 @@
             border-radius: var(--radius-sm);
             cursor: pointer;
             transition: all 0.2s ease;
-            user-select: none; /* Évite la sélection textuelle lors des clics rapides */
+            user-select: none;
         }
 
         .filter-btn:hover {
@@ -83,8 +81,6 @@
             border-color: #cbd5e0;
         }
 
-        /* ÉTAT ENFONCÉ (ACTIF) : Changement de contraste radical. Le bouton bascule sur la couleur 
-           accentuée avec un texte blanc pour signifier immédiatement sa sélection à l'utilisateur. */
         .filter-btn.active {
             background-color: var(--accent-red);
             color: #ffffff;
@@ -92,7 +88,6 @@
             box-shadow: 0 2px 4px rgba(197, 48, 48, 0.2);
         }
 
-        /* BOUTON TOUT DÉSÉLECTIONNER : Style spécifique pour le différencier des sources */
         .filter-btn.clear-all {
             border-style: dashed;
             font-weight: 700;
@@ -142,7 +137,6 @@
             object-fit: cover;
         }
 
-        /* FALLBACK VISUEL SANS IMAGE : Remplacement du texte "3D" par un motif abstrait plus discret */
         .card-image-placeholder {
             width: 100%;
             height: 100%;
@@ -194,6 +188,14 @@
             overflow: hidden;
         }
 
+        /* Style pour notifier la traduction automatique de l'extrait */
+        .translated-text {
+            border-left: 2px solid #3182ce;
+            padding-left: 6px;
+            font-style: italic;
+            color: #4a5568;
+        }
+
         .card-date {
             font-size: 0.75rem;
             color: var(--text-muted);
@@ -215,13 +217,13 @@
 
     <header id="main-header">
         <h1>Veille Technologique & Pédagogique - BTS MGTMN</h1>
-        <small id="config-label" style="color: var(--text-muted);">Mise à jour automatique en temps réel</small>
+        <small id="config-label" style="color: var(--text-muted);">Traduction automatique des extraits étrangers active</small>
     </header>
 
     <section id="filter-container" class="filter-bar"></section>
 
     <main id="timeline-container" class="timeline-grid">
-        <div class="loader" id="main-loader">Initialisation de l'infrastructure de veille...</div>
+        <div class="loader" id="main-loader">Initialisation de l'infrastructure de veille et traduction...</div>
     </main>
 
     <script>
@@ -258,7 +260,7 @@
                 
                 await Promise.all(promessesCollecte);
                 
-                // Tri chronologique descendant (Math : soustraction des timestamps Unix)
+                // Tri chronologique descendant
                 baseArticlesGlobal.sort((a, b) => b.dateObjet - a.dateObjet);
                 
                 // Construction et affichage
@@ -352,24 +354,21 @@
             const conteneurFiltres = document.getElementById("filter-container");
             conteneurFiltres.innerHTML = ""; 
             
-            // 1. CRÉATION DU BOUTON MAÎTRE : "Tout afficher" (Désélection globale)
             const boutonMaster = document.createElement("button");
             boutonMaster.className = "filter-btn clear-all";
             boutonMaster.textContent = "🗂️ Tout afficher";
             
-            // Logique d'activation automatique si aucun filtre n'est enfoncé
             if (sourcesActives.size === 0) {
                 boutonMaster.classList.add("active");
             }
             
             boutonMaster.addEventListener("click", () => {
-                sourcesActives.clear(); // Algorithme : Vidage complet de l'état des filtres
-                genererBoutonsFiltrage(); // Réinitialise l'état visuel de tous les boutons
-                genererRenduInterface();  // Relance le rendu complet de la grille
+                sourcesActives.clear(); 
+                genererBoutonsFiltrage(); 
+                genererRenduInterface();  
             });
             conteneurFiltres.appendChild(boutonMaster);
             
-            // 2. CRÉATION DES BOUTONS INDIVIDUELS PAR SOURCE
             const listeTriez = Array.from(listeSourcesUniques).sort();
             
             listeTriez.forEach(source => {
@@ -388,7 +387,6 @@
                         sourcesActives.add(source);
                     }
                     
-                    // Reconstruction complète de la barre pour mettre à jour l'état du bouton Maître
                     genererBoutonsFiltrage();
                     genererRenduInterface();
                 });
@@ -400,6 +398,7 @@
         /**
          * @function genererRenduInterface
          * @description Filtre les articles selon l'état du Set et reconstruit les cartes graphiques.
+         * Déclenche l'analyse linguistique pour la traduction asynchrone des contenus textuels.
          */
         function genererRenduInterface() {
             const conteneurTimeline = document.getElementById("timeline-container");
@@ -409,7 +408,6 @@
             
             conteneurTimeline.innerHTML = "";
             
-            // Application du filtre multicritère
             const articlesAAfficher = sourcesActives.size === 0 
                 ? baseArticlesGlobal 
                 : baseArticlesGlobal.filter(art => sourcesActives.has(art.titreSource));
@@ -423,9 +421,11 @@
                 const elementCarte = document.createElement("a");
                 elementCarte.className = "article-card";
                 elementCarte.href = art.lien;
-                elementCarte.target = "_blank";
+                elementCarte.target = "_blank"; // Ouvre le lien d'origine sans altérer sa structure linguistique
                 
-                // SVG d'icône cartographique filaire pour remplacer le texte brut "3D"
+                // Calcul d'un identifiant DOM unique par carte pour cibler l'extrait textuel lors de la traduction
+                const idUniqueExtrait = 'excerpt-' + Math.random().toString(36).substring(2, 11);
+                
                 let blocMediaHTML = `
                     <div class="card-image-placeholder">
                         <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
@@ -442,12 +442,59 @@
                     <div class="card-content">
                         <span class="card-source">${art.titreSource}</span>
                         <h2 class="card-title">${art.titreArticle}</h2>
-                        <p class="card-excerpt">${art.extrait ? art.extrait : "Consulter l'article complet pour analyser le contenu technique associé."}</p>
+                        <p class="card-excerpt" id="${idUniqueExtrait}">${art.extrait ? art.extrait : "Consulter l'article complet pour analyser le contenu technique associé."}</p>
                         <div class="card-date">Publié le ${art.dateAffichee}</div>
                     </div>
                 `;
                 conteneurTimeline.appendChild(elementCarte);
+
+                // ALGORITHME DE DÉTECTION ET APPEL DE LA TRADUCTION ASYNCHRONAL
+                if (art.extrait && !art.extrait.startsWith("Consulter")) {
+                    // Analyse heuristique : recherche de mots grammaticaux exclusifs à la langue anglaise
+                    const estAnglais = /\b(the|and|of|in|to|for|with|on|at|by|from|new|release|software|drone|satellite|surveying)\b/i.test(art.extrait);
+                    if (estAnglais) {
+                        lancerTraductionAsynchrone(idUniqueExtrait, art.extrait);
+                    }
+                }
             });
+        }
+
+        /**
+         * @function lancerTraductionAsynchrone
+         * @description Interroge en arrière-plan le dictionnaire de traduction gtx de Google,
+         * isole les segments de réponses et met à jour le DOM de la carte désignée.
+         * @param {string} idDOM - L'identifiant HTML du paragraphe cible.
+         * @param {string} texteOriginal - Le texte en langue étrangère à convertir.
+         * @returns {Promise<void>}
+         */
+        async function lancerTraductionAsynchrone(idDOM, texteOriginal) {
+            // Utilisation directe du endpoint de traduction unifié gtx (autorisé en cross-domain sans clé)
+            const urlTraduction = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=fr&dt=t&q=${encodeURIComponent(texteOriginal)}`;
+            
+            try {
+                const reponse = await fetch(urlTraduction);
+                if (!reponse.ok) return;
+                
+                const structureJson = await reponse.json();
+                let texteTraduitUnifie = "";
+                
+                // Analyse de la réponse matricielle : Google renvoie un tableau de segments de phrases
+                if (structureJson && structureJson[0]) {
+                    structureJson[0].forEach(segment => {
+                        if (segment[0]) texteTraduitUnifie += segment[0];
+                    });
+                }
+                
+                // Si la traduction est valide et différente, injection dynamique avec enrichissement visuel
+                if (texteTraduitUnifie && texteTraduitUnifie.trim() !== texteOriginal.trim()) {
+                    const conteneurCible = document.getElementById(idDOM);
+                    if (conteneurCible) {
+                        conteneurCible.innerHTML = `<span class="translated-text" title="Traduit automatiquement en français">${texteTraduitUnifie} ✨</span>`;
+                    }
+                }
+            } catch (erreur) {
+                console.warn("Échec de la traduction asynchrone pour l'élément " + idDOM, erreur);
+            }
         }
     </script>
 </body>
