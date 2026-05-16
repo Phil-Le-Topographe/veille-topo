@@ -8,35 +8,37 @@
     <style>
         /* ==========================================================================
            VARIABLES GLOBALES DE THÉMATISATION (DESIGN SYSTEM - MODE CLAIR)
+           L'usage des variables CSS (:root) centralise la maintenance des couleurs.
            ========================================================================== */
         :root {
-            --primary-dark: #1a202c;       /* Anthracite profond pour les textes majeurs */
-            --accent-red: #c53030;         /* Rouge institutionnel pour l'état actif et les repères */
-            --bg-main: #f7fafc;            /* Fond de la zone d'affichage des articles */
-            --sidebar-bg: #ffffff;         /* Fond blanc pur pour le panneau latéral gauche */
+            --primary-dark: #1a202c;       /* Anthracite profond assurant une forte lisibilité textuelle */
+            --accent-red: #c53030;         /* Rouge institutionnel servant de repère visuel pour l'état actif */
+            --bg-main: #f7fafc;            /* Fond de page clair limitant la fatigue oculaire */
+            --sidebar-bg: #ffffff;         /* Fond blanc pur pour isoler le panneau de configuration gauche */
             --card-bg: #ffffff;            /* Fond des fiches documentaires */
-            --text-muted: #718096;         /* Gris intermédiaire pour les métadonnées */
-            --border-light: #e2e8f0;       /* Lignes de délimitation des modules */
-            --input-bg: #ffffff;           /* Fond des champs de saisie */
-            --star-color: #e2e8f0;         /* Teinte des étoiles inactives */
-            --star-active: #ecc94b;        /* Jaune ambré pour les étoiles sélectionnées */
+            --text-muted: #718096;         /* Gris intermédiaire dédié aux métadonnées (dates, sources) */
+            --border-light: #e2e8f0;       /* Teinte de délimitation des modules et des grilles */
+            --input-bg: #ffffff;           /* Fond des zones de saisie et formulaires */
+            --star-color: #e2e8f0;         /* Couleur par défaut des icônes de notation inactives */
+            --star-active: #ecc94b;        /* Jaune ambré à fort contraste pour les fiches étoilées */
             
-            /* Couleurs de mise en relief des 9 bandeaux de catégories métiers */
-            --theme-header-bg: #f8fafc;    
-            --theme-header-text: #2d3748;  
+            /* Teintes dédiées à la mise en relief des 9 bandeaux de catégories métiers */
+            --theme-header-bg: #f8fafc;    /* Fond de contraste subtil pour les en-têtes de blocs */
+            --theme-header-text: #2d3748;  /* Couleur textuelle accentuée pour les titres de sections */
             
-            --radius-md: 12px;             /* Rayon de courbure des cartes d'articles */
-            --radius-sm: 6px;              /* Rayon de courbure des boutons et filtres */
-            --header-height: 70px;         /* Hauteur fixe de la barre supérieure */
+            --radius-md: 12px;             /* Rayon de courbure des angles des cartes d'articles */
+            --radius-sm: 6px;              /* Rayon d'arrondi des boutons de l'interface */
+            --header-height: 70px;         /* Hauteur fixe de la barre supérieure de navigation */
         }
 
         /* ==========================================================================
-           VARIABLES DE THÉMATISATION COMPLÉMENTAIRE (DESIGN SYSTEM - MODE SOMBRE)
+           VARIABLES DE THÉMATISATION ALTERNATIVE (DESIGN SYSTEM - MODE SOMBRE)
+           Activé par l'injection dynamique de la classe .dark-theme sur le body via JS.
            ========================================================================== */
         body.dark-theme {
             --primary-dark: #f7fafc;       
-            --accent-red: #fc8181;         
-            --bg-main: #0f172a;            /* Bleu nuit profond pour l'espace de lecture */
+            --accent-red: #fc8181;         /* Rouge atténué pour préserver le confort visuel sur fond sombre */
+            --bg-main: #0f172a;            /* Bleu nuit profond agissant comme absorbeur de lumière */
             --sidebar-bg: #1e293b;         /* Ardoise sombre pour le panneau latéral gauche */
             --card-bg: #1e293b;            
             --text-muted: #94a3b8;         
@@ -49,8 +51,8 @@
         }
 
         /* ==========================================================================
-           PROPRIÉTÉS DE CONFINEMENT DE LA PAGE (ANTI-CRASH TRADUCTION)
-           Le body redevient un bloc standard à hauteur bloquée pour stabiliser le flux.
+           PROPRIÉTÉS DE SÉCURISATION DU FLUX (CONFINEMENT ABSOLU VUE)
+           L'usage du débordement masqué empêche le navigateur de créer un défilement général.
            ========================================================================== */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -61,18 +63,13 @@
             line-height: 1.5;
             transition: background-color 0.2s ease, color 0.2s ease;
             height: 100vh;
-            overflow: hidden;             /* Interdit formellement le défilement général de la page */
+            overflow: hidden;             
         }
 
-        /* ==========================================================================
-           STRUCTURE FIXE 1 : BARRE SUPÉRIEURE (HEADER)
-           Positionnée de manière absolue au sommet du viewport.
-           ========================================================================== */
+        /* En-tête supérieur fixe positionné de manière absolue au sommet du viewport */
         header {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
+            top: 0; left: 0; width: 100%;
             height: var(--header-height);
             background-color: var(--sidebar-bg);
             border-bottom: 1px solid var(--border-light);
@@ -80,7 +77,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 100;                 /* Assure la primauté d'affichage sur les éléments défilants */
+            z-index: 100;
             box-sizing: border-box;
         }
 
@@ -89,26 +86,20 @@
         .header-actions { display: flex; align-items: center; gap: 10px; }
 
         /* ==========================================================================
-           STRUCTURE FIXE 2 : DISPATCHER DU TABLEAU DE BORD (APP LAYOUT)
-           Positionné au pixel près sous le header, occupant 100% de la hauteur restante.
+           ARCHITECTURE DASHBOARD DOUBLE COLONNE COULISSANTE (LAYOUT FIXE)
+           Positionné rigoureusement sous le bandeau supérieur à hauteur calculée.
            ========================================================================== */
         .app-layout {
             position: fixed;
-            top: var(--header-height);
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;                 /* Utilisation de Flexbox pour une répartition horizontale étanche */
+            top: var(--header-height); left: 0; right: 0; bottom: 0;
+            display: flex;
             overflow: hidden;
         }
 
-        /* ==========================================================================
-           STRUCTURE FIXE 3 : PANNEAU LATÉRAL GAUCHE (SIDEBAR)
-           Largeur fixe de 380px, défilement vertical interne indépendant.
-           ========================================================================== */
+        /* Panneau latéral gauche fixe (Sidebar) dédié à la taxonomie à 9 axes */
         .sidebar-panel {
             width: 380px;
-            flex-shrink: 0;                /* Interdit au panneau de se déformer ou de se réduire */
+            flex-shrink: 0;                /* Interdit au panneau de se déformer ou de rétrécir */
             background-color: var(--sidebar-bg);
             border-right: 1px solid var(--border-light);
             padding: 20px;
@@ -117,10 +108,10 @@
             flex-direction: column;
             gap: 12px;
             height: 100%;
-            overflow-y: auto;              /* Défilement vertical interne pour les 9 catégories */
+            overflow-y: auto;              /* Défilement vertical autonome si la liste des flux sature l'écran */
         }
 
-        /* Graphonomie de mise en relief des blocs thématiques métiers */
+        /* Conteneurs enveloppants pour la mise en relief des catégories métiers */
         .category-group {
             display: flex;
             flex-direction: column;
@@ -138,36 +129,33 @@
             text-transform: uppercase;
             color: var(--accent-red);
             letter-spacing: 0.06em;
-            border-left: 3px solid var(--accent-red); /* Repère de couleur stable */
+            border-left: 3px solid var(--accent-red); /* Ligne de repère géométrique rouge */
             padding-left: 10px;
             margin: 0 0 4px 0;
         }
 
         .category-buttons-block {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: wrap;               /* Autorise le retour à la ligne automatique des boutons */
             gap: 6px;
         }
 
-        /* ==========================================================================
-           STRUCTURE FIXE 4 : ESPACE DE LECTURE DROIT (CONTENT AREA)
-           Prend la totalité de l'espace horizontal restant et gère sa propre grille.
-           ========================================================================== */
+        /* Espace de lecture droit absorbant la totalité de la largeur restante */
         .content-area {
-            flex-grow: 1;                  /* Absorbe dynamiquement tout l'espace disponible à droite */
+            flex-grow: 1;                  
             display: flex;
             flex-direction: column;
             height: 100%;
             overflow: hidden;
         }
 
-        /* Barre de filtrage textuel et temporel */
+        /* Barre supérieure de recherche et filtres temporels */
         .content-control-bar {
             background-color: var(--sidebar-bg);
             border-bottom: 1px solid var(--border-light);
             padding: 15px 30px;
             box-sizing: border-box;
-            flex-shrink: 0;                /* Bloque la hauteur de la barre de recherche */
+            flex-shrink: 0;
         }
 
         .search-zone-wrapper {
@@ -195,10 +183,10 @@
 
         .date-filter-wrapper { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-        /* Grille des cartes d'articles : Défilement vertical totalement indépendant */
+        /* Grille d'affichage des cartes : Défilement vertical totalement indépendant */
         .timeline-grid {
-            flex-grow: 1;                  /* Remplit l'intégralité de la hauteur disponible */
-            overflow-y: auto;              /* Active le défilement fluide des fiches */
+            flex-grow: 1;                  
+            overflow-y: auto;              
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 25px;
@@ -208,7 +196,7 @@
         }
 
         /* ==========================================================================
-           COMPOSANTS INTERFACES GÉNÉRIQUES (BOUTONS & CARTES)
+           COMPOSANTS GRAPHONOMIQUES : BOUTONS ET CARTES (CARDS)
            ========================================================================== */
         .filter-btn {
             background-color: var(--card-bg);
@@ -232,7 +220,7 @@
         .filter-btn.clear-all { border-style: dashed; font-weight: 700; width: 100%; text-align: center; }
         .filter-btn.help-btn { background-color: transparent; border-color: var(--text-muted); color: var(--text-muted); font-weight: bold; }
 
-        /* Fiches d'articles documentaires */
+        /* Fiches d'actualités documentaires */
         .article-card {
             background: var(--card-bg);
             border: 1px solid var(--border-light);
@@ -258,9 +246,6 @@
         .card-title { font-size: 0.92rem; font-weight: 600; line-height: 1.3; margin: 0 0 8px 0; color: var(--primary-dark); }
         .card-excerpt { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 12px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-        .translated-text { border-left: 2px solid #3182ce; padding-left: 6px; font-style: italic; }
-        .translated-title { border-left: 2px solid #3182ce; padding-left: 6px; display: block; }
-
         .card-evaluation-row { margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
         .star-rating-box { display: flex; gap: 3px; }
         .star-item { font-size: 1rem; cursor: pointer; color: var(--star-color); }
@@ -269,18 +254,18 @@
         .loader { grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted); font-size: 1rem; }
 
         /* ==========================================================================
-           ISOLATION HERMÉTIQUE DE LA FENÊTRE MODALE D'AIDE
-           L'usage exclusif de display: none garantit l'absence d'interférence en ligne.
+           ISOLATION HERMÉTIQUE DE LA MODALE D'AIDE (SÉCURITÉ DISPLAY)
+           L'usage exclusif de display: none garantit l'étanchéité absolue face au traducteur Chrome.
            ========================================================================== */
         .modal-overlay {
-            display: none;                /* Neutralisation totale du composant par défaut */
+            display: none;                
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
             background-color: rgba(0, 0, 0, 0.6);
             justify-content: center; align-items: center;
-            z-index: 9999;                /* Priorité absolue d'affichage au-dessus du tableau de bord */
+            z-index: 9999;                
         }
-        .modal-overlay.open { display: flex; } /* Activation de l'affichage en mode popup uniquement */
+        .modal-overlay.open { display: flex; } 
 
         .modal-container {
             background-color: var(--card-bg);
@@ -766,7 +751,7 @@
                 elementCarte.querySelector(".btn-copy-fiche").addEventListener("click", (e) => {
                     const btn = e.target;
                     const src = btn.getAttribute("data-source");
-                    const titre = document.getElementById(idTitre).textContent.replace(/✨/g, "").trim();
+                    const titre = document.getElementById(idTitre).textContent.trim();
                     const url = btn.getAttribute("data-url");
                     const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
                     const etoilesTexte = "★".repeat(noteActuelle) + "☆".repeat(4 - noteActuelle);
@@ -775,29 +760,7 @@
                         const txt = btn.textContent; btn.textContent = "✅ Copié !"; setTimeout(() => btn.textContent = txt, 1500);
                     });
                 });
-
-                const regexAnglais = /\b(the|and|of|in|to|for|with|on|at|by|from|new|release|software|drone|satellite|surveying|update|news|gps|world|lidar|geospatial)\b/i;
-                if (art.titreArticle && regexAnglais.test(art.titreArticle)) { lancerTraductionAsynchrone(idTitre, art.titreArticle, true); }
-                if (art.extrait && !art.extrait.startsWith("Consulter") && regexAnglais.test(art.extrait)) { lancerTraductionAsynchrone(idExtrait, art.extrait, false); }
             });
-        }
-
-        async function lancerTraductionAsynchrone(idDOM, texteOriginal, estUnTitre) {
-            const urlTraduction = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=fr&dt=t&q=${encodeURIComponent(texteOriginal)}`;
-            try {
-                const reponse = await fetch(urlTraduction);
-                if (!reponse.ok) return;
-                const structureJson = await reponse.json();
-                let texteTraduitUnifie = "";
-                if (structureJson && structureJson[0]) { structureJson[0].forEach(segment => { if (segment[0]) texteTraduitUnifie += segment[0]; }); }
-                if (texteTraduitUnifie && texteTraduitUnifie.trim() !== texteOriginal.trim()) {
-                    const noeudCible = document.getElementById(idDOM);
-                    if (noeudCible) {
-                        const classeAppliquee = estUnTitre ? 'translated-title' : 'translated-text';
-                        noeudCible.innerHTML = `<span class="${classeAppliquee}" title="Traduit automatiquement">${texteTraduitUnifie} ✨</span>`;
-                    }
-                }
-            } catch (e) {}
         }
     </script>
 </body>
