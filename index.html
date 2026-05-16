@@ -304,7 +304,7 @@
 
     <header id="main-header">
         <div>
-            <h1>Veille Technologique & Pédagogique - BTS MGTMN</h1>
+            <h1>Veille Technologique</h1>
             <small id="cache-status" style="color: var(--text-muted);">Synchronisation réseau active...</small>
         </div>
         <div class="header-actions">
@@ -324,7 +324,7 @@
             <div class="category-group">
                 <span class="category-label">Général :</span>
                 <button class="filter-btn clear-all active" id="btn-master-clear">🗂️ Tout afficher</button>
-                <button class="filter-btn" id="btn-copy-all" style="border-color: var(--text-muted);" title="Compiler et copier toutes les fiches actuellement visibles à l'écran">📋 Tout copier</button>
+                <button class="filter-btn" id="btn-copy-all" style="border-color: var(--text-muted);" title="Compiler et copier uniquement les fiches étoilées visibles à l'écran">📋 Tout copier</button>
                 <button class="filter-btn" id="btn-reset-stars" style="border-color: var(--text-muted);" title="Effacer définitivement toutes les étoiles attribuées">⭐ Réinitialiser les notes</button>
             </div>
         </div>
@@ -440,10 +440,6 @@
             });
         }
 
-        /**
-         * @function configurerBoutonsGlobauxEvaluation
-         * @description Relie les écouteurs d'événements aux boutons d'action collective (Copie en lot et purge).
-         */
         function configurerBoutonsGlobauxEvaluation() {
             document.getElementById("btn-copy-all").addEventListener("click", executerCopieEnMasse);
             document.getElementById("btn-reset-stars").addEventListener("click", purgerToutesLesEtoiles);
@@ -605,60 +601,64 @@
 
         /**
          * @function executerCopieEnMasse
-         * @description Parse l'état des filtres graphiques, extrait uniquement les articles visibles,
-         * lit leurs notes respectives et compile le tout dans une chaîne textuelle formatée.
+         * @description Filtre les articles de la chronologie en appliquant les critères d'affichage,
+         * isole strictement ceux possédant au moins 1 étoile configurée, puis copie le rapport complet.
          */
         function executerCopieEnMasse() {
-            // Filtrage identique à celui appliqué à la grille d'affichage
-            const articlesVisibles = baseArticlesGlobal.filter(art => {
+            // ALGORITHME DE TRADUCTION ET FILTRAGE COMBINÉ : Intègre la restriction des étoiles > 0
+            const articlesEtoilesVisibles = baseArticlesGlobal.filter(art => {
                 const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
                 const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
-                return passeFiltreSource && passeFiltreTexte;
+                
+                // Extraction de l'état de la note locale pour restreindre la sélection
+                const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
+                const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
+                
+                return passeFiltreSource && passeFiltreTexte && noteActuelle > 0;
             });
 
-            if (articlesVisibles.length === 0) return;
+            const boutonCopie = document.getElementById("btn-copy-all");
+
+            // Gestion de l'état de vacuité : avertit l'utilisateur si aucun article n'est étoilé
+            if (articlesEtoilesVisibles.length === 0) {
+                const texteOriginal = boutonCopie.textContent;
+                boutonCopie.textContent = "⚠️ Aucun article étoilé";
+                setTimeout(() => boutonCopie.textContent = texteOriginal, 2500);
+                return;
+            }
 
             let blocSyntheseTextuel = "==================================================\n";
-            blocSyntheseTextuel += `    RAPPORT DE VEILLE COLLABORATIVE - BTS MGTMN\n`;
-            blocSyntheseTextuel += `    Fiches compilées le ${new Date().toLocaleDateString('fr-FR')} - Total : ${articlesVisibles.length} fiches\n`;
+            blocSyntheseTextuel += `    SELECTION DE VEILLE TECHNOLOGIQUE ÉVALUÉE\n`;
+            blocSyntheseTextuel += `    Rapport généré le ${new Date().toLocaleDateString('fr-FR')} - Total : ${articlesEtoilesVisibles.length} fiches\n`;
             blocSyntheseTextuel += "==================================================\n\n";
 
-            // Parcoours et structuration sémantique de chaque élément
-            articlesVisibles.forEach((art, idx) => {
+            articlesEtoilesVisibles.forEach((art, idx) => {
                 const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
                 const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
                 const notationEtoiles = "★".repeat(noteActuelle) + "☆".repeat(4 - noteActuelle);
 
-                blocSyntheseTextuel += `${idx + 1}. [${art.titreSource}] ${art.titreArticle}\n`;
+                // Détection de l'élément DOM pour récupérer le texte traduit si existant
+                const nœudVirtuelTitre = document.querySelector(`[data-url-origin="${art.lien}"]`);
+                const texteFinalTitre = nœudVirtuelTitre ? nœudVirtuelTitre.textContent.replace(/✨/g, "").trim() : art.titreArticle;
+
+                blocSyntheseTextuel += `${idx + 1}. [${art.titreSource}] ${texteFinalTitre}\n`;
                 blocSyntheseTextuel += `   Évaluation de l'équipe : ${notationEtoiles} (${noteActuelle}/4)\n`;
                 blocSyntheseTextuel += `   Lien d'analyse : ${art.lien}\n\n`;
             });
 
-            // Envoi de la chaîne formatée vers le presse-papiers système
             navigator.clipboard.writeText(blocSyntheseTextuel).then(() => {
-                const boutonCopie = document.getElementById("btn-copy-all");
                 const texteOriginal = boutonCopie.textContent;
-                boutonCopie.textContent = "✅ Catalogue copié !";
+                boutonCopie.textContent = "✅ Sélection copiée !";
                 setTimeout(() => boutonCopie.textContent = texteOriginal, 2500);
             });
         }
 
-        /**
-         * @function purgerToutesLesEtoiles
-         * @description Évalue les clés de la base locale, identifie les signatures d'étoiles,
-         * les efface puis commande une réactualisation immédiate de l'interface.
-         */
         function purgerToutesLesEtoiles() {
-            const confirmationEnseignante = confirm("Voulez-vous réinitialiser définitivement toutes les évaluations attribuées par l'équipe pédagogique ? Cette action videra vos données d'étoiles locales.");
-            
+            const confirmationEnseignante = confirm("Voulez-vous réinitialiser définitivement toutes les évaluations attribuées par l'équipe pédagogique ?");
             if (confirmationEnseignante) {
-                // Algorithme de nettoyage : filtrage et suppression par motif de préfixe de clé
                 Object.keys(localStorage).forEach(clef => {
-                    if (clef.startsWith("note_art_")) {
-                        localStorage.removeItem(clef);
-                    }
+                    if (clef.startsWith("note_art_")) { localStorage.removeItem(clef); }
                 });
-                // Rafraîchissement graphique immédiat
                 genererRenduInterface();
             }
         }
@@ -704,7 +704,7 @@
                     </div>
                     <div class="card-content">
                         <span class="card-source">${art.titreSource}</span>
-                        <h2 class="card-title"><a href="${art.lien}" target="_blank" id="${idTitre}" style="color:inherit; text-decoration:none;">${art.titreArticle}</a></h2>
+                        <h2 class="card-title"><a href="${art.lien}" target="_blank" id="${idTitre}" data-url-origin="${art.lien}" style="color:inherit; text-decoration:none;">${art.titreArticle}</a></h2>
                         <p class="card-excerpt" id="${idExtrait}">${art.extrait ? art.extrait : "Consulter la plateforme d'origine pour analyser cette ressource."}</p>
                         
                         <div class="card-date">Publié le ${art.dateAffichee}</div>
@@ -743,7 +743,7 @@
                     const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
                     
                     const etoilesTexte = "★".repeat(noteActuelle) + "☆".repeat(4 - noteActuelle);
-                    const chaineDeVeille = `[VEILLE BTS MGTMN] [${src}] ${titre} - Évaluation : ${etoilesTexte} (${noteActuelle}/4) - Lien : ${url}`;
+                    const chaineDeVeille = `[VEILLE] [${src}] ${titre} - Évaluation : ${etoilesTexte} (${noteActuelle}/4) - Lien : ${url}`;
                     
                     navigator.clipboard.writeText(chaineDeVeille).then(() => {
                         const texteOrigine = btn.textContent;
