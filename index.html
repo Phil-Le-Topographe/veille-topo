@@ -17,6 +17,8 @@
             --text-muted: #718096;         /* Gris intermédiaire pour les métadonnées et sous-titres */
             --border-light: #e2e8f0;       /* Gris de délimitation pour les lignes de séparation */
             --input-bg: #ffffff;           /* Fond des champs de saisie */
+            --star-color: #e2e8f0;         /* Gris par défaut pour les étoiles inactives */
+            --star-active: #ecc94b;        /* Jaune ambré pour les étoiles sélectionnées */
             --radius-md: 12px;             /* Rayon de courbure des angles des cartes */
             --radius-sm: 6px;              /* Rayon de courbure pour les boutons de filtrage */
         }
@@ -32,6 +34,7 @@
             --text-muted: #94a3b8;         
             --border-light: #334155;       
             --input-bg: #1e293b;           
+            --star-color: #475569;
         }
 
         body {
@@ -171,8 +174,8 @@
             height: 100%;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-            text-decoration: none;
             color: inherit;
+            text-decoration: none;
         }
 
         .article-card:hover {
@@ -210,7 +213,50 @@
         
         .translated-title { border-left: 2px solid #3182ce; padding-left: 6px; display: block; }
 
-        .card-date { font-size: 0.72rem; color: var(--text-muted); margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 10px; }
+        /* INTERFACE D'ÉVALUATION (FONCTIONNALITÉ ÉTOILES) 
+           JUSTIFICATION CSS : Alignement en ligne (flex) pour positionner les étoiles à gauche 
+           et le bouton d'exportation/copie à l'extrémité droite de la carte. */
+        .card-evaluation-row {
+            margin-top: auto; /* Pousse le bloc d'évaluation vers le bas de la carte */
+            border-top: 1px solid var(--border-light);
+            padding-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .star-rating-box {
+            display: flex;
+            gap: 4px;
+        }
+
+        .star-item {
+            font-size: 1.15rem;
+            cursor: pointer;
+            color: var(--star-color);
+            transition: color 0.15s ease, transform 0.1s ease;
+        }
+        .star-item:hover { transform: scale(1.2); }
+        .star-item.active { color: var(--star-active); }
+
+        .action-icon-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .action-icon-btn:hover {
+            background-color: var(--bg-main);
+            border-color: var(--border-light);
+            color: var(--primary-dark);
+        }
+
+        .card-date { font-size: 0.68rem; color: var(--text-muted); margin-bottom: 5px; }
 
         .loader { grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted); font-size: 1.1rem; }
 
@@ -288,9 +334,7 @@
         </div>
     </section>
 
-    <main id="timeline-container" class="timeline-grid">
-        <div class="loader" id="main-loader">Initialisation du cache et chargement des flux...</div>
-    </main>
+    <main id="timeline-container" class="timeline-grid"></main>
 
     <div id="help-modal" class="modal-overlay">
         <div class="modal-container">
@@ -552,8 +596,6 @@
         /* INTERFACE RENDERING & TRANSLATION ENGINE */
         function genererRenduInterface() {
             const conteneurGrid = document.getElementById("timeline-container");
-            const loaderInitial = document.getElementById("main-loader");
-            if (loaderInitial) loaderInitial.remove();
             conteneurGrid.innerHTML = "";
             
             const articlesFiltres = baseArticlesGlobal.filter(art => {
@@ -568,33 +610,87 @@
             }
             
             articlesFiltres.forEach(art => {
-                const elementCarte = document.createElement("a");
+                // Création du conteneur de carte sous forme de div au lieu d'une ancre directe
+                // afin de permettre le clic indépendant sur les étoiles sans déclencher le lien.
+                const elementCarte = document.createElement("div");
                 elementCarte.className = "article-card";
-                elementCarte.href = art.lien;
-                elementCarte.target = "_blank";
                 
                 const jetonAleatoire = Math.random().toString(36).substring(2, 11);
                 const idTitre = 't-' + jetonAleatoire;
                 const idExtrait = 'e-' + jetonAleatoire;
                 
+                // Récupération de la note persistée en LocalStorage pour cet article précis
+                const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
+                const noteEnregistree = parseInt(localStorage.getItem(noteCleStorage)) || 0;
+
                 let blocMediaHTML = `
                     <div class="card-image-placeholder">
                         <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                     </div>`;
                 if (art.urlImage) { blocMediaHTML = `<img src="${art.urlImage}" class="card-image" alt="Illustration" loading="lazy">`; }
                 
+                // RENDER DE LA CARTE GRAPHIQUE
                 elementCarte.innerHTML = `
                     <div class="card-image-wrapper">
                         ${blocMediaHTML}
                     </div>
                     <div class="card-content">
                         <span class="card-source">${art.titreSource}</span>
-                        <h2 class="card-title" id="${idTitre}">${art.titreArticle}</h2>
+                        <h2 class="card-title"><a href="${art.lien}" target="_blank" id="${idTitre}" style="color:inherit; text-decoration:none;">${art.titreArticle}</a></h2>
                         <p class="card-excerpt" id="${idExtrait}">${art.extrait ? art.extrait : "Consulter la plateforme d'origine pour analyser cette ressource."}</p>
+                        
                         <div class="card-date">Publié le ${art.dateAffichee}</div>
+                        
+                        <div class="card-evaluation-row">
+                            <div class="star-rating-box" data-url="${art.lien}">
+                                <span class="star-item ${noteEnregistree >= 1 ? 'active' : ''}" data-value="1">★</span>
+                                <span class="star-item ${noteEnregistree >= 2 ? 'active' : ''}" data-value="2">★</span>
+                                <span class="star-item ${noteEnregistree >= 3 ? 'active' : ''}" data-value="3">★</span>
+                                <span class="star-item ${noteEnregistree >= 4 ? 'active' : ''}" data-value="4">★</span>
+                            </div>
+                            <button class="action-icon-btn btn-copy-fiche" data-source="${art.titreSource}" data-title="${art.titreArticle}" data-url="${art.lien}">📋 Copier la fiche</button>
+                        </div>
                     </div>
                 `;
                 conteneurGrid.appendChild(elementCarte);
+
+                // ÉCOUTEURS D'ÉVÉNEMENTS INTERNES À LA CARTE (ÉTOILES)
+                const boiteEtoiles = elementCarte.querySelector(".star-rating-box");
+                boiteEtoiles.querySelectorAll(".star-item").forEach(etoile => {
+                    etoile.addEventListener("click", (e) => {
+                        const valeurNote = parseInt(e.target.getAttribute("data-value"));
+                        const urlArt = boiteEtoiles.getAttribute("data-url");
+                        
+                        // Enregistrement dans la mémoire locale du navigateur
+                        localStorage.setItem(noteCleStorage, valeurNote);
+                        
+                        // Mise à jour visuelle immédiate de la ligne d'étoiles
+                        boiteEtoiles.querySelectorAll(".star-item").forEach(s => {
+                            const sVal = parseInt(s.getAttribute("data-value"));
+                            s.classList.toggle("active", sVal <= valeurNote);
+                        });
+                    });
+                });
+
+                // ÉCOUTEUR D'ÉVÉNEMENT DU BOUTON DE COPIE (REPRISE AILLEURS)
+                elementCarte.querySelector(".btn-copy-fiche").addEventListener("click", (e) => {
+                    const btn = e.target;
+                    const src = btn.getAttribute("data-source");
+                    const titre = document.getElementById(idTitre).textContent.replace(/✨/g, "").trim();
+                    const url = btn.getAttribute("data-url");
+                    const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
+                    
+                    // Construction de la chaîne sémantique de veille
+                    const etoilesTexte = "★".repeat(noteActuelle) + "☆".repeat(4 - noteActuelle);
+                    const chaineDeVeille = `[VEILLE BTS MGTMN] [${src}] ${titre} - Évaluation : ${etoilesTexte} (${noteActuelle}/4) - Lien : ${url}`;
+                    
+                    // Écriture système dans le presse-papiers
+                    navigator.clipboard.writeText(chaineDeVeille).then(() => {
+                        const texteOrigine = btn.textContent;
+                        btn.textContent = "✅ Copié !";
+                        setTimeout(() => btn.textContent = texteOrigine, 2000);
+                    });
+                });
 
                 const regexAnglais = /\b(the|and|of|in|to|for|with|on|at|by|from|new|release|software|drone|satellite|surveying|update|news|gps|world|lidar|geospatial)\b/i;
 
@@ -617,7 +713,11 @@
                     const noeudCible = document.getElementById(idDOM);
                     if (noeudCible) {
                         const classeAppliquee = estUnTitre ? 'translated-title' : 'translated-text';
-                        noeudCible.innerHTML = `<span class="${classeAppliquee}" title="Traduit automatiquement du texte original">${texteTraduitUnifie} ✨</span>`;
+                        if (estUnTitre) {
+                            noeudCible.innerHTML = `<span class="${classeAppliquee}" title="Traduit automatiquement">${texteTraduitUnifie} ✨</span>`;
+                        } else {
+                            noeudCible.innerHTML = `<span class="${classeAppliquee}" title="Traduit automatiquement">${texteTraduitUnifie} ✨</span>`;
+                        }
                     }
                 }
             } catch (erreur) {}
