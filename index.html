@@ -188,12 +188,20 @@
             overflow: hidden;
         }
 
-        /* Style pour notifier la traduction automatique de l'extrait */
+        /* Justification CSS : Bordure bleue distinctive appliquée aux éléments traduits 
+           pour avertir l'utilisateur d'un traitement algorithmique automatique. */
         .translated-text {
             border-left: 2px solid #3182ce;
             padding-left: 6px;
             font-style: italic;
-            color: #4a5568;
+            color: #2d3748;
+        }
+        
+        .translated-title {
+            border-left: 2px solid #3182ce;
+            padding-left: 6px;
+            color: var(--primary-dark);
+            display: block;
         }
 
         .card-date {
@@ -217,13 +225,13 @@
 
     <header id="main-header">
         <h1>Veille Technologique & Pédagogique - BTS MGTMN</h1>
-        <small id="config-label" style="color: var(--text-muted);">Traduction automatique des extraits étrangers active</small>
+        <small id="config-label" style="color: var(--text-muted);">Traduction automatique des titres et extraits active</small>
     </header>
 
     <section id="filter-container" class="filter-bar"></section>
 
     <main id="timeline-container" class="timeline-grid">
-        <div class="loader" id="main-loader">Initialisation de l'infrastructure de veille et traduction...</div>
+        <div class="loader" id="main-loader">Initialisation de l'infrastructure de veille, des filtres et des traductions...</div>
     </main>
 
     <script>
@@ -238,8 +246,10 @@
 
         /**
          * @function initialiserApplication
-         * @description Orchestre le cycle de vie applicatif : charge l'OPML, parallélise les requêtes,
-         * trie par chronologie et ordonne la construction de l'interface.
+         * @description Gère l'initialisation asynchrone de l'application, coordonne les requêtes HTTP,
+         * déclenche la construction de la barre de filtres et injecte le rendu graphique.
+         * @param {void}
+         * @returns {Promise<void>}
          */
         async function initialiserApplication() {
             try {
@@ -275,6 +285,9 @@
         /**
          * @function collecterDonneesFlux
          * @description Gère l'acquisition asynchrone des flux et normalise les objets articles.
+         * @param {string} titreSource - Nom de l'éditeur de la source.
+         * @param {string} urlFlux - URL d'accès au flux de syndication.
+         * @returns {Promise<void>}
          */
         async function collecterDonneesFlux(titreSource, urlFlux) {
             const urlRequeteProxiee = `https://corsproxy.io/?${encodeURIComponent(urlFlux)}`;
@@ -333,7 +346,7 @@
 
                     baseArticlesGlobal.push({
                         titreSource: titreSource,
-                        titreArticle: titreArticle,
+                        titreArticle: titreArticle.trim(),
                         lien: lienArticle ? lienArticle.trim() : "#",
                         extrait: extraitTexte.trim(),
                         dateObjet: dateEstValide ? dateObjet : new Date(0),
@@ -349,6 +362,8 @@
         /**
          * @function genererBoutonsFiltrage
          * @description Construit la barre de filtres et injecte en premier lieu le bouton de désélection globale.
+         * @param {void}
+         * @returns {void}
          */
         function genererBoutonsFiltrage() {
             const conteneurFiltres = document.getElementById("filter-container");
@@ -397,8 +412,10 @@
 
         /**
          * @function genererRenduInterface
-         * @description Filtre les articles selon l'état du Set et reconstruit les cartes graphiques.
-         * Déclenche l'analyse linguistique pour la traduction asynchrone des contenus textuels.
+         * @description Filtre la collection d'articles, vide la grille actuelle et reconstruit les cartes graphiques.
+         * Déclenche l'analyse linguistique parallèle pour la traduction des titres et des extraits.
+         * @param {void}
+         * @returns {void}
          */
         function genererRenduInterface() {
             const conteneurTimeline = document.getElementById("timeline-container");
@@ -421,10 +438,12 @@
                 const elementCarte = document.createElement("a");
                 elementCarte.className = "article-card";
                 elementCarte.href = art.lien;
-                elementCarte.target = "_blank"; // Ouvre le lien d'origine sans altérer sa structure linguistique
+                elementCarte.target = "_blank"; // Préservation stricte de la destination native externe
                 
-                // Calcul d'un identifiant DOM unique par carte pour cibler l'extrait textuel lors de la traduction
-                const idUniqueExtrait = 'excerpt-' + Math.random().toString(36).substring(2, 11);
+                // GESTION DES IDENTIFIANTS UNIQUE DU DOM (CIBLAGE INDÉPENDANT)
+                const prefixeAleatoire = Math.random().toString(36).substring(2, 11);
+                const idUniqueTitre = 'title-' + prefixeAleatoire;
+                const idUniqueExtrait = 'excerpt-' + prefixeAleatoire;
                 
                 let blocMediaHTML = `
                     <div class="card-image-placeholder">
@@ -441,19 +460,29 @@
                     </div>
                     <div class="card-content">
                         <span class="card-source">${art.titreSource}</span>
-                        <h2 class="card-title">${art.titreArticle}</h2>
+                        <h2 class="card-title" id="${idUniqueTitre}">${art.titreArticle}</h2>
                         <p class="card-excerpt" id="${idUniqueExtrait}">${art.extrait ? art.extrait : "Consulter l'article complet pour analyser le contenu technique associé."}</p>
                         <div class="card-date">Publié le ${art.dateAffichee}</div>
                     </div>
                 `;
                 conteneurTimeline.appendChild(elementCarte);
 
-                // ALGORITHME DE DÉTECTION ET APPEL DE LA TRADUCTION ASYNCHRONAL
+                // EXPRESSION RÉGULIÈRE DE DÉTECTION LINGUISTIQUE (HEURISTIQUE SÉCTORIELLE)
+                const regexAnglais = /\b(the|and|of|in|to|for|with|on|at|by|from|new|release|software|drone|satellite|surveying|update|news|gps|world|lidar|geospatial)\b/i;
+
+                // ANALYSE ET DÉCLENCHEMENT DE LA TRADUCTION DU TITRE
+                if (art.titreArticle) {
+                    const titreEstAnglais = regexAnglais.test(art.titreArticle);
+                    if (titreEstAnglais) {
+                        lancerTraductionAsynchrone(idUniqueTitre, art.titreArticle, true);
+                    }
+                }
+
+                // ANALYSE ET DÉCLENCHEMENT DE LA TRADUCTION DE L'EXTRAIT
                 if (art.extrait && !art.extrait.startsWith("Consulter")) {
-                    // Analyse heuristique : recherche de mots grammaticaux exclusifs à la langue anglaise
-                    const estAnglais = /\b(the|and|of|in|to|for|with|on|at|by|from|new|release|software|drone|satellite|surveying)\b/i.test(art.extrait);
-                    if (estAnglais) {
-                        lancerTraductionAsynchrone(idUniqueExtrait, art.extrait);
+                    const extraitEstAnglais = regexAnglais.test(art.extrait);
+                    if (extraitEstAnglais) {
+                        lancerTraductionAsynchrone(idUniqueExtrait, art.extrait, false);
                     }
                 }
             });
@@ -461,14 +490,14 @@
 
         /**
          * @function lancerTraductionAsynchrone
-         * @description Interroge en arrière-plan le dictionnaire de traduction gtx de Google,
-         * isole les segments de réponses et met à jour le DOM de la carte désignée.
-         * @param {string} idDOM - L'identifiant HTML du paragraphe cible.
-         * @param {string} texteOriginal - Le texte en langue étrangère à convertir.
+         * @description Interroge en arrière-plan la passerelle gtx de Google Translate, parse la matrice de données
+         * JSON retournée et met à jour dynamiquement l'élément cible dans le DOM avec le style graphique approprié.
+         * @param {string} idDOM - L'identifiant unique de la balise HTML cible.
+         * @param {string} texteOriginal - Le texte brut en langue étrangère à soumettre à l'API.
+         * @param {boolean} estUnTitre - Flag booléen dictant la classe CSS structurelle à appliquer.
          * @returns {Promise<void>}
          */
-        async function lancerTraductionAsynchrone(idDOM, texteOriginal) {
-            // Utilisation directe du endpoint de traduction unifié gtx (autorisé en cross-domain sans clé)
+        async function lancerTraductionAsynchrone(idDOM, texteOriginal, estUnTitre) {
             const urlTraduction = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=fr&dt=t&q=${encodeURIComponent(texteOriginal)}`;
             
             try {
@@ -478,22 +507,24 @@
                 const structureJson = await reponse.json();
                 let texteTraduitUnifie = "";
                 
-                // Analyse de la réponse matricielle : Google renvoie un tableau de segments de phrases
+                // Algorithme de reconstruction : concaténation des segments de phrases gérés par l'API
                 if (structureJson && structureJson[0]) {
                     structureJson[0].forEach(segment => {
                         if (segment[0]) texteTraduitUnifie += segment[0];
                     });
                 }
                 
-                // Si la traduction est valide et différente, injection dynamique avec enrichissement visuel
+                // Validation de modification : n'intervient que si le texte traduit diffère du texte source
                 if (texteTraduitUnifie && texteTraduitUnifie.trim() !== texteOriginal.trim()) {
                     const conteneurCible = document.getElementById(idDOM);
                     if (conteneurCible) {
-                        conteneurCible.innerHTML = `<span class="translated-text" title="Traduit automatiquement en français">${texteTraduitUnifie} ✨</span>`;
+                        // Attribution de la classe CSS selon la nature sémantique de l'élément (titre vs paragraphe)
+                        const classeAppliquee = estUnTitre ? 'translated-title' : 'translated-text';
+                        conteneurCible.innerHTML = `<span class="${classeAppliquee}" title="Traduit automatiquement en français">${texteTraduitUnifie} ✨</span>`;
                     }
                 }
             } catch (erreur) {
-                console.warn("Échec de la traduction asynchrone pour l'élément " + idDOM, erreur);
+                console.warn("Échec du traitement de la traduction asynchrone pour l'élément : " + idDOM);
             }
         }
     </script>
