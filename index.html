@@ -58,7 +58,6 @@
             gap: 15px;
         }
 
-        /* FLEXBOX COLUMN : Alignement vertical pour placer le bouton Aide sous les deux premiers */
         .header-actions {
             display: flex;
             flex-direction: column;
@@ -141,7 +140,6 @@
 
         .filter-btn.clear-all { border-style: dashed; font-weight: 700; }
         
-        /* Bouton Aide spécifique */
         .filter-btn.help-btn {
             background-color: transparent;
             border-color: var(--text-muted);
@@ -272,7 +270,7 @@
         <div class="header-actions">
             <div class="actions-top-row">
                 <button class="filter-btn" id="btn-refresh-cache" title="Forcer la purge du cache local">🔄 Actualiser</button>
-                <button class="filter-btn" id="btn-toggle-theme" title="Basculer de mode thématique">Double Thème</button>
+                <button class="filter-btn" id="btn-toggle-theme" title="Basculer entre le mode clair et le mode sombre">🌓 Thème</button>
             </div>
             <button class="filter-btn help-btn" id="btn-open-help" title="Ouvrir le pense-bête de maintenance">❓ Aide Maintenance</button>
         </div>
@@ -330,7 +328,6 @@
     </div>
 
     <script>
-        // MAPPING MÉTIER ET CONFIGURATION DU CACHE
         const DICTIONNAIRE_CATEGORIES = {
             "qgis.org blog": "sig", "arcorama": "sig", "release notes from webodm": "sig", "release notes from cloudcompare": "sig", "agisoft photoscan": "sig",
             "eu agency for the space programme - linking space to user needs": "materiel", "dronelife": "materiel", "lidar news": "materiel", "news": "materiel", "gps world": "materiel", "geospatial world": "materiel",
@@ -387,7 +384,6 @@
             });
         }
 
-        // MANAGEMENT DE LA FENÊTRE MODALE D'AIDE
         function configurerEvenementsModaleAide() {
             const modal = document.getElementById("help-modal");
             const btnOpen = document.getElementById("btn-open-help");
@@ -396,7 +392,6 @@
             btnOpen.addEventListener("click", () => modal.classList.add("open"));
             btnClose.addEventListener("click", () => modal.classList.remove("open"));
             
-            // Fermeture de sécurité si clic en dehors du conteneur de la modale
             modal.addEventListener("click", (e) => {
                 if (e.target === modal) modal.classList.remove("open");
             });
