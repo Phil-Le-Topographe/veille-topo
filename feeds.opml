@@ -30,5 +30,19 @@
     <outline text="CNIG - Actualités" title="CNIG - Actualités" type="rss" xmlUrl="https://cnig.gouv.fr/spip.php?page=backend&amp;id_rubrique=1" htmlUrl="https://cnig.gouv.fr/"/>
     <outline text="Theia Land" title="Theia Land" type="rss" xmlUrl="theia_land.xml" htmlUrl="https://www.theia-land.fr/actualites/"/>
     <outline text="IGN Kiosque" title="IGN Kiosque" type="rss" xmlUrl="ign_kiosque.xml" htmlUrl="https://www.ign.fr/institut/kiosque"/>
+    <outline text="Theia Land" title="Theia Land" type="rss" xmlUrl="theia_land.xml" htmlUrl="https://www.theia-land.fr/actualites/"/>
+    <outline text="IGN Kiosque" title="IGN Kiosque" type="rss" xmlUrl="ign_kiosque.xml" htmlUrl="https://www.ign.fr/institut/kiosque"/>
+    <outline text="Afigeo" title="Afigeo" type="rss" xmlUrl="afigeo.xml" htmlUrl="https://www.afigeo.asso.fr/actualites/"/>
+    <outline text="Leica Geosystems" title="Leica Geosystems" type="rss" xmlUrl="leica_geosystems.xml" htmlUrl="https://leica-geosystems.com/fr-fr/about-us/news-room/news-overview"/>
+    <outline text="Trimble Geospatial" title="Trimble Geospatial" type="rss" xmlUrl="trimble_geospatial.xml" htmlUrl="https://geospatial.trimble.com/blog/geospatial/en-US"/>
+    <outline text="Topcon Positioning" title="Topcon Positioning" type="rss" xmlUrl="topcon_positioning.xml" htmlUrl="https://www.topconpositioning.com/solutions/infrastructure/surveying?product=&amp;_page=1"/>
+    <outline text="Réseau Orphéon" title="Réseau Orphéon" type="rss" xmlUrl="reseau_orpheon.xml" htmlUrl="https://reseau-orpheon.fr/News/ipgorph"/>
+    <outline text="Réseau Teria" title="Réseau Teria" type="rss" xmlUrl="reseau_teria.xml" htmlUrl="https://www.reseau-teria.com/"/>
+    <outline text="EUSPA Pressroom" title="EUSPA Pressroom" type="rss" xmlUrl="euspa_pressroom.xml" htmlUrl="https://www.euspa.europa.eu/pressroom"/>
+    <outline text="Expertises Territoires" title="Expertises Territoires" type="rss" xmlUrl="expertises_territoires.xml" htmlUrl="https://www.expertises-territoires.fr/"/>
+    <outline text="PréventionBTP" title="PréventionBTP" type="rss" xmlUrl="preventionbtp.xml" htmlUrl="https://www.preventionbtp.fr/actualites"/>
+    <outline text="INRAP" title="INRAP" type="rss" xmlUrl="inrap.xml" htmlUrl="https://www.inrap.fr/actualites/recherche"/>
+    <outline text="Ordre des Géomètres-Experts" title="Ordre des Géomètres-Experts" type="rss" xmlUrl="ordre_des_géomètres-experts.xml" htmlUrl="https://www.geometre-expert.fr/actus-infos/"/>
+    <outline text="Techniques de l'Ingénieur" title="Techniques de l'Ingénieur" type="rss" xmlUrl="techniques_de_l_ingénieur.xml" htmlUrl="https://www.techniques-ingenieur.fr/actualite/"/>
   </body>
 </opml>
