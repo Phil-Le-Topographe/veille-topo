@@ -3,21 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portail de Veille Dynamique Traduit - Géomatique & Topographie</title>
+    <title>Portail d'Ingénierie Documentaire - Géomatique & Topographie</title>
     
     <style>
         /* ==========================================================================
-           VARIABLES GLOBALES DE THÉMATISATION (DESIGN SYSTEM)
+           VARIABLES GLOBALES DE THÉMATISATION (DESIGN SYSTEM - MODE CLAIR)
            ========================================================================== */
         :root {
-            --primary-dark: #1a202c;     /* Anthracite profond pour les textes majeurs */
-            --accent-red: #c53030;       /* Rouge institutionnel pour l'état actif et les titres */
-            --bg-main: #f7fafc;          /* Fond de page neutre pour limiter la fatigue visuelle */
-            --card-bg: #ffffff;          /* Blanc pur assurant le détachement des cartes */
-            --text-muted: #718096;       /* Gris intermédiaire pour les métadonnées et sous-titres */
-            --border-light: #e2e8f0;     /* Gris de délimitation pour les lignes de séparation */
-            --radius-md: 12px;           /* Rayon de courbure des angles des cartes */
-            --radius-sm: 6px;            /* Rayon de courbure pour les boutons de filtrage */
+            --primary-dark: #1a202c;       /* Anthracite profond pour les textes majeurs */
+            --accent-red: #c53030;         /* Rouge institutionnel pour l'état actif et les titres */
+            --bg-main: #f7fafc;            /* Fond de page neutre pour limiter la fatigue visuelle */
+            --card-bg: #ffffff;            /* Blanc pur assurant le détachement des cartes */
+            --text-muted: #718096;         /* Gris intermédiaire pour les métadonnées et sous-titres */
+            --border-light: #e2e8f0;       /* Gris de délimitation pour les lignes de séparation */
+            --input-bg: #ffffff;           /* Fond des champs de saisie */
+            --radius-md: 12px;             /* Rayon de courbure des angles des cartes */
+            --radius-sm: 6px;              /* Rayon de courbure pour les boutons de filtrage */
+        }
+
+        /* ==========================================================================
+           SURCHARGE DE THÉMATISATION (DESIGN SYSTEM - MODE SOMBRE)
+           JUSTIFICATION CSS : L'utilisation de variables de même nom permet une bascule 
+           immédiate de l'ensemble de l'interface par simple permutation de classe sur le body.
+           ========================================================================== */
+        body.dark-theme {
+            --primary-dark: #f7fafc;       /* Inversion : le texte majeur devient clair */
+            --accent-red: #fc8181;         /* Rouge atténué pour optimiser le contraste sur fond sombre */
+            --bg-main: #0f172a;            /* Bleu nuit profond pour le fond général (anti-éblouissement) */
+            --card-bg: #1e293b;            /* Gris-bleu ardoise pour les modules de cartes */
+            --text-muted: #94a3b8;         /* Gris clair pour les textes secondaires */
+            --border-light: #334155;       /* Assombrissement des bordures de séparation */
+            --input-bg: #1e293b;           /* Fond des inputs aligné sur les cartes */
         }
 
         body {
@@ -27,48 +43,90 @@
             margin: 0;
             padding: 0;
             line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* ==========================================================================
-           JUSTIFICATION DE LA MISE EN PAGE ET DE L'ARCHITECTURE GRAPHIQUE
+           STRUCTURE DE LA PAGE ET MISES EN PAGE (FLEXBOX & GRID)
            ========================================================================== */
         
-        /* FLEXBOX : Alignement horizontal de l'en-tête principal. L'utilisation de 
-           'space-between' projette le titre à gauche et l'indicateur de configuration à droite. */
+        /* FLEXBOX : Organisation horizontale de l'en-tête. Permet d'isoler le bloc de titre 
+           à gauche et les commandes utilitaires (Thème / Cache) à l'extrémité droite. */
         header {
-            background-color: #ffffff;
+            background-color: var(--card-bg);
             border-bottom: 1px solid var(--border-light);
             padding: 20px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
+            gap: 15px;
         }
 
-        h1 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--primary-dark);
-            margin: 0;
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
-        /* BARRE DE FILTRAGE (FLEXBOX) : Le choix de Flexbox avec 'flex-wrap: wrap' 
-           permet aux boutons de se réorganiser proprement sur plusieurs lignes sur support mobile. */
-        .filter-bar {
-            background-color: #ffffff;
+        /* BARRE DE CONTRÔLE INTERMÉDIAIRE : Reçoit le champ de recherche et les boutons. */
+        .control-panel {
+            background-color: var(--card-bg);
             border-bottom: 1px solid var(--border-light);
-            padding: 15px 40px;
+            padding: 20px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* BARRE DE RECHERCHE TEXTUELLE */
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            background-color: var(--input-bg);
+            color: var(--primary-dark);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-red);
+        }
+
+        /* BLOCS DE FILTRAGE PAR CATÉGORIES (FLEXBOX INTERNE) */
+        .category-group {
             display: flex;
             flex-wrap: wrap;
+            align-items: center;
             gap: 10px;
+            padding: 5px 0;
         }
 
+        .category-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            min-width: 120px;
+        }
+
+        /* COMPOSANTS BOUTONS */
         .filter-btn {
             background-color: var(--bg-main);
             color: var(--primary-dark);
             border: 1px solid var(--border-light);
             padding: 6px 14px;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 500;
             border-radius: var(--radius-sm);
             cursor: pointer;
@@ -77,8 +135,7 @@
         }
 
         .filter-btn:hover {
-            background-color: #edf2f7;
-            border-color: #cbd5e0;
+            background-color: var(--border-light);
         }
 
         .filter-btn.active {
@@ -93,8 +150,8 @@
             font-weight: 700;
         }
 
-        /* GRID LAYOUT : Architecture pour l'affichage des cartes de taille unifiée.
-           La fonction minmax(300px, 1fr) impose une contrainte de largeur minimale de 300px par carte. */
+        /* GRID LAYOUT : Grille de distribution des cartes d'actualités.
+           Calcule le nombre de colonnes optimal de manière fluide sans media queries. */
         .timeline-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -103,7 +160,7 @@
         }
 
         /* ==========================================================================
-           COMPOSANTS : STRUCTURE DU BLOC DE CARTE (CARD ARCHITECTURE)
+           COMPOSANTS : STRUCTURE DES CARTES GRAPHIC COMPONENT
            ========================================================================== */
         .article-card {
             background: var(--card-bg);
@@ -126,8 +183,8 @@
 
         .card-image-wrapper {
             width: 100%;
-            height: 180px;
-            background: #e2e8f0;
+            height: 160px;
+            background: var(--border-light);
             position: relative;
         }
 
@@ -142,7 +199,6 @@
             height: 100%;
             background: linear-gradient(135deg, #2c3e50 0%, #4a5568 100%);
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             color: rgba(255, 255, 255, 0.15);
@@ -162,7 +218,7 @@
         }
 
         .card-source {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--accent-red);
@@ -171,7 +227,7 @@
         }
 
         .card-title {
-            font-size: 1.05rem;
+            font-size: 1rem;
             font-weight: 600;
             line-height: 1.4;
             margin: 0 0 10px 0;
@@ -179,7 +235,7 @@
         }
 
         .card-excerpt {
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             color: var(--text-muted);
             margin: 0 0 15px 0;
             display: -webkit-box;
@@ -188,24 +244,20 @@
             overflow: hidden;
         }
 
-        /* Justification CSS : Bordure bleue distinctive appliquée aux éléments traduits 
-           pour avertir l'utilisateur d'un traitement algorithmique automatique. */
         .translated-text {
             border-left: 2px solid #3182ce;
             padding-left: 6px;
             font-style: italic;
-            color: #2d3748;
         }
         
         .translated-title {
             border-left: 2px solid #3182ce;
             padding-left: 6px;
-            color: var(--primary-dark);
             display: block;
         }
 
         .card-date {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: var(--text-muted);
             margin-top: auto;
             border-top: 1px solid var(--border-light);
@@ -217,51 +269,175 @@
             text-align: center;
             padding: 50px;
             color: var(--text-muted);
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
     </style>
 </head>
 <body>
 
     <header id="main-header">
-        <h1>Veille Technologique & Pédagogique - BTS MGTMN</h1>
-        <small id="config-label" style="color: var(--text-muted);">Traduction automatique des titres et extraits active</small>
+        <div>
+            <h1>Veille Technologique & Pédagogique - BTS MGTMN</h1>
+            <small id="cache-status" style="color: var(--text-muted);">Synchronisation réseau active...</small>
+        </div>
+        <div class="header-actions">
+            <button class="filter-btn" id="btn-refresh-cache" title="Forcer la purge du cache local et réinterroger les serveurs distants">🔄 Actualiser</button>
+            <button class="filter-btn" id="btn-toggle-theme" title="Basculer entre le mode clair et le mode sombre">🌓 Thème</button>
+        </div>
     </header>
 
-    <section id="filter-container" class="filter-bar"></section>
+    <section class="control-panel">
+        <div class="search-wrapper">
+            <input type="text" id="search-bar" class="search-input" placeholder="Rechercher un mot-clé, un logiciel, un capteur...">
+        </div>
+        
+        <div id="categories-filter-box">
+            <div class="category-group">
+                <span class="category-label">Général :</span>
+                <button class="filter-btn clear-all active" id="btn-master-clear">🗂️ Tout afficher</button>
+            </div>
+            </div>
+    </section>
 
     <main id="timeline-container" class="timeline-grid">
-        <div class="loader" id="main-loader">Initialisation de l'infrastructure de veille, des filtres et des traductions...</div>
+        <div class="loader" id="main-loader">Initialisation du cache et chargement des flux...</div>
     </main>
 
     <script>
-        // REGISTRES DE DONNÉES GLOBAUX
-        let baseArticlesGlobal = [];          // Contient l'ensemble normalisé des articles
-        let listeSourcesUniques = new Set();  // Liste brute des éditeurs uniques découverts
-        let sourcesActives = new Set();       // Liste des filtres sélectionnés par l'utilisateur
+        /* ==========================================================================
+           DICTIONNAIRE DE MAPPING MÉTIER ET CONFIGURATION DU CACHE
+           ========================================================================== */
+        
+        // CORRESPONDANCE DES SOURCES : Permet de classifier sémantiquement chaque flux RSS
+        // afin de bâtir des filtres d'arborescence adaptés au référentiel de formation.
+        const DICTIONNAIRE_CATEGORIES = {
+            "qgis.org blog": "sig", "arcorama": "sig", "release notes from webodm": "sig", "release notes from cloudcompare": "sig", "agisoft photoscan": "sig",
+            "eu agency for the space programme - linking space to user needs": "materiel", "dronelife": "materiel", "lidar news": "materiel", "news": "materiel", "gps world": "materiel", "geospatial world": "materiel",
+            "flux rss des actualités": "institution", "conseil national de l'information géolocalisée - actualités": "institution", "cerema - actualité": "institution", "press releases": "institution", "ministère du partenariat avec les territoires et de la décentralisation ministère de la transition écologique, de l’énergie, du climat et de la prévention des risques ministère du logement et de la ré": "institution",
+            "epos-france": "science", "institut de physique du globe de paris": "science", "copernicus": "science", "theia": "science", "esa france": "science", "nasa": "science", "infoterre": "science", "\"collège de france\" - google actualités": "science"
+        };
+
+        // LIBELLÉS DES THÉMATIQUES MÉTIERS
+        const NOMS_CATEGORIES = {
+            "sig": "Logiciels & SIG",
+            "materiel": "Matériel & Capteurs",
+            "institution": "Institutions & Normes",
+            "science": "Sciences & Spatial"
+        };
+
+        // PARAMÈTRES DU CACHE LOCAL
+        const CACHE_KEY_DATA = "veille_topo_data_v2";
+        const CACHE_KEY_TIME = "veille_topo_timestamp_v2";
+        const DUREE_CACHE = 3600000; // Persistance fixée à 1 heure (en millisecondes)
+
+        // REGISTRES ET ÉTATS DE L'APPLICATION
+        let baseArticlesGlobal = [];
+        let listeSourcesUniques = new Set();
+        let sourcesActives = new Set();
+        let termeRechercheGlobal = "";
 
         document.addEventListener("DOMContentLoaded", () => {
-            initialiserApplication();
+            configurerCommutateurTheme();
+            configurerBarreRecherche();
+            configurerBoutonRafraichissement();
+            gererCycleDeVieDonnees();
         });
 
+        /* ==========================================================================
+           FONCTIONS DE GESTION DU THÉMATISME ET DE L'INTERACTION UTILISATEUR
+           ========================================================================== */
+
         /**
-         * @function initialiserApplication
-         * @description Gère l'initialisation asynchrone de l'application, coordonne les requêtes HTTP,
-         * déclenche la construction de la barre de filtres et injecte le rendu graphique.
-         * @param {void}
-         * @returns {Promise<void>}
+         * @function configurerCommutateurTheme
+         * @description Initialise le mode sombre en vérifiant les préférences antérieures 
+         * stockées de l'utilisateur ou en appliquant l'événement de bascule au clic.
          */
-        async function initialiserApplication() {
+        function configurerCommutateurTheme() {
+            const btn = document.getElementById("btn-toggle-theme");
+            if (localStorage.getItem("theme_sombre") === "true") {
+                document.body.classList.add("dark-theme");
+            }
+            btn.addEventListener("click", () => {
+                document.body.classList.toggle("dark-theme");
+                localStorage.setItem("theme_sombre", document.body.classList.contains("dark-theme"));
+            });
+        }
+
+        /**
+         * @function configurerBarreRecherche
+         * @description Attache un écouteur sur le champ textuel pour intercepter la saisie
+         * et recalculer à la volée la visibilité des cartes sans requêter le réseau.
+         */
+        function configurerBarreRecherche() {
+            const barre = document.getElementById("search-bar");
+            barre.addEventListener("input", (e) => {
+                termeRechercheGlobal = e.target.value.toLowerCase().trim();
+                genererRenduInterface();
+            });
+        }
+
+        /**
+         * @function configurerBoutonRafraichissement
+         * @description Permet à l'utilisateur de forcer l'effacement du cache pour actualiser les données.
+         */
+        function configurerBoutonRafraichissement() {
+            document.getElementById("btn-refresh-cache").addEventListener("click", () => {
+                localStorage.removeItem(CACHE_KEY_DATA);
+                localStorage.removeItem(CACHE_KEY_TIME);
+                location.reload();
+            });
+        }
+
+        /* ==========================================================================
+           PIPELINE D'ACQUISITION DES DONNÉES (CACHE VS RÉSEAU)
+           ========================================================================== */
+
+        /**
+         * @function gererCycleDeVieDonnees
+         * @description Implémente l'algorithme de mise en cache locale (Client-Side Caching).
+         * Évalue l'âge du cache. Si valide, charge instantanément ; sinon, interroge le réseau.
+         */
+        async function gererCycleDeVieDonnees() {
+            const cacheTimestamp = localStorage.getItem(CACHE_KEY_TIME);
+            const cacheDonnees = localStorage.getItem(CACHE_KEY_DATA);
+            const instantPresent = Date.now();
+
+            // LOGIQUE DE VALIDATION : Double vérification de présence et d'obsolescence temporelle
+            if (cacheTimestamp && cacheDonnees && (instantPresent - cacheTimestamp < DUREE_CACHE)) {
+                baseArticlesGlobal = JSON.parse(cacheDonnees);
+                
+                // Extraction des sources uniques depuis les données du cache pour reconstituer les filtres
+                baseArticlesGlobal.forEach(art => listeSourcesUniques.add(art.titreSource));
+                
+                const minutesRestantes = Math.round((DUREE_CACHE - (instantPresent - cacheTimestamp)) / 60000);
+                document.getElementById("cache-status").textContent = `Données locales (MàJ réseau dans ${minutesRestantes} min)`;
+                
+                genererStructureBoutonsCategories();
+                genererRenduInterface();
+            } else {
+                document.getElementById("cache-status").textContent = `Requêtage des serveurs distants en cours...`;
+                await initialiserCollecteReseau();
+            }
+        }
+
+        /**
+         * @function initialiserCollecteReseau
+         * @description Charge le fichier d'infrastructure OPML et parallélise les requêtes vers les flux RSS.
+         */
+        async function initialiserCollecteReseau() {
             try {
                 const reponse = await fetch('feeds.opml');
-                if (!reponse.ok) throw new Error("Fichier 'feeds.opml' introuvable.");
+                if (!reponse.ok) throw new Error("Fichier 'feeds.opml' absent de la racine.");
                 
                 const chaineDonnees = await reponse.text();
                 const parseur = new DOMParser();
                 const documentXML = parseur.parseFromString(chaineDonnees, "text/xml");
                 
+                if (documentXML.querySelector("parsererror")) throw new Error("Erreur de syntaxe dans le fichier OPML.");
+                
                 const elementsOutline = documentXML.querySelectorAll("outline[xmlUrl]");
                 
+                // PARALLÉLISATION ASYNCHRONE : Lancement simultané des requêtes pour optimiser les performances
                 const promessesCollecte = Array.from(elementsOutline).map(outline => {
                     const titreSource = outline.getAttribute("title") || outline.getAttribute("text") || "Source";
                     const urlFlux = outline.getAttribute("xmlUrl");
@@ -270,31 +446,36 @@
                 
                 await Promise.all(promessesCollecte);
                 
-                // Tri chronologique descendant
-                baseArticlesGlobal.sort((a, b) => b.dateObjet - a.dateObjet);
+                // Tri chronologique des structures normalisées par soustraction de timestamps
+                baseArticlesGlobal.sort((a, b) => b.dateTimestamp - a.dateTimestamp);
                 
-                // Construction et affichage
-                genererBoutonsFiltrage();
+                // PERSISTANCE DES DONNÉES : Stockage local du résultat pour les sessions futures
+                try {
+                    localStorage.setItem(CACHE_KEY_DATA, JSON.stringify(baseArticlesGlobal));
+                    localStorage.setItem(CACHE_KEY_TIME, Date.now().toString());
+                    document.getElementById("cache-status").textContent = `Flux synchronisés avec succès (Cache activé)`;
+                } catch (e) {
+                    console.warn("Quota d'espace de stockage LocalStorage excédé.");
+                }
+                
+                genererStructureBoutonsCategories();
                 genererRenduInterface();
                 
             } catch (erreur) {
-                document.getElementById("timeline-container").innerHTML = `<div class="loader" style="color:#c53030;">Erreur critique : ${erreur.message}</div>`;
+                document.getElementById("timeline-container").innerHTML = `<div class="loader" style="color:#c53030;">Erreur d'infrastructure : ${erreur.message}</div>`;
             }
         }
 
         /**
          * @function collecterDonneesFlux
-         * @description Gère l'acquisition asynchrone des flux et normalise les objets articles.
-         * @param {string} titreSource - Nom de l'éditeur de la source.
-         * @param {string} urlFlux - URL d'accès au flux de syndication.
-         * @returns {Promise<void>}
+         * @description Récupère un flux unique via proxy, extrait et normalise ses attributs (Titres, dates, images, résumés).
          */
         async function collecterDonneesFlux(titreSource, urlFlux) {
             const urlRequeteProxiee = `https://corsproxy.io/?${encodeURIComponent(urlFlux)}`;
             
             try {
                 const reponse = await fetch(urlRequeteProxiee);
-                if (!reponse.ok) return; 
+                if (!reponse.ok) return;
                 
                 const texteBrut = await reponse.text();
                 const parseur = new DOMParser();
@@ -339,9 +520,8 @@
                     }
                     
                     if (!urlImage) {
-                        const expressionImage = /<img[^>]+src="([^">]+)"/i;
-                        const correspondance = descriptionBrute.match(expressionImage);
-                        if (correspondance && correspondance[1]) urlImage = correspondance[1];
+                        const correspondence = descriptionBrute.match(/<img[^>]+src="([^">]+)"/i);
+                        if (correspondence && correspondence[1]) urlImage = correspondence[1];
                     }
 
                     baseArticlesGlobal.push({
@@ -349,101 +529,125 @@
                         titreArticle: titreArticle.trim(),
                         lien: lienArticle ? lienArticle.trim() : "#",
                         extrait: extraitTexte.trim(),
-                        dateObjet: dateEstValide ? dateObjet : new Date(0),
+                        dateTimestamp: dateEstValide ? dateObjet.getTime() : 0,
                         dateAffichee: dateEstValide ? dateObjet.toLocaleDateString('fr-FR', {day: 'numeric', month: 'short', year: 'numeric'}) : "Date inconnue",
                         urlImage: urlImage
                     });
                 });
-            } catch (e) {
-                // Échec isolé ignoré
-            }
+            } catch (e) {}
         }
 
+        /* ==========================================================================
+           CONSTRUCTION DYNAMIQUE DE L'INTERFACE DE FILTRAGE PAR CATÉGORIES
+           ========================================================================== */
+
         /**
-         * @function genererBoutonsFiltrage
-         * @description Construit la barre de filtres et injecte en premier lieu le bouton de désélection globale.
-         * @param {void}
-         * @returns {void}
+         * @function genererStructureBoutonsCategories
+         * @description Analyse l'ensemble des sources, les trie par groupe métier, 
+         * et génère l'architecture des boutons de filtrage sous le titre.
          */
-        function genererBoutonsFiltrage() {
-            const conteneurFiltres = document.getElementById("filter-container");
-            conteneurFiltres.innerHTML = ""; 
+        function genererStructureBoutonsCategories() {
+            const boitePrincipale = document.getElementById("categories-filter-box");
             
-            const boutonMaster = document.createElement("button");
-            boutonMaster.className = "filter-btn clear-all";
-            boutonMaster.textContent = "🗂️ Tout afficher";
+            // Initialisation d'une structure de regroupement temporaire
+            let distribution = { "sig": [], "materiel": [], "institution": [], "science": [], "autres": [] };
             
-            if (sourcesActives.size === 0) {
-                boutonMaster.classList.add("active");
-            }
-            
-            boutonMaster.addEventListener("click", () => {
-                sourcesActives.clear(); 
-                genererBoutonsFiltrage(); 
-                genererRenduInterface();  
+            // Répartition des sources selon le dictionnaire de mapping normalisé en minuscules
+            listeSourcesUniques.forEach(source => {
+                const sourceCle = source.toLowerCase().replace(/\s+/g, ' ').trim();
+                const codeCat = DICTIONNAIRE_CATEGORIES[sourceCle] || "autres";
+                distribution[codeCat].push(source);
             });
-            conteneurFiltres.appendChild(boutonMaster);
-            
-            const listeTriez = Array.from(listeSourcesUniques).sort();
-            
-            listeTriez.forEach(source => {
-                const bouton = document.createElement("button");
-                bouton.className = "filter-btn";
-                bouton.textContent = source;
+
+            // Injection géométrique des lignes de boutons
+            for (const [idCategorie, tableauSources] of Object.entries(distribution)) {
+                if (tableauSources.length === 0 || idCategorie === "autres") continue;
                 
-                if (sourcesActives.has(source)) {
-                    bouton.classList.add("active");
-                }
+                const conteneurLigne = document.createElement("div");
+                conteneurLigne.className = "category-group";
                 
-                bouton.addEventListener("click", () => {
-                    if (sourcesActives.has(source)) {
-                        sourcesActives.delete(source);
-                    } else {
-                        sourcesActives.add(source);
-                    }
+                const étiquette = document.createElement("span");
+                étiquette.className = "category-label";
+                étiquette.textContent = NOMS_CATEGORIES[idCategorie] + " :";
+                conteneurLigne.appendChild(étiquette);
+                
+                // Tri alphabétique des boutons éditeurs au sein de leur catégorie
+                tableauSources.sort().forEach(source => {
+                    const bouton = document.createElement("button");
+                    bouton.className = "filter-btn";
+                    bouton.textContent = source;
                     
-                    genererBoutonsFiltrage();
-                    genererRenduInterface();
+                    bouton.addEventListener("click", () => {
+                        document.getElementById("btn-master-clear").classList.remove("active");
+                        
+                        if (sourcesActives.has(source)) {
+                            sourcesActives.delete(source);
+                            bouton.classList.remove("active");
+                        } else {
+                            sourcesActives.add(source);
+                            bouton.classList.add("active");
+                        }
+                        
+                        if (sourcesActives.size === 0) {
+                            document.getElementById("btn-master-clear").classList.add("active");
+                        }
+                        genererRenduInterface();
+                    });
+                    conteneurLigne.appendChild(bouton);
                 });
                 
-                conteneurFiltres.appendChild(bouton);
+                boitePrincipale.appendChild(conteneurLigne);
+            }
+
+            // Configuration du comportement du bouton Maître "Tout afficher"
+            document.getElementById("btn-master-clear").addEventListener("click", function() {
+                sourcesActives.clear();
+                document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+                this.classList.add("active");
+                genererRenduInterface();
             });
         }
+
+        /* ==========================================================================
+           ALGORITHME DE RENDU ET TRADUCTION ASYNCHRONE POST-RENDU
+           ========================================================================== */
 
         /**
          * @function genererRenduInterface
-         * @description Filtre la collection d'articles, vide la grille actuelle et reconstruit les cartes graphiques.
-         * Déclenche l'analyse linguistique parallèle pour la traduction des titres et des extraits.
-         * @param {void}
-         * @returns {void}
+         * @description Applique le triptyque de filtrage (Catégories, Boutons de sources, Mots-clés de recherche),
+         * vide la grille, reconstruit les modules de cartes et amorce la détection linguistique.
          */
         function genererRenduInterface() {
-            const conteneurTimeline = document.getElementById("timeline-container");
+            const conteneurGrid = document.getElementById("timeline-container");
+            const loaderInitial = document.getElementById("main-loader");
+            if (loaderInitial) loaderInitial.remove();
             
-            const loader = document.getElementById("main-loader");
-            if (loader) loader.remove();
+            conteneurGrid.innerHTML = ""; // Purge complète de la grille
             
-            conteneurTimeline.innerHTML = "";
+            // EXÉCUTION DU FILTRAGE MULTICRITÈRE COMPOSE
+            const articlesFiltres = baseArticlesGlobal.filter(art => {
+                const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
+                const passeFiltreTexte = !termeRechercheGlobal || 
+                                         art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || 
+                                         art.extrait.toLowerCase().includes(termeRechercheGlobal);
+                return passeFiltreSource && passeFiltreTexte;
+            });
             
-            const articlesAAfficher = sourcesActives.size === 0 
-                ? baseArticlesGlobal 
-                : baseArticlesGlobal.filter(art => sourcesActives.has(art.titreSource));
-            
-            if (articlesAAfficher.length === 0) {
-                conteneurTimeline.innerHTML = "<div class='loader'>Aucun article ne correspond aux filtres activés.</div>";
+            if (articlesFiltres.length === 0) {
+                conteneurGrid.innerHTML = "<div class='loader'>Aucun résultat ne correspond à vos critères de recherche.</div>";
                 return;
             }
             
-            articlesAAfficher.forEach(art => {
+            // Construction géométrique du DOM des cartes
+            articlesFiltres.forEach(art => {
                 const elementCarte = document.createElement("a");
                 elementCarte.className = "article-card";
                 elementCarte.href = art.lien;
-                elementCarte.target = "_blank"; // Préservation stricte de la destination native externe
+                elementCarte.target = "_blank"; // Respect absolu du lien d'origine externe
                 
-                // GESTION DES IDENTIFIANTS UNIQUE DU DOM (CIBLAGE INDÉPENDANT)
-                const prefixeAleatoire = Math.random().toString(36).substring(2, 11);
-                const idUniqueTitre = 'title-' + prefixeAleatoire;
-                const idUniqueExtrait = 'excerpt-' + prefixeAleatoire;
+                const jetonAleatoire = Math.random().toString(36).substring(2, 11);
+                const idTitre = 't-' + jetonAleatoire;
+                const idExtrait = 'e-' + jetonAleatoire;
                 
                 let blocMediaHTML = `
                     <div class="card-image-placeholder">
@@ -460,42 +664,29 @@
                     </div>
                     <div class="card-content">
                         <span class="card-source">${art.titreSource}</span>
-                        <h2 class="card-title" id="${idUniqueTitre}">${art.titreArticle}</h2>
-                        <p class="card-excerpt" id="${idUniqueExtrait}">${art.extrait ? art.extrait : "Consulter l'article complet pour analyser le contenu technique associé."}</p>
+                        <h2 class="card-title" id="${idTitre}">${art.titreArticle}</h2>
+                        <p class="card-excerpt" id="${idExtrait}">${art.extrait ? art.extrait : "Consulter la plateforme d'origine pour analyser cette ressource."}</p>
                         <div class="card-date">Publié le ${art.dateAffichee}</div>
                     </div>
                 `;
-                conteneurTimeline.appendChild(elementCarte);
+                conteneurGrid.appendChild(elementCarte);
 
-                // EXPRESSION RÉGULIÈRE DE DÉTECTION LINGUISTIQUE (HEURISTIQUE SÉCTORIELLE)
+                // DÉTECTION LINGUISTIQUE (Heuristique basée sur les marqueurs grammaticaux anglophones)
                 const regexAnglais = /\b(the|and|of|in|to|for|with|on|at|by|from|new|release|software|drone|satellite|surveying|update|news|gps|world|lidar|geospatial)\b/i;
 
-                // ANALYSE ET DÉCLENCHEMENT DE LA TRADUCTION DU TITRE
-                if (art.titreArticle) {
-                    const titreEstAnglais = regexAnglais.test(art.titreArticle);
-                    if (titreEstAnglais) {
-                        lancerTraductionAsynchrone(idUniqueTitre, art.titreArticle, true);
-                    }
+                if (art.titreArticle && regexAnglais.test(art.titreArticle)) {
+                    lancerTraductionAsynchrone(idTitre, art.titreArticle, true);
                 }
-
-                // ANALYSE ET DÉCLENCHEMENT DE LA TRADUCTION DE L'EXTRAIT
-                if (art.extrait && !art.extrait.startsWith("Consulter")) {
-                    const extraitEstAnglais = regexAnglais.test(art.extrait);
-                    if (extraitEstAnglais) {
-                        lancerTraductionAsynchrone(idUniqueExtrait, art.extrait, false);
-                    }
+                if (art.extrait && !art.extrait.startsWith("Consulter") && regexAnglais.test(art.extrait)) {
+                    lancerTraductionAsynchrone(idExtrait, art.extrait, false);
                 }
             });
         }
 
         /**
          * @function lancerTraductionAsynchrone
-         * @description Interroge en arrière-plan la passerelle gtx de Google Translate, parse la matrice de données
-         * JSON retournée et met à jour dynamiquement l'élément cible dans le DOM avec le style graphique approprié.
-         * @param {string} idDOM - L'identifiant unique de la balise HTML cible.
-         * @param {string} texteOriginal - Le texte brut en langue étrangère à soumettre à l'API.
-         * @param {boolean} estUnTitre - Flag booléen dictant la classe CSS structurelle à appliquer.
-         * @returns {Promise<void>}
+         * @description Interroge l'API de traduction en tâche de fond (sans figer l'interface), 
+         * traite la matrice de réponse JSON et met à jour l'élément ciblé dans la carte.
          */
         async function lancerTraductionAsynchrone(idDOM, texteOriginal, estUnTitre) {
             const urlTraduction = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=fr&dt=t&q=${encodeURIComponent(texteOriginal)}`;
@@ -507,25 +698,20 @@
                 const structureJson = await reponse.json();
                 let texteTraduitUnifie = "";
                 
-                // Algorithme de reconstruction : concaténation des segments de phrases gérés par l'API
                 if (structureJson && structureJson[0]) {
                     structureJson[0].forEach(segment => {
                         if (segment[0]) texteTraduitUnifie += segment[0];
                     });
                 }
                 
-                // Validation de modification : n'intervient que si le texte traduit diffère du texte source
                 if (texteTraduitUnifie && texteTraduitUnifie.trim() !== texteOriginal.trim()) {
-                    const conteneurCible = document.getElementById(idDOM);
-                    if (conteneurCible) {
-                        // Attribution de la classe CSS selon la nature sémantique de l'élément (titre vs paragraphe)
+                    const noeudCible = document.getElementById(idDOM);
+                    if (noeudCible) {
                         const classeAppliquee = estUnTitre ? 'translated-title' : 'translated-text';
-                        conteneurCible.innerHTML = `<span class="${classeAppliquee}" title="Traduit automatiquement en français">${texteTraduitUnifie} ✨</span>`;
+                        noeudCible.innerHTML = `<span class="${classeAppliquee}" title="Traduit automatiquement du texte original">${texteTraduitUnifie} ✨</span>`;
                     }
                 }
-            } catch (erreur) {
-                console.warn("Échec du traitement de la traduction asynchrone pour l'élément : " + idDOM);
-            }
+            } catch (erreur) {}
         }
     </script>
 </body>
