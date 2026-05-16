@@ -53,9 +53,9 @@
         }
 
         /* GRID LAYOUT : Choix architectural indispensable pour l'affichage de cartes de taille uniforme.
-           La fonction minmax(300px, 1fr) impose une contrainte de largeur minimale de 300px par carte. 
-           Si l'espace disponible le permet, la grille calcule le nombre maximal de colonnes et distribue 
-           équitablement le reliquat d'espace (1fr). */
+           La propriété 'repeat(auto-fill, minmax(300px, 1fr))' calcule dynamiquement 
+           le nombre optimal de colonnes par ligne selon la résolution du moniteur, 
+           garantissant une réactivité (responsiveness) native sans media queries complexes. */
         .timeline-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -68,8 +68,8 @@
            ========================================================================== */
         
         /* FLEXBOX (Column) : La carte utilise Flexbox verticalement pour forcer les éléments 
-           interne à se positionner régulièrement. 'height: 100%' garantit que toutes les cartes 
-           d'une même ligne de la grille Grid partagent exactement la même hauteur. */
+           internes à se positionner régulièrement. 'height: 100%' gère l'uniformité : toutes les 
+           cartes d'une même ligne de la grille partagent exactement la même hauteur. */
         .article-card {
             background: var(--card-bg);
             border: 1px solid var(--border-light);
@@ -80,7 +80,7 @@
             height: 100%;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-            text-decoration: none; /* La carte entière est un lien cliquable */
+            text-decoration: none; /* La carte entière constitue une ancre cliquable */
             color: inherit;
         }
 
@@ -91,11 +91,11 @@
 
         /* CONTENEUR IMAGE : Hauteur fixe imposée pour standardiser l'affichage. 
            La propriété 'object-fit: cover' est cruciale : elle force le navigateur à redimensionner 
-           et recadrer l'image récupérée du flux RSS sans altérer son ratio d'aspect original (pas de distorsion). */
+           et recadrer l'image récupérée du flux RSS sans altérer son ratio d'aspect (pas de distorsion). */
         .card-image-wrapper {
             width: 100%;
             height: 180px;
-            background: #e2e8f0; /* Fond de secours pendant le chargement */
+            background: #e2e8f0; /* Fond de secours pendant la phase de chargement */
             position: relative;
         }
 
@@ -122,7 +122,7 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
-            flex-grow: 1; /* Force le contenu à occuper tout l'espace vertical disponible */
+            flex-grow: 1; /* Force le contenu textuel à occuper tout l'espace vertical résiduel */
         }
 
         .card-source {
@@ -147,15 +147,15 @@
             color: var(--text-muted);
             margin: 0 0 15px 0;
             display: -webkit-box;
-            -webkit-line-clamp: 3; /* Limite le résumé à exactement 3 lignes de texte */
+            -webkit-line-clamp: 3; /* Limite l'affichage du résumé à 3 lignes de texte maximum */
             -webkit-box-orient: vertical;  
-            overflow: hidden; /* Masque le texte excédentaire */
+            overflow: hidden; /* Tronque le texte excédentaire */
         }
 
         .card-date {
             font-size: 0.75rem;
             color: var(--text-muted);
-            margin-top: auto; /* Pousse la date au bas absolu de la carte pour l'alignement */
+            margin-top: auto; /* Pousse la date au bas absolu de la carte pour parfaire l'alignement */
             border-top: 1px solid var(--border-light);
             padding-top: 10px;
         }
@@ -192,6 +192,8 @@
          * @function initialiserApplication
          * @description Orchestre le cycle de vie de l'application : charge l'OPML, lance les requêtes 
          * en parallèle, trie les résultats et commande le rendu graphique.
+         * @param {void}
+         * @returns {Promise<void>} Renvoie une promesse asynchrone modifiant le DOM.
          */
         async function initialiserApplication() {
             try {
@@ -228,9 +230,10 @@
 
         /**
          * @function collecterDonneesFlux
-         * @description Interroge un flux RSS/Atom via le proxy, extrait les données brutes et enrichit le tableau global.
+         * @description Interroge un flux RSS/Atom via le proxy, extrait les données brutes, résout les anomalies de formatage de dates et enrichit le tableau global.
          * @param {string} titreSource - Nom éditeur du flux.
          * @param {string} urlFlux - URL technique du flux.
+         * @returns {Promise<void>} Insère les entités normalisées dans le catalogue global.
          */
         async function collecterDonneesFlux(titreSource, urlFlux) {
             const urlRequeteProxiee = `https://corsproxy.io/?${encodeURIComponent(urlFlux)}`;
@@ -256,9 +259,22 @@
                         lienArticle = article.querySelector("link")?.textContent || "#";
                     }
                     
-                    // Extraction et lissage de la date de publication
-                    const chaineDate = article.querySelector("pubDate")?.textContent || article.querySelector("updated")?.textContent || article.querySelector("published")?.textContent || "";
-                    const dateObjet = chaineDate ? new Date(chaineDate) : new Date(0); // Date zéro par défaut si absente
+                    // EXTRACTION ÉTENDUE DE LA DATE : Exploration des balises standards et secondaires (Dublin Core)
+                    let chaineDate = article.querySelector("pubDate")?.textContent || 
+                                     article.querySelector("updated")?.textContent || 
+                                     article.querySelector("published")?.textContent || 
+                                     article.querySelector("date")?.textContent || "";
+                    
+                    if (!chaineDate) {
+                        const dcDate = article.getElementsByTagName("dc:date")[0];
+                        if (dcDate) chaineDate = dcDate.textContent;
+                    }
+                    
+                    // LOGIQUE MATHÉMATIQUE DE SÉCURISATION DES DATES :
+                    // On instancie l'objet Date. Si la chaîne est corrompue ou non standard, getTime() retourne NaN.
+                    // La validation combine isNaN() et la vérification de la date d'époque (0) pour intercepter les anomalies.
+                    const dateObjet = chaineDate ? new Date(chaineDate.trim()) : new Date(0);
+                    const dateEstValide = !isNaN(dateObjet.getTime()) && dateObjet.getTime() !== 0;
                     
                     // Extraction du résumé (nettoyage des balises HTML éventuelles)
                     let descriptionBrute = article.querySelector("description")?.textContent || article.querySelector("summary")?.textContent || "";
@@ -292,8 +308,8 @@
                         titreArticle: titreArticle,
                         lien: lienArticle.trim(),
                         extrait: extraitTexte.trim(),
-                        dateObjet: dateObjet,
-                        dateAffichee: dateObjet.getTime() !== 0 ? dateObjet.toLocaleDateString('fr-FR', {day: 'numeric', month: 'short', year: 'numeric'}) : "Date inconnue",
+                        dateObjet: dateEstValide ? dateObjet : new Date(0),
+                        dateAffichee: dateEstValide ? dateObjet.toLocaleDateString('fr-FR', {day: 'numeric', month: 'short', year: 'numeric'}) : "Date inconnue",
                         urlImage: urlImage
                     });
                 });
@@ -305,6 +321,8 @@
         /**
          * @function genererRenduInterface
          * @description Parcourt le tableau d'éléments triés et injecte le code HTML des cartes graphiques.
+         * @param {void}
+         * @returns {void} Insère les cartes d'actualités vectorielles directement dans le conteneur principal.
          */
         function genererRenduInterface() {
             const conteneur = document.getElementById("timeline-container");
@@ -336,7 +354,7 @@
                     <div class="card-content">
                         <span class="card-source">${art.titreSource}</span>
                         <h2 class="card-title">${art.titreArticle}</h2>
-                        <p class="card-excerpt">${art.extrait ? art.excerpt = art.extrait : "Consulter l'article complet pour analyser le contenu technique associé."}</p>
+                        <p class="card-excerpt">${art.extrait ? art.extrait : "Consulter l'article complet pour analyser le contenu technique associé."}</p>
                         <div class="card-date">Publié le ${art.dateAffichee}</div>
                     </div>
                 `;
