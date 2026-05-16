@@ -1,9 +1,6 @@
 name: Pipeline d'Extraction Documentaire Hybride
 
 on:
-  push:
-    branches:
-      - dev-scraping
   schedule:
     - cron: '0 3 * * *'
   workflow_dispatch:
