@@ -23,17 +23,15 @@
 
         /* ==========================================================================
            SURCHARGE DE THÉMATISATION (DESIGN SYSTEM - MODE SOMBRE)
-           JUSTIFICATION CSS : L'utilisation de variables de même nom permet une bascule 
-           immédiate de l'ensemble de l'interface par simple permutation de classe sur le body.
            ========================================================================== */
         body.dark-theme {
-            --primary-dark: #f7fafc;       /* Inversion : le texte majeur devient clair */
-            --accent-red: #fc8181;         /* Rouge atténué pour optimiser le contraste sur fond sombre */
-            --bg-main: #0f172a;            /* Bleu nuit profond pour le fond général (anti-éblouissement) */
+            --primary-dark: #f7fafc;       
+            --accent-red: #fc8181;         
+            --bg-main: #0f172a;            /* Bleu nuit profond pour le fond général */
             --card-bg: #1e293b;            /* Gris-bleu ardoise pour les modules de cartes */
-            --text-muted: #94a3b8;         /* Gris clair pour les textes secondaires */
-            --border-light: #334155;       /* Assombrissement des bordures de séparation */
-            --input-bg: #1e293b;           /* Fond des inputs aligné sur les cartes */
+            --text-muted: #94a3b8;         
+            --border-light: #334155;       
+            --input-bg: #1e293b;           
         }
 
         body {
@@ -49,9 +47,6 @@
         /* ==========================================================================
            STRUCTURE DE LA PAGE ET MISES EN PAGE (FLEXBOX & GRID)
            ========================================================================== */
-        
-        /* FLEXBOX : Organisation horizontale de l'en-tête. Permet d'isoler le bloc de titre 
-           à gauche et les commandes utilitaires (Thème / Cache) à l'extrémité droite. */
         header {
             background-color: var(--card-bg);
             border-bottom: 1px solid var(--border-light);
@@ -63,13 +58,19 @@
             gap: 15px;
         }
 
+        /* FLEXBOX COLUMN : Alignement vertical pour placer le bouton Aide sous les deux premiers */
         .header-actions {
             display: flex;
-            align-items: center;
-            gap: 15px;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
         }
 
-        /* BARRE DE CONTRÔLE INTERMÉDIAIRE : Reçoit le champ de recherche et les boutons. */
+        .actions-top-row {
+            display: flex;
+            gap: 10px;
+        }
+
         .control-panel {
             background-color: var(--card-bg);
             border-bottom: 1px solid var(--border-light);
@@ -79,7 +80,6 @@
             gap: 15px;
         }
 
-        /* BARRE DE RECHERCHE TEXTUELLE */
         .search-wrapper {
             position: relative;
             width: 100%;
@@ -99,11 +99,8 @@
             transition: border-color 0.2s ease;
         }
 
-        .search-input:focus {
-            border-color: var(--accent-red);
-        }
+        .search-input:focus { border-color: var(--accent-red); }
 
-        /* BLOCS DE FILTRAGE PAR CATÉGORIES (FLEXBOX INTERNE) */
         .category-group {
             display: flex;
             flex-wrap: wrap;
@@ -120,7 +117,6 @@
             min-width: 120px;
         }
 
-        /* COMPOSANTS BOUTONS */
         .filter-btn {
             background-color: var(--bg-main);
             color: var(--primary-dark);
@@ -134,9 +130,7 @@
             user-select: none;
         }
 
-        .filter-btn:hover {
-            background-color: var(--border-light);
-        }
+        .filter-btn:hover { background-color: var(--border-light); }
 
         .filter-btn.active {
             background-color: var(--accent-red);
@@ -145,13 +139,20 @@
             box-shadow: 0 2px 4px rgba(197, 48, 48, 0.2);
         }
 
-        .filter-btn.clear-all {
-            border-style: dashed;
-            font-weight: 700;
+        .filter-btn.clear-all { border-style: dashed; font-weight: 700; }
+        
+        /* Bouton Aide spécifique */
+        .filter-btn.help-btn {
+            background-color: transparent;
+            border-color: var(--text-muted);
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+        .filter-btn.help-btn:hover {
+            background-color: var(--bg-main);
+            color: var(--primary-dark);
         }
 
-        /* GRID LAYOUT : Grille de distribution des cartes d'actualités.
-           Calcule le nombre de colonnes optimal de manière fluide sans media queries. */
         .timeline-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -160,7 +161,7 @@
         }
 
         /* ==========================================================================
-           COMPOSANTS : STRUCTURE DES CARTES GRAPHIC COMPONENT
+           COMPOSANTS GRAPHONOMIQUES : CARTES (CARDS)
            ========================================================================== */
         .article-card {
             background: var(--card-bg);
@@ -188,89 +189,77 @@
             position: relative;
         }
 
-        .card-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .card-image { width: 100%; height: 100%; object-fit: cover; }
 
         .card-image-placeholder {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             background: linear-gradient(135deg, #2c3e50 0%, #4a5568 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             color: rgba(255, 255, 255, 0.15);
         }
 
-        .card-image-placeholder svg {
-            width: 40px;
-            height: 40px;
-            fill: currentColor;
-        }
+        .card-image-placeholder svg { width: 40px; height: 40px; fill: currentColor; }
 
-        .card-content {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
+        .card-content { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
 
-        .card-source {
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--accent-red);
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
+        .card-source { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-red); font-weight: 700; margin-bottom: 8px; }
 
-        .card-title {
-            font-size: 1rem;
-            font-weight: 600;
-            line-height: 1.4;
-            margin: 0 0 10px 0;
-            color: var(--primary-dark);
-        }
+        .card-title { font-size: 1rem; font-weight: 600; line-height: 1.4; margin: 0 0 10px 0; color: var(--primary-dark); }
 
-        .card-excerpt {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin: 0 0 15px 0;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;  
-            overflow: hidden;
-        }
+        .card-excerpt { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 15px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-        .translated-text {
-            border-left: 2px solid #3182ce;
-            padding-left: 6px;
-            font-style: italic;
-        }
+        .translated-text { border-left: 2px solid #3182ce; padding-left: 6px; font-style: italic; }
         
-        .translated-title {
-            border-left: 2px solid #3182ce;
-            padding-left: 6px;
-            display: block;
+        .translated-title { border-left: 2px solid #3182ce; padding-left: 6px; display: block; }
+
+        .card-date { font-size: 0.72rem; color: var(--text-muted); margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 10px; }
+
+        .loader { grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted); font-size: 1.1rem; }
+
+        /* ==========================================================================
+           INTERFACES EMBARQUÉES : FENÊTRE MODALE DE DOCUMENTATION (HELP OVERLAY)
+           ========================================================================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
         }
 
-        .card-date {
-            font-size: 0.72rem;
-            color: var(--text-muted);
-            margin-top: auto;
-            border-top: 1px solid var(--border-light);
-            padding-top: 10px;
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+        .modal-container {
+            background-color: var(--card-bg);
+            color: var(--primary-dark);
+            width: 90%; max-width: 800px; height: 80vh;
+            border-radius: var(--radius-md);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
         }
 
-        .loader {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 50px;
-            color: var(--text-muted);
-            font-size: 1.1rem;
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: var(--bg-main);
         }
+
+        .modal-header h2 { margin: 0; font-size: 1.2rem; color: var(--accent-red); }
+
+        .modal-body { padding: 25px; overflow-y: auto; font-size: 0.9rem; }
+
+        .modal-body h3 { color: var(--accent-red); margin-top: 20px; border-bottom: 1px solid var(--border-light); padding-bottom: 5px; }
+
+        .modal-body code { background-color: var(--bg-main); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: bold; }
+
+        .modal-body pre { background-color: var(--bg-main); padding: 12px; border-radius: 6px; border: 1px solid var(--border-light); overflow-x: auto; font-family: monospace; }
+        
+        .modal-note { background-color: rgba(49, 130, 206, 0.1); border-left: 4px solid #3182ce; padding: 10px 15px; margin: 15px 0; border-radius: 0 4px 4px 0; }
     </style>
 </head>
 <body>
@@ -281,8 +270,11 @@
             <small id="cache-status" style="color: var(--text-muted);">Synchronisation réseau active...</small>
         </div>
         <div class="header-actions">
-            <button class="filter-btn" id="btn-refresh-cache" title="Forcer la purge du cache local et réinterroger les serveurs distants">🔄 Actualiser</button>
-            <button class="filter-btn" id="btn-toggle-theme" title="Basculer entre le mode clair et le mode sombre">🌓 Thème</button>
+            <div class="actions-top-row">
+                <button class="filter-btn" id="btn-refresh-cache" title="Forcer la purge du cache local">🔄 Actualiser</button>
+                <button class="filter-btn" id="btn-toggle-theme" title="Basculer de mode thématique">Double Thème</button>
+            </div>
+            <button class="filter-btn help-btn" id="btn-open-help" title="Ouvrir le pense-bête de maintenance">❓ Aide Maintenance</button>
         </div>
     </header>
 
@@ -290,26 +282,55 @@
         <div class="search-wrapper">
             <input type="text" id="search-bar" class="search-input" placeholder="Rechercher un mot-clé, un logiciel, un capteur...">
         </div>
-        
         <div id="categories-filter-box">
             <div class="category-group">
                 <span class="category-label">Général :</span>
                 <button class="filter-btn clear-all active" id="btn-master-clear">🗂️ Tout afficher</button>
             </div>
-            </div>
+        </div>
     </section>
 
     <main id="timeline-container" class="timeline-grid">
         <div class="loader" id="main-loader">Initialisation du cache et chargement des flux...</div>
     </main>
 
+    <div id="help-modal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>PENSE-BÊTE DE MAINTENANCE OPÉRATIONNELLE</h2>
+                <button class="filter-btn" id="btn-close-help">Fermer ✕</button>
+            </div>
+            <div class="modal-body">
+                <p>Ce guide interne rappelle la procédure stricte pour ajouter de nouvelles sources de veille au sein de l'application sans rompre les scripts de rendu dynamique.</p>
+                
+                <h3>Opération 1 : Déclaration du flux (feeds.opml)</h3>
+                <p>Ouvrez le fichier <code>feeds.opml</code> sur GitHub, passez en mode édition (crayon) et insérez votre nouvelle ligne juste au-dessus de la balise finale <code>&lt;/body&gt;</code> :</p>
+                <pre>&lt;outline text="Nom Source" title="Nom Source" type="rss" xmlUrl="URL_DU_FLUX" htmlUrl="URL_SITE"/&gt;</pre>
+                
+                <div class="modal-note">
+                    <strong>CRITICAL / RIGUEUR XML :</strong> Si l'URL du flux contient un caractère <code>&amp;</code> (esperluette), vous devez <strong>obligatoirement</strong> l'écrire sous sa forme échappée <code>&amp;amp;</code> dans le fichier OPML pour éviter un crash silencieux du parseur XML.
+                </div>
+
+                <h3>Opération 2 : Classification Métier (index.html)</h3>
+                <p>Ouvrez le fichier <code>index.html</code> sur GitHub, passez en mode édition et insérez le nom exact de votre source <strong>strictement en minuscules</strong> au sein de l'objet global <code>DICTIONNAIRE_CATEGORIES</code> (début de script) :</p>
+                <pre>"nom exact de la source en minuscules": "code_categorie",</pre>
+                
+                <p>Codes métiers réglementaires de routage à utiliser :</p>
+                <ul>
+                    <li><code>"sig"</code> : Dirige vers la ligne <strong>Logiciels & SIG</strong></li>
+                    <li><code>"materiel"</code> : Dirige vers la ligne <strong>Matériel & Capteurs</strong></li>
+                    <li><code>"institution"</code> : Dirige vers la ligne <strong>Institutions & Normes</strong></li>
+                    <li><code>"science"</code> : Dirige vers la ligne <strong>Sciences & Spatial</strong></li>
+                </ul>
+
+                <h3>Opération 3 : Prise en compte immédiate</h3>
+                <p>Après avoir validé les modifications sur GitHub (<em>Commit changes</em>) et attendu une minute, rendez-vous sur l'application et cliquez sur le bouton <strong><code>🔄 Actualiser</code></strong> en haut à droite pour purger le cache local et forcer la découverte des nouveaux flux.</p>
+            </div>
+        </div>
+    </div>
+
     <script>
-        /* ==========================================================================
-           DICTIONNAIRE DE MAPPING MÉTIER ET CONFIGURATION DU CACHE
-           ========================================================================== */
-        
-        // CORRESPONDANCE DES SOURCES : Permet de classifier sémantiquement chaque flux RSS
-        // afin de bâtir des filtres d'arborescence adaptés au référentiel de formation.
+        // MAPPING MÉTIER ET CONFIGURATION DU CACHE
         const DICTIONNAIRE_CATEGORIES = {
             "qgis.org blog": "sig", "arcorama": "sig", "release notes from webodm": "sig", "release notes from cloudcompare": "sig", "agisoft photoscan": "sig",
             "eu agency for the space programme - linking space to user needs": "materiel", "dronelife": "materiel", "lidar news": "materiel", "news": "materiel", "gps world": "materiel", "geospatial world": "materiel",
@@ -317,7 +338,6 @@
             "epos-france": "science", "institut de physique du globe de paris": "science", "copernicus": "science", "theia": "science", "esa france": "science", "nasa": "science", "infoterre": "science", "\"collège de france\" - google actualités": "science"
         };
 
-        // LIBELLÉS DES THÉMATIQUES MÉTIERS
         const NOMS_CATEGORIES = {
             "sig": "Logiciels & SIG",
             "materiel": "Matériel & Capteurs",
@@ -325,12 +345,10 @@
             "science": "Sciences & Spatial"
         };
 
-        // PARAMÈTRES DU CACHE LOCAL
         const CACHE_KEY_DATA = "veille_topo_data_v2";
         const CACHE_KEY_TIME = "veille_topo_timestamp_v2";
-        const DUREE_CACHE = 3600000; // Persistance fixée à 1 heure (en millisecondes)
+        const DUREE_CACHE = 3600000; 
 
-        // REGISTRES ET ÉTATS DE L'APPLICATION
         let baseArticlesGlobal = [];
         let listeSourcesUniques = new Set();
         let sourcesActives = new Set();
@@ -340,46 +358,27 @@
             configurerCommutateurTheme();
             configurerBarreRecherche();
             configurerBoutonRafraichissement();
+            configurerEvenementsModaleAide();
             gererCycleDeVieDonnees();
         });
 
-        /* ==========================================================================
-           FONCTIONS DE GESTION DU THÉMATISME ET DE L'INTERACTION UTILISATEUR
-           ========================================================================== */
-
-        /**
-         * @function configurerCommutateurTheme
-         * @description Initialise le mode sombre en vérifiant les préférences antérieures 
-         * stockées de l'utilisateur ou en appliquant l'événement de bascule au clic.
-         */
+        /* CONTROL INTERFACES */
         function configurerCommutateurTheme() {
             const btn = document.getElementById("btn-toggle-theme");
-            if (localStorage.getItem("theme_sombre") === "true") {
-                document.body.classList.add("dark-theme");
-            }
+            if (localStorage.getItem("theme_sombre") === "true") { document.body.classList.add("dark-theme"); }
             btn.addEventListener("click", () => {
                 document.body.classList.toggle("dark-theme");
                 localStorage.setItem("theme_sombre", document.body.classList.contains("dark-theme"));
             });
         }
 
-        /**
-         * @function configurerBarreRecherche
-         * @description Attache un écouteur sur le champ textuel pour intercepter la saisie
-         * et recalculer à la volée la visibilité des cartes sans requêter le réseau.
-         */
         function configurerBarreRecherche() {
-            const barre = document.getElementById("search-bar");
-            barre.addEventListener("input", (e) => {
+            document.getElementById("search-bar").addEventListener("input", (e) => {
                 termeRechercheGlobal = e.target.value.toLowerCase().trim();
                 genererRenduInterface();
             });
         }
 
-        /**
-         * @function configurerBoutonRafraichissement
-         * @description Permet à l'utilisateur de forcer l'effacement du cache pour actualiser les données.
-         */
         function configurerBoutonRafraichissement() {
             document.getElementById("btn-refresh-cache").addEventListener("click", () => {
                 localStorage.removeItem(CACHE_KEY_DATA);
@@ -388,30 +387,32 @@
             });
         }
 
-        /* ==========================================================================
-           PIPELINE D'ACQUISITION DES DONNÉES (CACHE VS RÉSEAU)
-           ========================================================================== */
+        // MANAGEMENT DE LA FENÊTRE MODALE D'AIDE
+        function configurerEvenementsModaleAide() {
+            const modal = document.getElementById("help-modal");
+            const btnOpen = document.getElementById("btn-open-help");
+            const btnClose = document.getElementById("btn-close-help");
 
-        /**
-         * @function gererCycleDeVieDonnees
-         * @description Implémente l'algorithme de mise en cache locale (Client-Side Caching).
-         * Évalue l'âge du cache. Si valide, charge instantanément ; sinon, interroge le réseau.
-         */
+            btnOpen.addEventListener("click", () => modal.classList.add("open"));
+            btnClose.addEventListener("click", () => modal.classList.remove("open"));
+            
+            // Fermeture de sécurité si clic en dehors du conteneur de la modale
+            modal.addEventListener("click", (e) => {
+                if (e.target === modal) modal.classList.remove("open");
+            });
+        }
+
+        /* DATA PIPELINE */
         async function gererCycleDeVieDonnees() {
             const cacheTimestamp = localStorage.getItem(CACHE_KEY_TIME);
             const cacheDonnees = localStorage.getItem(CACHE_KEY_DATA);
             const instantPresent = Date.now();
 
-            // LOGIQUE DE VALIDATION : Double vérification de présence et d'obsolescence temporelle
             if (cacheTimestamp && cacheDonnees && (instantPresent - cacheTimestamp < DUREE_CACHE)) {
                 baseArticlesGlobal = JSON.parse(cacheDonnees);
-                
-                // Extraction des sources uniques depuis les données du cache pour reconstituer les filtres
                 baseArticlesGlobal.forEach(art => listeSourcesUniques.add(art.titreSource));
-                
-                const minutesRestantes = Math.round((DUREE_CACHE - (instantPresent - cacheTimestamp)) / 60000);
-                document.getElementById("cache-status").textContent = `Données locales (MàJ réseau dans ${minutesRestantes} min)`;
-                
+                const mins = Math.round((DUREE_CACHE - (instantPresent - cacheTimestamp)) / 60000);
+                document.getElementById("cache-status").textContent = `Données locales (MàJ réseau dans ${mins} min)`;
                 genererStructureBoutonsCategories();
                 genererRenduInterface();
             } else {
@@ -420,24 +421,16 @@
             }
         }
 
-        /**
-         * @function initialiserCollecteReseau
-         * @description Charge le fichier d'infrastructure OPML et parallélise les requêtes vers les flux RSS.
-         */
         async function initialiserCollecteReseau() {
             try {
                 const reponse = await fetch('feeds.opml');
-                if (!reponse.ok) throw new Error("Fichier 'feeds.opml' absent de la racine.");
+                if (!reponse.ok) throw new Error("Fichier 'feeds.opml' absent.");
                 
                 const chaineDonnees = await reponse.text();
                 const parseur = new DOMParser();
                 const documentXML = parseur.parseFromString(chaineDonnees, "text/xml");
-                
-                if (documentXML.querySelector("parsererror")) throw new Error("Erreur de syntaxe dans le fichier OPML.");
-                
                 const elementsOutline = documentXML.querySelectorAll("outline[xmlUrl]");
                 
-                // PARALLÉLISATION ASYNCHRONE : Lancement simultané des requêtes pour optimiser les performances
                 const promessesCollecte = Array.from(elementsOutline).map(outline => {
                     const titreSource = outline.getAttribute("title") || outline.getAttribute("text") || "Source";
                     const urlFlux = outline.getAttribute("xmlUrl");
@@ -445,66 +438,45 @@
                 });
                 
                 await Promise.all(promessesCollecte);
-                
-                // Tri chronologique des structures normalisées par soustraction de timestamps
                 baseArticlesGlobal.sort((a, b) => b.dateTimestamp - a.dateTimestamp);
                 
-                // PERSISTANCE DES DONNÉES : Stockage local du résultat pour les sessions futures
                 try {
                     localStorage.setItem(CACHE_KEY_DATA, JSON.stringify(baseArticlesGlobal));
                     localStorage.setItem(CACHE_KEY_TIME, Date.now().toString());
                     document.getElementById("cache-status").textContent = `Flux synchronisés avec succès (Cache activé)`;
-                } catch (e) {
-                    console.warn("Quota d'espace de stockage LocalStorage excédé.");
-                }
+                } catch (e) {}
                 
                 genererStructureBoutonsCategories();
                 genererRenduInterface();
-                
             } catch (erreur) {
                 document.getElementById("timeline-container").innerHTML = `<div class="loader" style="color:#c53030;">Erreur d'infrastructure : ${erreur.message}</div>`;
             }
         }
 
-        /**
-         * @function collecterDonneesFlux
-         * @description Récupère un flux unique via proxy, extrait et normalise ses attributs (Titres, dates, images, résumés).
-         */
         async function collecterDonneesFlux(titreSource, urlFlux) {
             const urlRequeteProxiee = `https://corsproxy.io/?${encodeURIComponent(urlFlux)}`;
-            
             try {
                 const reponse = await fetch(urlRequeteProxiee);
                 if (!reponse.ok) return;
-                
                 const texteBrut = await reponse.text();
                 const parseur = new DOMParser();
                 const xmlDoc = parseur.parseFromString(texteBrut, "text/xml");
-                
                 const estAtom = xmlDoc.querySelector("entry") !== null;
                 const balisesArticles = estAtom ? xmlDoc.querySelectorAll("entry") : xmlDoc.querySelectorAll("item");
                 
-                if (balisesArticles.length > 0) {
-                    listeSourcesUniques.add(titreSource);
-                }
+                if (balisesArticles.length > 0) { listeSourcesUniques.add(titreSource); }
 
                 Array.from(balisesArticles).slice(0, 5).forEach(article => {
                     const titreArticle = article.querySelector("title")?.textContent || "Sans titre";
                     let lienArticle = estAtom ? article.querySelector("link")?.getAttribute("href") : article.querySelector("link")?.textContent;
-                    
-                    let chaineDate = article.querySelector("pubDate")?.textContent || 
-                                     article.querySelector("updated")?.textContent || 
-                                     article.querySelector("published")?.textContent || 
-                                     article.querySelector("date")?.textContent || "";
+                    let chaineDate = article.querySelector("pubDate")?.textContent || article.querySelector("updated")?.textContent || article.querySelector("published")?.textContent || article.querySelector("date")?.textContent || "";
                     
                     if (!chaineDate) {
                         const dcDate = article.getElementsByTagName("dc:date")[0];
                         if (dcDate) chaineDate = dcDate.textContent;
                     }
-                    
                     const dateObjet = chaineDate ? new Date(chaineDate.trim()) : new Date(0);
                     const dateEstValide = !isNaN(dateObjet.getTime()) && dateObjet.getTime() !== 0;
-                    
                     let descriptionBrute = article.querySelector("description")?.textContent || article.querySelector("summary")?.textContent || "";
                     const fauxDiv = document.createElement("div");
                     fauxDiv.innerHTML = descriptionBrute;
@@ -513,22 +485,18 @@
                     let urlImage = null;
                     const enclosure = article.querySelector("enclosure[type^='image']");
                     if (enclosure) urlImage = enclosure.getAttribute("url");
-                    
                     if (!urlImage) {
                         const mediaContent = article.getElementsByTagName("media:content")[0] || article.getElementsByTagName("media:thumbnail")[0];
                         if (mediaContent) urlImage = mediaContent.getAttribute("url");
                     }
-                    
                     if (!urlImage) {
                         const correspondence = descriptionBrute.match(/<img[^>]+src="([^">]+)"/i);
                         if (correspondence && correspondence[1]) urlImage = correspondence[1];
                     }
 
                     baseArticlesGlobal.push({
-                        titreSource: titreSource,
-                        titreArticle: titreArticle.trim(),
-                        lien: lienArticle ? lienArticle.trim() : "#",
-                        extrait: extraitTexte.trim(),
+                        titreSource: titreSource, titreArticle: titreArticle.trim(),
+                        lien: lienArticle ? lienArticle.trim() : "#", extrait: extraitTexte.trim(),
                         dateTimestamp: dateEstValide ? dateObjet.getTime() : 0,
                         dateAffichee: dateEstValide ? dateObjet.toLocaleDateString('fr-FR', {day: 'numeric', month: 'short', year: 'numeric'}) : "Date inconnue",
                         urlImage: urlImage
@@ -537,49 +505,32 @@
             } catch (e) {}
         }
 
-        /* ==========================================================================
-           CONSTRUCTION DYNAMIQUE DE L'INTERFACE DE FILTRAGE PAR CATÉGORIES
-           ========================================================================== */
-
-        /**
-         * @function genererStructureBoutonsCategories
-         * @description Analyse l'ensemble des sources, les trie par groupe métier, 
-         * et génère l'architecture des boutons de filtrage sous le titre.
-         */
+        /* FILTERS INTERFACE BUILDING */
         function genererStructureBoutonsCategories() {
             const boitePrincipale = document.getElementById("categories-filter-box");
-            
-            // Initialisation d'une structure de regroupement temporaire
             let distribution = { "sig": [], "materiel": [], "institution": [], "science": [], "autres": [] };
             
-            // Répartition des sources selon le dictionnaire de mapping normalisé en minuscules
             listeSourcesUniques.forEach(source => {
                 const sourceCle = source.toLowerCase().replace(/\s+/g, ' ').trim();
                 const codeCat = DICTIONNAIRE_CATEGORIES[sourceCle] || "autres";
                 distribution[codeCat].push(source);
             });
 
-            // Injection géométrique des lignes de boutons
             for (const [idCategorie, tableauSources] of Object.entries(distribution)) {
                 if (tableauSources.length === 0 || idCategorie === "autres") continue;
-                
                 const conteneurLigne = document.createElement("div");
                 conteneurLigne.className = "category-group";
-                
                 const étiquette = document.createElement("span");
                 étiquette.className = "category-label";
                 étiquette.textContent = NOMS_CATEGORIES[idCategorie] + " :";
                 conteneurLigne.appendChild(étiquette);
                 
-                // Tri alphabétique des boutons éditeurs au sein de leur catégorie
                 tableauSources.sort().forEach(source => {
                     const bouton = document.createElement("button");
                     bouton.className = "filter-btn";
                     bouton.textContent = source;
-                    
                     bouton.addEventListener("click", () => {
                         document.getElementById("btn-master-clear").classList.remove("active");
-                        
                         if (sourcesActives.has(source)) {
                             sourcesActives.delete(source);
                             bouton.classList.remove("active");
@@ -587,19 +538,14 @@
                             sourcesActives.add(source);
                             bouton.classList.add("active");
                         }
-                        
-                        if (sourcesActives.size === 0) {
-                            document.getElementById("btn-master-clear").classList.add("active");
-                        }
+                        if (sourcesActives.size === 0) { document.getElementById("btn-master-clear").classList.add("active"); }
                         genererRenduInterface();
                     });
                     conteneurLigne.appendChild(bouton);
                 });
-                
                 boitePrincipale.appendChild(conteneurLigne);
             }
 
-            // Configuration du comportement du bouton Maître "Tout afficher"
             document.getElementById("btn-master-clear").addEventListener("click", function() {
                 sourcesActives.clear();
                 document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
@@ -608,28 +554,16 @@
             });
         }
 
-        /* ==========================================================================
-           ALGORITHME DE RENDU ET TRADUCTION ASYNCHRONE POST-RENDU
-           ========================================================================== */
-
-        /**
-         * @function genererRenduInterface
-         * @description Applique le triptyque de filtrage (Catégories, Boutons de sources, Mots-clés de recherche),
-         * vide la grille, reconstruit les modules de cartes et amorce la détection linguistique.
-         */
+        /* INTERFACE RENDERING & TRANSLATION ENGINE */
         function genererRenduInterface() {
             const conteneurGrid = document.getElementById("timeline-container");
             const loaderInitial = document.getElementById("main-loader");
             if (loaderInitial) loaderInitial.remove();
+            conteneurGrid.innerHTML = "";
             
-            conteneurGrid.innerHTML = ""; // Purge complète de la grille
-            
-            // EXÉCUTION DU FILTRAGE MULTICRITÈRE COMPOSE
             const articlesFiltres = baseArticlesGlobal.filter(art => {
                 const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
-                const passeFiltreTexte = !termeRechercheGlobal || 
-                                         art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || 
-                                         art.extrait.toLowerCase().includes(termeRechercheGlobal);
+                const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
                 return passeFiltreSource && passeFiltreTexte;
             });
             
@@ -638,12 +572,11 @@
                 return;
             }
             
-            // Construction géométrique du DOM des cartes
             articlesFiltres.forEach(art => {
                 const elementCarte = document.createElement("a");
                 elementCarte.className = "article-card";
                 elementCarte.href = art.lien;
-                elementCarte.target = "_blank"; // Respect absolu du lien d'origine externe
+                elementCarte.target = "_blank";
                 
                 const jetonAleatoire = Math.random().toString(36).substring(2, 11);
                 const idTitre = 't-' + jetonAleatoire;
@@ -653,10 +586,7 @@
                     <div class="card-image-placeholder">
                         <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                     </div>`;
-                    
-                if (art.urlImage) {
-                    blocMediaHTML = `<img src="${art.urlImage}" class="card-image" alt="Illustration" loading="lazy">`;
-                }
+                if (art.urlImage) { blocMediaHTML = `<img src="${art.urlImage}" class="card-image" alt="Illustration" loading="lazy">`; }
                 
                 elementCarte.innerHTML = `
                     <div class="card-image-wrapper">
@@ -671,39 +601,23 @@
                 `;
                 conteneurGrid.appendChild(elementCarte);
 
-                // DÉTECTION LINGUISTIQUE (Heuristique basée sur les marqueurs grammaticaux anglophones)
                 const regexAnglais = /\b(the|and|of|in|to|for|with|on|at|by|from|new|release|software|drone|satellite|surveying|update|news|gps|world|lidar|geospatial)\b/i;
 
-                if (art.titreArticle && regexAnglais.test(art.titreArticle)) {
-                    lancerTraductionAsynchrone(idTitre, art.titreArticle, true);
-                }
-                if (art.extrait && !art.extrait.startsWith("Consulter") && regexAnglais.test(art.extrait)) {
-                    lancerTraductionAsynchrone(idExtrait, art.extrait, false);
-                }
+                if (art.titreArticle && regexAnglais.test(art.titreArticle)) { lancerTraductionAsynchrone(idTitre, art.titreArticle, true); }
+                if (art.extrait && !art.extrait.startsWith("Consulter") && regexAnglais.test(art.extrait)) { lancerTraductionAsynchrone(idExtrait, art.extrait, false); }
             });
         }
 
-        /**
-         * @function lancerTraductionAsynchrone
-         * @description Interroge l'API de traduction en tâche de fond (sans figer l'interface), 
-         * traite la matrice de réponse JSON et met à jour l'élément ciblé dans la carte.
-         */
         async function lancerTraductionAsynchrone(idDOM, texteOriginal, estUnTitre) {
             const urlTraduction = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=fr&dt=t&q=${encodeURIComponent(texteOriginal)}`;
-            
             try {
                 const reponse = await fetch(urlTraduction);
                 if (!reponse.ok) return;
-                
                 const structureJson = await reponse.json();
                 let texteTraduitUnifie = "";
-                
                 if (structureJson && structureJson[0]) {
-                    structureJson[0].forEach(segment => {
-                        if (segment[0]) texteTraduitUnifie += segment[0];
-                    });
+                    structureJson[0].forEach(segment => { if (segment[0]) texteTraduitUnifie += segment[0]; });
                 }
-                
                 if (texteTraduitUnifie && texteTraduitUnifie.trim() !== texteOriginal.trim()) {
                     const noeudCible = document.getElementById(idDOM);
                     if (noeudCible) {
