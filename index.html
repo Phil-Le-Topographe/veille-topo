@@ -3,53 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portail de Veille Documentaire - Topographie & Géomatique</title>
+    <title>Tableau de Bord Documentaire - Topographie & Géomatique</title>
     
     <style>
         /* ==========================================================================
-           VARIABLES GLOBALES DE CONFIGURATION DU DESIGN (DESIGN SYSTEM - MODE CLAIR)
-           Idéal pour l'affichage sur les écrans de laboratoires pédagogiques.
+           VARIABLES GLOBALES DE CONFIGURATION (DESIGN SYSTEM - MODE CLAIR)
            ========================================================================== */
         :root {
-            --primary-dark: #1a202c;       /* Anthracite profond pour les textes principaux (forte lisibilité) */
-            --accent-red: #c53030;         /* Rouge institutionnel utilisé pour l'état actif et les repères visuels */
-            --bg-main: #f7fafc;            /* Fond de page neutre pour limiter la fatigue visuelle lors des sessions longues */
-            --card-bg: #ffffff;            /* Blanc pur assurant le détachement des modules d'information */
-            --text-muted: #718096;         /* Gris intermédiaire pour les métadonnées (dates, sources originelles) */
-            --border-light: #e2e8f0;       /* Gris de délimitation pour les grilles et séparateurs sémantiques */
-            --input-bg: #ffffff;           /* Fond des zones de saisie textuelle */
-            --star-color: #e2e8f0;         /* Teinte neutre pour les icônes d'évaluation inactives */
-            --star-active: #ecc94b;        /* Jaune ambré à haut contraste pour la sélection d'étoiles (notation) */
+            --primary-dark: #1a202c;       /* Anthracite profond pour les textes majeurs */
+            --accent-red: #c53030;         /* Rouge institutionnel pour l'état actif et les repères */
+            --bg-main: #f7fafc;            /* Fond de la zone d'affichage des articles */
+            --sidebar-bg: #ffffff;         /* Fond blanc pur pour le panneau latéral gauche */
+            --card-bg: #ffffff;            /* Fond des fiches documentaires */
+            --text-muted: #718096;         /* Gris intermédiaire pour les métadonnées */
+            --border-light: #e2e8f0;       /* Lignes de délimitation des modules */
+            --input-bg: #ffffff;           /* Fond des champs de saisie */
+            --star-color: #e2e8f0;         /* Teinte des étoiles inactives */
+            --star-active: #ecc94b;        /* Jaune ambré pour les étoiles sélectionnées */
             
-            /* Surcharges spécifiques pour la mise en relief des 9 nouvelles thématiques métiers */
-            --theme-header-bg: #edf2f7;    /* Fond de contraste clair pour les bandeaux de catégories */
-            --theme-header-text: #2d3748;  /* Couleur textuelle accentuée pour les titres de catégories */
+            /* Surcharges colorimétriques pour la mise en relief des blocs thématiques */
+            --theme-header-bg: #f8fafc;    /* Fond subtil pour les conteneurs de catégories */
+            --theme-header-text: #2d3748;  /* Couleur du texte des titres de catégories */
             
-            --radius-md: 12px;             /* Rayon de courbure appliqué aux fiches d'articles (cartes) */
-            --radius-sm: 6px;              /* Rayon de courbure minimal pour l'ergonomie des boutons d'interface */
+            --radius-md: 12px;             /* Rayon de courbure des cartes d'articles */
+            --radius-sm: 6px;              /* Rayon de courbure des boutons et filtres */
+            --header-height: 70px;         /* Hauteur fixe de la barre supérieure pour le calcul des hauteurs de panneaux */
         }
 
         /* ==========================================================================
-           VARIABLES DE THÉMATISATION ALTERNATIVE (DESIGN SYSTEM - MODE SOMBRE)
-           Activé dynamiquement via l'injection de la classe .dark-theme sur la balise body.
+           VARIABLES DE THÉMATISATION COMPLÉMENTAIRE (DESIGN SYSTEM - MODE SOMBRE)
            ========================================================================== */
         body.dark-theme {
             --primary-dark: #f7fafc;       
-            --accent-red: #fc8181;         /* Rouge désaturé pour préserver le contraste sans éblouissement */
-            --bg-main: #0f172a;            /* Bleu nuit profond agissant comme absorbeur de lumière */
-            --card-bg: #1e293b;            /* Ardoise intermédiaire pour la structure des cartes */
+            --accent-red: #fc8181;         
+            --bg-main: #0f172a;            /* Bleu nuit profond pour l'espace de lecture */
+            --sidebar-bg: #1e293b;         /* Ardoise sombre pour le panneau latéral gauche */
+            --card-bg: #1e293b;            
             --text-muted: #94a3b8;         
             --border-light: #334155;       
-            --input-bg: #1e293b;           
+            --input-bg: #0f172a;           
             --star-color: #475569;
             
-            /* Surcharges sombres pour la mise en relief des 9 nouvelles thématiques métiers */
-            --theme-header-bg: #1e293b;    /* Bloc sombre imbriqué */
-            --theme-header-text: #e2e8f0;  /* Blanc cassé haut contraste */
+            --theme-header-bg: #111827;    
+            --theme-header-text: #e2e8f0;  
         }
 
         /* ==========================================================================
-           PROPRIÉTÉS STYLISTIQUES STRUCTURALES (RESET & LAYOUT BASE)
+           MIGRATION VERS L'ARCHITECTURE DASHBOARD (CSS GRID APPLIQUÉ AU BODY)
+           Désactive le défilement global de la page pour créer des zones indépendantes.
            ========================================================================== */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -58,128 +59,144 @@
             margin: 0;
             padding: 0;
             line-height: 1.5;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            
+            /* Configuration du Grid Layout Global */
+            display: grid;
+            grid-template-rows: var(--header-height) 1fr; /* Ligne 1 : Header fixe | Ligne 2 : Zone applicative */
+            height: 100vh;                                 /* Verrouille la hauteur sur la totalité de la fenêtre */
+            overflow: hidden;                              /* Interdit le défilement de la page entière */
         }
 
-        /* En-tête principal : utilise Flexbox pour l'alignement bidirectionnel des titres et des actions */
+        /* ==========================================================================
+           STRUCTURE 1 : BARRE SUPÉRIEURE FIXE (HEADER)
+           ========================================================================== */
         header {
-            background-color: var(--card-bg);
+            grid-row: 1;                                   /* Positionnement sur la première ligne du Grid global */
+            background-color: var(--sidebar-bg);
             border-bottom: 1px solid var(--border-light);
-            padding: 20px 40px;
+            padding: 0 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .header-actions {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 10px;
-        }
-
-        .actions-top-row {
-            display: flex;
-            gap: 10px;
-        }
-
-        /* Panneau de contrôle des tris et de la taxonomie métier */
-        .control-panel {
-            background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border-light);
-            padding: 20px 40px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .search-zone-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-items: center;
-            width: 100%;
-        }
-
-        .search-wrapper {
-            position: relative;
-            flex: 1 1 300px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 10px 15px;
-            background-color: var(--input-bg);
-            color: var(--primary-dark);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-sm);
-            font-size: 0.9rem;
-            outline: none;
+            z-index: 10;
+            height: var(--header-height);
             box-sizing: border-box;
-            transition: border-color 0.2s ease;
         }
 
-        .search-input:focus { border-color: var(--accent-red); }
+        header h1 { font-size: 1.25rem; margin: 0; font-weight: 700; }
+        header small { font-size: 0.75rem; display: block; }
 
-        .date-filter-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
+        .header-actions { display: flex; align-items: center; gap: 10px; }
+
+        /* ==========================================================================
+           STRUCTURE 2 : CONTENEUR PRINCIPAL DISPATCHER (APP LAYOUT)
+           Sépare l'écran en deux colonnes asynchrones disposées sous la barre supérieure.
+           ========================================================================== */
+        .app-layout {
+            grid-row: 2;                                   /* Occupe la seconde ligne du Grid global */
+            display: grid;
+            grid-template-columns: 380px 1fr;              /* Colonne 1 : Filtres (380px) | Colonne 2 : Articles (Reste de l'espace) */
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
         }
 
         /* ==========================================================================
-           CONCEPTION ERGONOMIQUE ET MISE EN RELIEF DES 9 NOUVELLES CATÉGORIES
+           STRUCTURE 3 : PANNEAU LATÉRAL GAUCHE DE SÉLECTION (SIDEBAR)
+           Contient les 9 catégories métiers avec un défilement vertical interne dédié.
            ========================================================================== */
+        .sidebar-panel {
+            grid-column: 1;                                /* Positionnement sur la colonne de gauche */
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-light);
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: 100%;
+            overflow-y: auto;                              /* Active le défilement si les 9 catégories dépassent de l'écran */
+        }
+
+        /* Mise en relief sémantique des blocs thématiques métiers */
         .category-group {
             display: flex;
-            flex-direction: column;         /* Alignement vertical : Titre au-dessus, boutons en-dessous */
-            gap: 12px;
-            padding: 16px;
+            flex-direction: column;
+            gap: 10px;
+            padding: 14px;
             background-color: var(--theme-header-bg);
             border: 1px solid var(--border-light);
             border-radius: var(--radius-md);
-            margin-bottom: 12px;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
-        /* Titre de la catégorie : Traitement typographique lourd pour faire ressortir l'axe métier */
         .category-label {
-            font-size: 0.88rem;
+            font-size: 0.8rem;
             font-weight: 800;
-            text-transform: uppercase;     /* Normalisation en capitales réglementaires */
+            text-transform: uppercase;
             color: var(--accent-red);
-            letter-spacing: 0.08em;        /* Augmentation de l'interlettrage pour la scannabilité visuelle */
-            border-left: 4px solid var(--accent-red); /* Repère géométrique de couleur stable */
-            padding-left: 12px;
-            margin: 0;
-            display: flex;
-            align-items: center;
+            letter-spacing: 0.06em;
+            border-left: 3px solid var(--accent-red);      /* Repère géométrique de couleur stable */
+            padding-left: 10px;
+            margin: 0 0 4px 0;
         }
 
-        /* Conteneur Flexbox interne pour aligner les boutons des flux au sein de la thématique */
         .category-buttons-block {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+            flex-wrap: wrap;                               /* Autorise le retour à la ligne automatique des boutons */
+            gap: 6px;
         }
 
         /* ==========================================================================
-           COMPOSANTS INTERFACES COMPLEMENTAIRES (BOUTONS & FILTRES)
+           STRUCTURE 4 : ZONE DE LECTURE DROITE (MAIN CONTENT AREA)
+           Contient les filtres globaux en en-tête et la grille d'articles indépendante.
+           ========================================================================== */
+        .content-area {
+            grid-column: 2;                                /* Positionnement sur la colonne de droite */
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Barre de contrôle supérieure de la zone de lecture */
+        .content-control-bar {
+            background-color: var(--sidebar-bg);
+            border-bottom: 1px solid var(--border-light);
+            padding: 15px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-sizing: border-box;
+            flex-shrink: 0;                                /* Interdit la réduction de cette barre lors du calcul des hauteurs */
+        }
+
+        /* Mosaïque d'affichage des fiches : Défilement vertical indépendant */
+        .timeline-grid {
+            flex-grow: 1;                                  /* Absorbe la totalité de l'espace vertical restant */
+            overflow-y: auto;                              /* Active le défilement vertical autonome pour la grille */
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Mosaïque réactive (Responsive Design) */
+            gap: 25px;
+            padding: 30px;
+            box-sizing: border-box;
+            background-color: var(--bg-main);
+        }
+
+        /* ==========================================================================
+           COMPOSANTS GRAPHONOMIQUES INTERNES (BOUTONS & CARTES)
            ========================================================================== */
         .filter-btn {
             background-color: var(--card-bg);
             color: var(--primary-dark);
             border: 1px solid var(--border-light);
-            padding: 6px 14px;
-            font-size: 0.82rem;
+            padding: 5px 12px;
+            font-size: 0.78rem;
             font-weight: 500;
             border-radius: var(--radius-sm);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             user-select: none;
         }
 
@@ -189,33 +206,15 @@
             background-color: var(--accent-red);
             color: #ffffff;
             border-color: var(--accent-red);
-            box-shadow: 0 2px 4px rgba(197, 48, 48, 0.2);
+            box-shadow: 0 2px 4px rgba(197, 48, 48, 0.15);
         }
 
-        .filter-btn.clear-all { border-style: dashed; font-weight: 700; margin-bottom: 5px; }
+        .filter-btn.clear-all { border-style: dashed; font-weight: 700; width: 100%; text-align: center; }
         
-        .filter-btn.help-btn {
-            background-color: transparent;
-            border-color: var(--text-muted);
-            color: var(--text-muted);
-            font-weight: bold;
-        }
-        .filter-btn.help-btn:hover {
-            background-color: var(--bg-main);
-            color: var(--primary-dark);
-        }
+        .filter-btn.help-btn { background-color: transparent; border-color: var(--text-muted); color: var(--text-muted); font-weight: bold; }
+        .filter-btn.help-btn:hover { background-color: var(--bg-main); color: var(--primary-dark); }
 
-        /* Mosaïque d'affichage : Grid Layout auto-adaptatif pour une réactivité totale (Responsive Design) */
-        .timeline-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
-            padding: 40px;
-        }
-
-        /* ==========================================================================
-           COMPOSANTS GRAPHONOMIQUES : CARTES DOCUMENTAIRES (CARDS)
-           ========================================================================== */
+        /* Style des modules d'information (Cartes d'articles) */
         .article-card {
             background: var(--card-bg);
             border: 1px solid var(--border-light);
@@ -224,183 +223,93 @@
             display: flex;
             flex-direction: column;
             height: 100%;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             color: inherit;
             text-decoration: none;
         }
 
         .article-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.08);
         }
 
-        .card-image-wrapper {
-            width: 100%;
-            height: 160px;
-            background: var(--border-light);
-            position: relative;
-        }
-
+        .card-image-wrapper { width: 100%; height: 140px; background: var(--border-light); position: relative; }
         .card-image { width: 100%; height: 100%; object-fit: cover; }
+        .card-image-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, #2c3e50 0%, #4a5568 100%); display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.1); }
+        .card-image-placeholder svg { width: 35px; height: 35px; fill: currentColor; }
 
-        .card-image-placeholder {
-            width: 100%; height: 100%;
-            background: linear-gradient(135deg, #2c3e50 0%, #4a5568 100%);
-            display: flex; align-items: center; justify-content: center;
-            color: rgba(255, 255, 255, 0.15);
-        }
-
-        .card-image-placeholder svg { width: 40px; height: 40px; fill: currentColor; }
-
-        .card-content { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
-
-        .card-source { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-red); font-weight: 700; margin-bottom: 8px; }
-
-        .card-title { font-size: 1rem; font-weight: 600; line-height: 1.4; margin: 0 0 10px 0; color: var(--primary-dark); }
-
-        .card-excerpt { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 15px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-content { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+        .card-source { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-red); font-weight: 700; margin-bottom: 6px; }
+        .card-title { font-size: 0.92rem; font-weight: 600; line-height: 1.3; margin: 0 0 8px 0; color: var(--primary-dark); }
+        .card-excerpt { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 12px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
         .translated-text { border-left: 2px solid #3182ce; padding-left: 6px; font-style: italic; }
-        
         .translated-title { border-left: 2px solid #3182ce; padding-left: 6px; display: block; }
 
-        .card-evaluation-row {
-            margin-top: auto; 
-            border-top: 1px solid var(--border-light);
-            padding-top: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .star-rating-box { display: flex; gap: 4px; }
-
-        .star-item {
-            font-size: 1.15rem;
-            cursor: pointer;
-            color: var(--star-color);
-            transition: color 0.15s ease, transform 0.1s ease;
-        }
+        .card-evaluation-row { margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .star-rating-box { display: flex; gap: 3px; }
+        .star-item { font-size: 1rem; cursor: pointer; color: var(--star-color); transition: transform 0.1s ease; }
         .star-item:hover { transform: scale(1.2); }
         .star-item.active { color: var(--star-active); }
-
-        .action-icon-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 4px 8px;
-            font-size: 0.8rem;
-            border-radius: 4px;
-            border: 1px solid transparent;
-            transition: all 0.2s ease;
-        }
-        .action-icon-btn:hover {
-            background-color: var(--bg-main);
-            border-color: var(--border-light);
-            color: var(--primary-dark);
-        }
-
-        .card-date { font-size: 0.68rem; color: var(--text-muted); margin-bottom: 5px; }
-
-        .loader { grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted); font-size: 1.1rem; }
-
-        /* ==========================================================================
-           INTERFACES MODALES EN VUE OVERLAY (PENSE-BÊTE DE CONFIGURATION)
-           ========================================================================== */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 1000;
-            opacity: 0; pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal-overlay.open { opacity: 1; pointer-events: auto; }
-
-        .modal-container {
-            background-color: var(--card-bg);
-            color: var(--primary-dark);
-            width: 90%; max-width: 800px; height: 80vh;
-            border-radius: var(--radius-md);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-            display: flex; flex-direction: column;
-            overflow: hidden;
-            border: 1px solid var(--border-light);
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-light);
-            display: flex; justify-content: space-between; align-items: center;
-            background-color: var(--bg-main);
-        }
-
-        .modal-header h2 { margin: 0; font-size: 1.2rem; color: var(--accent-red); }
-
-        .modal-body { padding: 25px; overflow-y: auto; font-size: 0.9rem; }
-
-        .modal-body h3 { color: var(--accent-red); margin-top: 20px; border-bottom: 1px solid var(--border-light); padding-bottom: 5px; }
-
-        .modal-body code { background-color: var(--bg-main); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: bold; }
-
-        .modal-body pre { background-color: var(--bg-main); padding: 12px; border-radius: 6px; border: 1px solid var(--border-light); overflow-x: auto; font-family: monospace; }
         
-        .modal-note { background-color: rgba(49, 130, 206, 0.1); border-left: 4px solid #3182ce; padding: 10px 15px; margin: 15px 0; border-radius: 0 4px 4px 0; }
+        .card-date { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 4px; }
+        .loader { grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted); font-size: 1rem; }
     </style>
 </head>
 <body>
 
     <header id="main-header">
         <div>
-            <h1>Veille Technologique & Réglementaire</h1>
-            <small id="cache-status" style="color: var(--text-muted);">Initialisation globale...</small>
+            <h1>Veille Technologique &amp; Réglementaire</h1>
+            <small id="cache-status" style="color: var(--text-muted);">Initialisation du système...</small>
         </div>
         <div class="header-actions">
-            <div class="actions-top-row">
-                <button class="filter-btn" id="btn-refresh-cache" title="Forcer la purge du cache local">🔄 Actualiser</button>
-                <button class="filter-btn" id="btn-toggle-theme" title="Basculer entre le mode clair et le mode sombre">🌓 Thème</button>
-            </div>
-            <button class="filter-btn help-btn" id="btn-open-help" title="Ouvrir le pense-bête de maintenance">❓ Aide Maintenance</button>
+            <button class="filter-btn" id="btn-refresh-cache" title="Forcer la purge du cache local">🔄 Actualiser</button>
+            <button class="filter-btn" id="btn-toggle-theme" title="Basculer entre le mode clair et le mode sombre">🌓 Thème</button>
+            <button class="filter-btn help-btn" id="btn-open-help" title="Ouvrir le pense-bête de maintenance">❓ Aide</button>
         </div>
     </header>
 
-    <section class="control-panel">
-        <div class="search-zone-wrapper">
-            <div class="search-wrapper">
-                <input type="text" id="search-bar" class="search-input" placeholder="Rechercher un mot-clé, un logiciel, un capteur, un auteur...">
+    <div class="app-layout">
+        
+        <aside class="sidebar-panel" id="sidebar-filters">
+            <button class="filter-btn clear-all active" id="btn-master-clear">🗂️ Tout afficher (Reset)</button>
+            <div id="categories-filter-box" style="display: flex; flex-direction: column; gap: 12px;"></div>
+        </aside>
+        
+        <section class="content-area">
+            
+            <div class="content-control-bar">
+                <div class="search-zone-wrapper">
+                    <div class="search-wrapper">
+                        <input type="text" id="search-bar" class="search-input" placeholder="Filtrer en temps réel par mot-clé, logiciel, capteur...">
+                    </div>
+                    
+                    <div class="date-filter-wrapper">
+                        <select id="select-date-range" class="search-input" style="width: auto; padding: 9px 12px;">
+                            <option value="all">📅 Toutes les dates</option>
+                            <option value="24h">Dernières 24 heures</option>
+                            <option value="3d">Derniers 3 jours</option>
+                            <option value="1w">Depuis 1 semaine</option>
+                            <option value="1m">Depuis 1 mois</option>
+                            <option value="custom">Sélectionner une date limite...</option>
+                        </select>
+                        <input type="date" id="input-custom-date" class="search-input" style="width: auto; padding: 7px 12px; display: none;">
+                        
+                        <button class="filter-btn" id="btn-copy-all" style="border-color: var(--text-muted);" title="Compiler et copier uniquement les fiches étoilées visibles à l'écran">📋 Copier le choix</button>
+                        <button class="filter-btn" id="btn-reset-stars" style="border-color: var(--text-muted);" title="Effacer toutes les étoiles attribuées">⭐ Réinitialiser les notes</button>
+                        <button class="filter-btn help-btn" id="btn-share-guide" style="padding: 6px 10px;">ℹ️ Guide</button>
+                    </div>
+                </div>
             </div>
             
-            <div class="date-filter-wrapper">
-                <select id="select-date-range" class="search-input" style="width: auto; padding: 9px 12px;">
-                    <option value="all">📅 Toutes les dates</option>
-                    <option value="24h">Dernières 24 heures</option>
-                    <option value="3d">Derniers 3 jours</option>
-                    <option value="1w">Depuis 1 semaine</option>
-                    <option value="1m">Depuis 1 mois</option>
-                    <option value="custom">Sélectionner une date limite...</option>
-                </select>
-                <input type="date" id="input-custom-date" class="search-input" style="width: auto; padding: 7px 12px; display: none;" title="Masquer les articles publiés avant cette date">
-                
-                <button class="filter-btn" id="btn-copy-all" style="border-color: var(--text-muted);" title="Compiler et copier uniquement les fiches étoilées visibles à l'écran">📋 Copier le choix</button>
-                <button class="filter-btn" id="btn-reset-stars" style="border-color: var(--text-muted);" title="Effacer définitivement toutes les étoiles attribuées">⭐ Réinitialiser les notes</button>
-                <button class="filter-btn help-btn" id="btn-share-guide" style="padding: 6px 10px;" title="Protocole de partage de la sélection">ℹ️ Guide Partage</button>
-            </div>
-        </div>
-
-        <div id="categories-filter-box">
-            <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                <button class="filter-btn clear-all active" id="btn-master-clear">🗂️ Tout afficher (Réinitialiser les filtres)</button>
-            </div>
-        </div>
-    </section>
-
-    <main id="timeline-container" class="timeline-grid">
-        <div class="loader" id="main-loader">Initialisation du cache et chargement des flux...</div>
-    </main>
+            <main id="timeline-container" class="timeline-grid">
+                <div class="loader" id="main-loader">Chargement du catalogue de veille...</div>
+            </main>
+            
+        </section>
+    </div>
 
     <div id="help-modal" class="modal-overlay">
         <div class="modal-container">
@@ -409,21 +318,12 @@
                 <button class="filter-btn" id="btn-close-help">Fermer ✕</button>
             </div>
             <div class="modal-body">
-                <p>Ce guide interne rappelle la procédure stricte pour ajouter de nouvelles sources de veille au sein de l'application sans rompre les scripts de rendu dynamique.</p>
-                
+                <p>Ce guide rappelle la procédure pour ajouter une source de veille sans rompre le rendu dynamique de l'interface.</p>
                 <h3>Opération 1 : Déclaration du flux (feeds.opml)</h3>
-                <p>Ouvrez le fichier <code>feeds.opml</code> sur GitHub, passez en mode édition (crayon) et insérez votre nouvelle ligne juste au-dessus de la balise finale <code>&lt;/body&gt;</code> :</p>
                 <pre>&lt;outline text="Nom Source" title="Nom Source" type="rss" xmlUrl="URL_DU_FLUX" htmlUrl="URL_SITE"/&gt;</pre>
-                
-                <div class="modal-note">
-                    <strong>CRITICAL / RIGUEUR XML :</strong> Si l'URL du flux contient un caractère <code>&amp;</code> (esperluette), vous devez <strong>obligatoirement</strong> l'écrire sous sa forme échappée <code>&amp;amp;</code> dans le fichier OPML pour éviter un crash silencieux du parseur XML.
-                </div>
-
                 <h3>Opération 2 : Classification Métier Révisée (index.html)</h3>
-                <p>Ouvrez le fichier <code>index.html</code> sur GitHub, passez en mode édition et insérez le nom exact de votre source <strong>strictement en minuscules</strong> au sein de l'objet global <code>DICTIONNAIRE_CATEGORIES</code> (début de script) :</p>
                 <pre>"nom exact de la source en minuscules": "code_categorie",</pre>
-                
-                <p>Codes métiers réglementaires de routage (9 axes géomatiques) :</p>
+                <p>Codes des 9 axes géomatiques réglementaires :</p>
                 <ul>
                     <li><code>"carto"</code> : Cartographie – SIG – Toponymie</li>
                     <li><code>"institution"</code> : Institutionnel – Associations</li>
@@ -435,9 +335,6 @@
                     <li><code>"dd"</code> : Développement Durable</li>
                     <li><code>"ia"</code> : Intelligence artificielle</li>
                 </ul>
-
-                <h3>Opération 3 : Prise en compte immédiate</h3>
-                <p>Après avoir validé les modifications sur GitHub (<em>Commit changes</em>) et attendu une minute, rendez-vous sur l'application et cliquez sur le bouton <strong><code>🔄 Actualiser</code></strong> en haut à droite pour purger le cache local et forcer la découverte des nouveaux flux.</p>
             </div>
         </div>
     </div>
@@ -445,46 +342,29 @@
     <script>
         /**
          * @constant DICTIONNAIRE_CATEGORIES
-         * @description Matrice de routage sémantique qui associe l'identité minuscule brute d'une source 
-         * de données à l'une des 9 catégories réglementaires du pôle d'ingénierie.
+         * @description Matrice d'aiguillage sémantique associant la clé normalisée d'un flux à l'un des 9 thèmes.
          */
         const DICTIONNAIRE_CATEGORIES = {
-            // 1. Cartographie – SIG – Toponymie
             "qgis.org blog": "carto", "arcorama": "carto", "afigeo": "carto",
-            // 2. Institutionnel – Associations
-            "ordre des géomètres-experts": "institution", 
-            "flux rss des actualités": "institution", 
-            "conseil national de l'information géolocalisée - actualités": "institution", 
-            "expertises territoires": "institution", 
-            "cerema - actualité": "institution", 
-            "press releases": "institution", 
-            "ministère du partenariat avec les territoires et de la décentralisation ministère de la transition écologique, de l’énergie, du climat et de la prévention des risques ministère du logement et de la ré": "institution", 
-            "préventionbtp": "institution",
-            // 3. Matériels – Logiciels – Sociétés
+            "ordre des géomètres-experts": "institution", "flux rss des actualités": "institution", "conseil national de l'information géolocalisée - actualités": "institution", "expertises territoires": "institution", "cerema - actualité": "institution", "press releases": "institution", "ministère du partenariat avec les territoires et de la décentralisation ministère de la transition écologique, de l’énergie, du climat et de la prévention des risques ministère du logement et de la ré": "institution", "préventionbtp": "institution",
             "leica geosystems": "materiel", "trimble geospatial": "materiel", "topcon positioning": "materiel", "techniques de l'ingénieur": "materiel", "release notes from cloudcompare": "materiel",
-            // 4. GNSS – Spatial – Observation aérienne
             "réseau orphéon": "gnss", "réseau teria": "gnss", "copernicus": "gnss", "esa france": "gnss", "nasa": "gnss", "euspa pressroom": "gnss", "eu agency for the space programme - linking space to user needs": "gnss", "gps world": "gnss", "geospatial world": "gnss", "news": "gnss",
-            // 5. Géodésie – Topographie
             "ign kiosque": "geodesie", "infoterre": "geodesie", "epos-france": "geodesie", "institut de physique du globe de paris": "geodesie",
-            // 6. Drone – Systèmes aéroportés
             "dronelife": "drone", "release notes from webodm": "drone", "lidar news": "drone",
-            // 7. Archéologie – Patrimoine
             "inrap": "archeo",
-            // 8. Développement Durable
             "theia land": "dd", "theia": "dd",
-            // 9. Intelligence artificielle
             "\"collège de france\" - google actualités": "ia"
         };
 
         /**
          * @constant NOMS_CATEGORIES
-         * @description Nomenclature officielle des intitulés métiers pour le rendu graphique des bandeaux de filtrage.
+         * @description Nomenclature d'affichage pour la génération des en-têtes graphiques de la Sidebar.
          */
         const NOMS_CATEGORIES = {
             "carto": "Cartographie – SIG – Toponymie",
             "institution": "Institutionnel – Associations",
             "materiel": "Matériels – Logiciels – Sociétés",
-            "gnss": "GNSS – Spatial – Observation aérienne",
+            "gnss": "GNSS – Spatial – Obs. aérienne",
             "geodesie": "Géodésie – Topographie",
             "drone": "Drone – Systèmes aéroportés",
             "archeo": "Archéologie – Patrimoine",
@@ -492,12 +372,10 @@
             "ia": "Intelligence artificielle"
         };
 
-        /* Identifiants des clés d'adressage pour le stockage persistant au sein du navigateur (LocalStorage) */
         const CACHE_KEY_DATA = "veille_topo_data_v2";
         const CACHE_KEY_TIME = "veille_topo_timestamp_v2";
-        const DUREE_CACHE = 3600000; /* Durée limite de rétention exprimée en millisecondes (soit 1 heure) */
+        const DUREE_CACHE = 3600000; 
 
-        /* Variables globales d'état pour la gestion dynamique des tris de l'interface */
         let baseArticlesGlobal = [];
         let listeSourcesUniques = new Set();
         let sourcesActives = new Set();
@@ -505,7 +383,7 @@
         let filtreDateSeuilGlobal = 0;
 
         /**
-         * @description Point d'entrée principal de l'application (Cycle de vie d'initialisation du DOM).
+         * @description Gestionnaire d'initialisation du DOM. Active les modules d'interface.
          */
         document.addEventListener("DOMContentLoaded", () => {
             configurerCommutateurTheme();
@@ -517,10 +395,6 @@
             gererCycleDeVieDonnees();
         });
 
-        /**
-         * @function configurerCommutateurTheme
-         * @description Gère l'inversion d'état du Design System pour basculer entre le mode clair et le mode sombre.
-         */
         function configurerCommutateurTheme() {
             const btn = document.getElementById("btn-toggle-theme");
             if (localStorage.getItem("theme_sombre") === "true") { document.body.classList.add("dark-theme"); }
@@ -530,10 +404,6 @@
             });
         }
 
-        /**
-         * @function configurerBarreRecherche
-         * @description Initialise l'écouteur d'événements sur le champ textuel pour filtrer dynamiquement l'index de cartes.
-         */
         function configurerBarreRecherche() {
             document.getElementById("search-bar").addEventListener("input", (e) => {
                 termeRechercheGlobal = e.target.value.toLowerCase().trim();
@@ -541,10 +411,6 @@
             });
         }
 
-        /**
-         * @function configurerFiltresTemporels
-         * @description Calcule de manière arithmétique le timestamp limite inférieur pour l'affichage des articles.
-         */
         function configurerFiltresTemporels() {
             const selectRange = document.getElementById("select-date-range");
             const inputCalendar = document.getElementById("input-custom-date");
@@ -578,10 +444,6 @@
             }
         }
 
-        /**
-         * @function configurerBoutonRafraichissement
-         * @description Force la purge des données locales pour déclencher une interrogation directe des serveurs.
-         */
         function configurerBoutonRafraichissement() {
             document.getElementById("btn-refresh-cache").addEventListener("click", () => {
                 localStorage.removeItem(CACHE_KEY_DATA);
@@ -590,41 +452,23 @@
             });
         }
 
-        /**
-         * @function configurerEvenementsModaleAide
-         * @description Gère l'affichage de la fenêtre modale contenant les directives de maintenance.
-         */
         function configurerEvenementsModaleAide() {
             const modal = document.getElementById("help-modal");
             const btnOpen = document.getElementById("btn-open-help");
             const btnClose = document.getElementById("btn-close-help");
-
             btnOpen.addEventListener("click", () => modal.classList.add("open"));
             btnClose.addEventListener("click", () => modal.classList.remove("open"));
             modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.remove("open"); });
         }
 
-        /**
-         * @function configurerBoutonsGlobauxEvaluation
-         * @description Initialise les fonctions d'exportation collective et de réinitialisation des notations.
-         */
         function configurerBoutonsGlobauxEvaluation() {
             document.getElementById("btn-copy-all").addEventListener("click", executerCopieEnMasse);
             document.getElementById("btn-reset-stars").addEventListener("click", purgerToutesLesEtoiles);
             document.getElementById("btn-share-guide").addEventListener("click", () => {
-                alert(
-                    "💡 PROTOCOLE DE PARTAGE COLLABORATIF DE LA SELECTION :\n\n" +
-                    "1. Évaluez la pertinence des articles en leur attribuant des étoiles (de 1 à 4).\n" +
-                    "2. Cliquez sur le bouton 'Copier le choix' pour compiler automatiquement les seuls articles étoilés visibles.\n" +
-                    "3. Ouvrez votre messagerie et collez directement (Ctrl+V) le catalogue formaté dans votre courriel."
-                );
+                alert("📋 MODE D'EMPLOI :\n1. Notez les articles pertinents (1 à 4 étoiles).\n2. Cliquez sur 'Copier le choix' pour extraire les fiches cochées.\n3. Collez directement le résultat dans un courriel.");
             });
         }
 
-        /**
-         * @function gererCycleDeVieDonnees
-         * @description Gère l'interrogation de la mémoire tampon locale ou ordonne le requêtage réseau en fonction du temps écoulé.
-         */
         async function gererCycleDeVieDonnees() {
             const cacheTimestamp = localStorage.getItem(CACHE_KEY_TIME);
             const cacheDonnees = localStorage.getItem(CACHE_KEY_DATA);
@@ -634,23 +478,19 @@
                 baseArticlesGlobal = JSON.parse(cacheDonnees);
                 baseArticlesGlobal.forEach(art => listeSourcesUniques.add(art.titreSource));
                 const mins = Math.round((DUREE_CACHE - (instantPresent - cacheTimestamp)) / 60000);
-                document.getElementById("cache-status").textContent = `Données locales (MàJ réseau dans ${mins} min)`;
+                document.getElementById("cache-status").textContent = `Données en mémoire (MàJ dans ${mins} min)`;
                 genererStructureBoutonsCategories();
                 genererRenduInterface();
             } else {
-                document.getElementById("cache-status").textContent = `Requêtage des serveurs distants en cours...`;
+                document.getElementById("cache-status").textContent = `Synchronisation réseau...`;
                 await initialiserCollecteReseau();
             }
         }
 
-        /**
-         * @function initialiserCollecteReseau
-         * @description Lit le fichier d'index OPML, orchestre le téléchargement parallèle des sources et gère la mise en cache.
-         */
         async function initialiserCollecteReseau() {
             try {
                 const reponse = await fetch('feeds.opml');
-                if (!reponse.ok) throw new Error("Fichier 'feeds.opml' absent.");
+                if (!reponse.ok) throw new Error("Fichier 'feeds.opml' introuvable.");
                 
                 const chaineDonnees = await reponse.text();
                 const parseur = new DOMParser();
@@ -669,20 +509,16 @@
                 try {
                     localStorage.setItem(CACHE_KEY_DATA, JSON.stringify(baseArticlesGlobal));
                     localStorage.setItem(CACHE_KEY_TIME, Date.now().toString());
-                    document.getElementById("cache-status").textContent = `Flux synchronisés avec succès (Cache activé)`;
+                    document.getElementById("cache-status").textContent = `Flux synchronisés.`;
                 } catch (e) {}
                 
                 genererStructureBoutonsCategories();
                 genererRenduInterface();
             } catch (erreur) {
-                document.getElementById("timeline-container").innerHTML = `<div class="loader" style="color:#c53030;">Erreur d'infrastructure : ${erreur.message}</div>`;
+                document.getElementById("timeline-container").innerHTML = `<div class="loader" style="color:#c53030;">Erreur : ${erreur.message}</div>`;
             }
         }
 
-        /**
-         * @function collecterDonneesFlux
-         * @description Applique un algorithme de routage réseau conditionnel (local vs proxy externe) pour analyser le XML.
-         */
         async function collecterDonneesFlux(titreSource, urlFlux) {
             const estUrlDistant = urlFlux.startsWith("http://") || urlFlux.startsWith("https://");
             const urlCibleFinale = estUrlDistant ? `https://corsproxy.io/?${encodeURIComponent(urlFlux)}` : urlFlux;
@@ -718,10 +554,6 @@
                     const enclosure = article.querySelector("enclosure[type^='image']");
                     if (enclosure) urlImage = enclosure.getAttribute("url");
                     if (!urlImage) {
-                        const mediaContent = article.getElementsByTagName("media:content")[0] || article.getElementsByTagName("media:thumbnail")[0];
-                        if (mediaContent) urlImage = mediaContent.getAttribute("url");
-                    }
-                    if (!urlImage) {
                         const correspondence = descriptionBrute.match(/<img[^>]+src="([^">]+)"/i);
                         if (correspondence && correspondence[1]) urlImage = correspondence[1];
                     }
@@ -739,40 +571,31 @@
 
         /**
          * @function genererStructureBoutonsCategories
-         * @description Construit dynamiquement les 9 blocs thématiques métiers mis en relief (HTML sémantique complexe).
+         * @description Répartit les sources lues dans la Sidebar gauche selon la nomenclature géomatique à 9 axes.
          */
         function genererStructureBoutonsCategories() {
             const boitePrincipale = document.getElementById("categories-filter-box");
+            boitePrincipale.innerHTML = "";
             
-            /* Initialisation de la distribution sémantique sur 9 axes distincts */
-            let distribution = { 
-                "carto": [], "institution": [], "materiel": [], 
-                "gnss": [], "geodesie": [], "drone": [], 
-                "archeo": [], "dd": [], "ia": [], "autres": [] 
-            };
+            let distribution = { "carto": [], "institution": [], "materiel": [], "gnss": [], "geodesie": [], "drone": [], "archeo": [], "dd": [], "ia": [], "autres": [] };
             
-            /* Répartition des identités au sein de la matrice */
             listeSourcesUniques.forEach(source => {
                 const sourceCle = source.toLowerCase().replace(/\s+/g, ' ').trim();
                 const codeCat = DICTIONNAIRE_CATEGORIES[sourceCle] || "autres";
                 distribution[codeCat].push(source);
             });
 
-            /* Rendu algorithmique des conteneurs thématiques */
             for (const [idCategorie, tableauSources] of Object.entries(distribution)) {
                 if (tableauSources.length === 0 || idCategorie === "autres") continue;
                 
-                /* Création du grand bloc enveloppant de catégorie mis en relief */
                 const conteneurGroupe = document.createElement("div");
                 conteneurGroupe.className = "category-group";
                 
-                /* En-tête typographique textuelle de mise en valeur */
                 const titreLabel = document.createElement("h3");
                 titreLabel.className = "category-label";
                 titreLabel.textContent = NOMS_CATEGORIES[idCategorie];
                 conteneurGroupe.appendChild(titreLabel);
                 
-                /* Sous-bloc horizontal Flexbox pour recevoir les boutons */
                 const conteneurBoutons = document.createElement("div");
                 conteneurBoutons.className = "category-buttons-block";
                 
@@ -801,16 +624,12 @@
 
             document.getElementById("btn-master-clear").addEventListener("click", function() {
                 sourcesActives.clear();
-                document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+                document.querySelectorAll(".sidebar-panel .filter-btn").forEach(b => b.classList.remove("active"));
                 this.classList.add("active");
                 genererRenduInterface();
             });
         }
 
-        /**
-         * @function executerCopieEnMasse
-         * @description Compile et formate dans le presse-papiers le catalogue textuel des articles étoilés visibles.
-         */
         function executerCopieEnMasse() {
             const articlesEtoilesVisibles = baseArticlesGlobal.filter(art => {
                 const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
@@ -827,54 +646,36 @@
 
             if (articlesEtoilesVisibles.length === 0) {
                 const texteOriginal = boutonCopie.textContent;
-                boutonCopie.textContent = "⚠️ Aucun article étoilé visible";
-                setTimeout(() => boutonCopie.textContent = texteOriginal, 2500);
+                boutonCopie.textContent = "⚠️ Aucun choix étoilé";
+                setTimeout(() => boutonCopie.textContent = texteOriginal, 2000);
                 return;
             }
 
-            let blocSyntheseTextuel = "==================================================\n";
-            blocSyntheseTextuel += `    SELECTION DE VEILLE TECHNOLOGIQUE ÉVALUÉE\n`;
-            blocSyntheseTextuel += `    Rapport généré le ${new Date().toLocaleDateString('fr-FR')} - Total : ${articlesEtoilesVisibles.length} fiches\n`;
-            blocSyntheseTextuel += "==================================================\n\n";
-
+            let blocSyntheseTextuel = "==================================================\n  SELECTION DE VEILLE TECHNOLOGIQUE ÉVALUÉE\n==================================================\n\n";
             articlesEtoilesVisibles.forEach((art, idx) => {
                 const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
                 const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
                 const notationEtoiles = "★".repeat(noteActuelle) + "☆".repeat(4 - noteActuelle);
+                const nœudTitre = document.querySelector(`[data-url-origin="${art.lien}"]`);
+                const texteFinalTitre = nœudTitre ? nœudTitre.textContent.replace(/✨/g, "").trim() : art.titreArticle;
 
-                const nœudVirtuelTitre = document.querySelector(`[data-url-origin="${art.lien}"]`);
-                const texteFinalTitre = nœudVirtuelTitre ? nœudVirtuelTitre.textContent.replace(/✨/g, "").trim() : art.titreArticle;
-
-                blocSyntheseTextuel += `${idx + 1}. [${art.titreSource}] ${texteFinalTitre}\n`;
-                blocSyntheseTextuel += `   Évaluation de l'équipe : ${notationEtoiles} (${noteActuelle}/4)\n`;
-                blocSyntheseTextuel += `   Lien d'analyse : ${art.lien}\n\n`;
+                blocSyntheseTextuel += `${idx + 1}. [${art.titreSource}] ${texteFinalTitre}\n   Évaluation : ${notationEtoiles} (${noteActuelle}/4)\n   Lien : ${art.lien}\n\n`;
             });
 
             navigator.clipboard.writeText(blocSyntheseTextuel).then(() => {
                 const texteOriginal = boutonCopie.textContent;
-                boutonCopie.textContent = "✅ Choix copié !";
-                setTimeout(() => boutonCopie.textContent = texteOriginal, 2500);
+                boutonCopie.textContent = "✅ Sélection copiée !";
+                setTimeout(() => boutonCopie.textContent = texteOriginal, 2000);
             });
         }
 
-        /**
-         * @function purgerToutesLesEtoiles
-         * @description Efface définitivement toutes les clés de notation stockées au sein du LocalStorage.
-         */
         function purgerToutesLesEtoiles() {
-            const confirmationEnseignante = confirm("Voulez-vous réinitialiser définitivement toutes les évaluations attribuées par l'équipe pédagogique ?");
-            if (confirmationEnseignante) {
-                Object.keys(localStorage).forEach(clef => {
-                    if (clef.startsWith("note_art_")) { localStorage.removeItem(clef); }
-                });
+            if (confirm("Réinitialiser définitivement toutes les évaluations ?")) {
+                Object.keys(localStorage).forEach(clef => { if (clef.startsWith("note_art_")) { localStorage.removeItem(clef); } });
                 genererRenduInterface();
             }
         }
 
-        /**
-         * @function genererRenduInterface
-         * @description Construit le rendu sémantique des cartes d'articles et active le moteur de traduction asynchrone.
-         */
         function genererRenduInterface() {
             const conteneurGrid = document.getElementById("timeline-container");
             const loaderInitial = document.getElementById("main-loader");
@@ -889,7 +690,7 @@
             });
             
             if (articlesFiltres.length === 0) {
-                conteneurGrid.innerHTML = "<div class='loader'>Aucun article ne correspond aux critères temporels ou textuels sélectionnés.</div>";
+                conteneurGrid.innerHTML = "<div class='loader'>Aucun article ne correspond aux critères.</div>";
                 return;
             }
             
@@ -900,27 +701,19 @@
                 const jetonAleatoire = Math.random().toString(36).substring(2, 11);
                 const idTitre = 't-' + jetonAleatoire;
                 const idExtrait = 'e-' + jetonAleatoire;
-                
                 const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
                 const noteEnregistree = parseInt(localStorage.getItem(noteCleStorage)) || 0;
 
-                let blocMediaHTML = `
-                    <div class="card-image-placeholder">
-                        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                    </div>`;
+                let blocMediaHTML = `<div class="card-image-placeholder"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>`;
                 if (art.urlImage) { blocMediaHTML = `<img src="${art.urlImage}" class="card-image" alt="Illustration" loading="lazy">`; }
                 
                 elementCarte.innerHTML = `
-                    <div class="card-image-wrapper">
-                        ${blocMediaHTML}
-                    </div>
+                    <div class="card-image-wrapper">${blocMediaHTML}</div>
                     <div class="card-content">
                         <span class="card-source">${art.titreSource}</span>
                         <h2 class="card-title"><a href="${art.lien}" target="_blank" id="${idTitre}" data-url-origin="${art.lien}" style="color:inherit; text-decoration:none;">${art.titreArticle}</a></h2>
-                        <p class="card-excerpt" id="${idExtrait}">${art.extrait ? art.extrait : "Consulter la plateforme d'origine pour analyser cette ressource."}</p>
-                        
+                        <p class="card-excerpt" id="${idExtrait}">${art.extrait ? art.extrait : "Consulter la ressource d'origine."}</p>
                         <div class="card-date">Publié le ${art.dateAffichee}</div>
-                        
                         <div class="card-evaluation-row">
                             <div class="star-rating-box" data-url="${art.lien}">
                                 <span class="star-item ${noteEnregistree >= 1 ? 'active' : ''}" data-value="1">★</span>
@@ -928,7 +721,7 @@
                                 <span class="star-item ${noteEnregistree >= 3 ? 'active' : ''}" data-value="3">★</span>
                                 <span class="star-item ${noteEnregistree >= 4 ? 'active' : ''}" data-value="4">★</span>
                             </div>
-                            <button class="action-icon-btn btn-copy-fiche" data-source="${art.titreSource}" data-title="${art.titreArticle}" data-url="${art.lien}">📋 Copier la fiche</button>
+                            <button class="action-icon-btn btn-copy-fiche" data-source="${art.titreSource}" data-url="${art.lien}">📋 Copier</button>
                         </div>
                     </div>
                 `;
@@ -952,28 +745,19 @@
                     const titre = document.getElementById(idTitre).textContent.replace(/✨/g, "").trim();
                     const url = btn.getAttribute("data-url");
                     const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
-                    
                     const etoilesTexte = "★".repeat(noteActuelle) + "☆".repeat(4 - noteActuelle);
-                    const chaineDeVeille = `[VEILLE] [${src}] ${titre} - Évaluation : ${etoilesTexte} (${noteActuelle}/4) - Lien : ${url}`;
                     
-                    navigator.clipboard.writeText(chaineDeVeille).then(() => {
-                        const texteOrigine = btn.textContent;
-                        btn.textContent = "✅ Copié !";
-                        setTimeout(() => btn.textContent = texteOrigine, 2000);
+                    navigator.clipboard.writeText(`[VEILLE] [${src}] ${titre} - Évaluation : ${etoilesTexte} - Lien : ${url}`).then(() => {
+                        const txt = btn.textContent; btn.textContent = "✅ Copié !"; setTimeout(() => btn.textContent = txt, 1500);
                     });
                 });
 
                 const regexAnglais = /\b(the|and|of|in|to|for|with|on|at|by|from|new|release|software|drone|satellite|surveying|update|news|gps|world|lidar|geospatial)\b/i;
-
                 if (art.titreArticle && regexAnglais.test(art.titreArticle)) { lancerTraductionAsynchrone(idTitre, art.titreArticle, true); }
                 if (art.extrait && !art.extrait.startsWith("Consulter") && regexAnglais.test(art.extrait)) { lancerTraductionAsynchrone(idExtrait, art.extrait, false); }
             });
         }
 
-        /**
-         * @function lancerTraductionAsynchrone
-         * @description Interroge l'API de traduction Google de manière asynchrone pour traiter les contenus anglophones.
-         */
         async function lancerTraductionAsynchrone(idDOM, texteOriginal, estUnTitre) {
             const urlTraduction = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=fr&dt=t&q=${encodeURIComponent(texteOriginal)}`;
             try {
@@ -981,17 +765,15 @@
                 if (!reponse.ok) return;
                 const structureJson = await reponse.json();
                 let texteTraduitUnifie = "";
-                if (structureJson && structureJson[0]) {
-                    structureJson[0].forEach(segment => { if (segment[0]) texteTraduitUnifie += segment[0]; });
-                }
+                if (structureJson && structureJson[0]) { structureJson[0].forEach(segment => { if (segment[0]) texteTraduitUnifie += segment[0]; }); }
                 if (texteTraduitUnifie && texteTraduitUnifie.trim() !== texteOriginal.trim()) {
                     const noeudCible = document.getElementById(idDOM);
                     if (noeudCible) {
                         const classeAppliquee = estUnTitre ? 'translated-title' : 'translated-text';
-                        noeudCible.innerHTML = `<span class="${classeAppliquee}" title="Traduit automatiquement du texte original">${texteTraduitUnifie} ✨</span>`;
+                        noeudCible.innerHTML = `<span class="${classeAppliquee}" title="Traduit automatiquement">${texteTraduitUnifie} ✨</span>`;
                     }
                 }
-            } catch (erreur) {}
+            } catch (e) {}
         }
     </script>
 </body>
