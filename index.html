@@ -8,7 +8,6 @@
     <style>
         /* ==========================================================================
            VARIABLES GLOBALES DE THÉMATISATION (DESIGN SYSTEM - MODE CLAIR)
-           L'usage des variables CSS (:root) centralise la maintenance des couleurs.
            ========================================================================== */
         :root {
             --primary-dark: #1a202c;       /* Anthracite profond assurant une forte lisibilité textuelle */
@@ -23,8 +22,8 @@
             --star-active: #ecc94b;        /* Jaune ambré à fort contraste pour les fiches étoilées */
             
             /* Teintes dédiées à la mise en relief des 9 bandeaux de catégories métiers */
-            --theme-header-bg: #f8fafc;    /* Fond de contraste subtil pour les en-têtes de blocs */
-            --theme-header-text: #2d3748;  /* Couleur textuelle accentuée pour les titres de sections */
+            --theme-header-bg: #f8fafc;    
+            --theme-header-text: #2d3748;  
             
             --radius-md: 12px;             /* Rayon de courbure des angles des cartes d'articles */
             --radius-sm: 6px;              /* Rayon d'arrondi des boutons de l'interface */
@@ -33,11 +32,10 @@
 
         /* ==========================================================================
            VARIABLES DE THÉMATISATION ALTERNATIVE (DESIGN SYSTEM - MODE SOMBRE)
-           Activé par l'injection dynamique de la classe .dark-theme sur le body via JS.
            ========================================================================== */
         body.dark-theme {
             --primary-dark: #f7fafc;       
-            --accent-red: #fc8181;         /* Rouge atténué pour préserver le confort visuel sur fond sombre */
+            --accent-red: #fc8181;         
             --bg-main: #0f172a;            /* Bleu nuit profond agissant comme absorbeur de lumière */
             --sidebar-bg: #1e293b;         /* Ardoise sombre pour le panneau latéral gauche */
             --card-bg: #1e293b;            
@@ -52,7 +50,6 @@
 
         /* ==========================================================================
            PROPRIÉTÉS DE SÉCURISATION DU FLUX (CONFINEMENT ABSOLU VUE)
-           L'usage du débordement masqué empêche le navigateur de créer un défilement général.
            ========================================================================== */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -87,7 +84,6 @@
 
         /* ==========================================================================
            ARCHITECTURE DASHBOARD DOUBLE COLONNE COULISSANTE (LAYOUT FIXE)
-           Positionné rigoureusement sous le bandeau supérieur à hauteur calculée.
            ========================================================================== */
         .app-layout {
             position: fixed;
@@ -99,7 +95,7 @@
         /* Panneau latéral gauche fixe (Sidebar) dédié à la taxonomie à 9 axes */
         .sidebar-panel {
             width: 380px;
-            flex-shrink: 0;                /* Interdit au panneau de se déformer ou de rétrécir */
+            flex-shrink: 0;                
             background-color: var(--sidebar-bg);
             border-right: 1px solid var(--border-light);
             padding: 20px;
@@ -108,7 +104,7 @@
             flex-direction: column;
             gap: 12px;
             height: 100%;
-            overflow-y: auto;              /* Défilement vertical autonome si la liste des flux sature l'écran */
+            overflow-y: auto;              
         }
 
         /* Conteneurs enveloppants pour la mise en relief des catégories métiers */
@@ -129,14 +125,14 @@
             text-transform: uppercase;
             color: var(--accent-red);
             letter-spacing: 0.06em;
-            border-left: 3px solid var(--accent-red); /* Ligne de repère géométrique rouge */
+            border-left: 3px solid var(--accent-red); 
             padding-left: 10px;
             margin: 0 0 4px 0;
         }
 
         .category-buttons-block {
             display: flex;
-            flex-wrap: wrap;               /* Autorise le retour à la ligne automatique des boutons */
+            flex-wrap: wrap;               
             gap: 6px;
         }
 
@@ -255,7 +251,6 @@
 
         /* ==========================================================================
            ISOLATION HERMÉTIQUE DE LA MODALE D'AIDE (SÉCURITÉ DISPLAY)
-           L'usage exclusif de display: none garantit l'étanchéité absolue face au traducteur Chrome.
            ========================================================================== */
         .modal-overlay {
             display: none;                
@@ -640,7 +635,7 @@
         }
 
         function executerCopieEnMasse() {
-            const articlesEtoilesVisibles = baseArticlesGlobal.filter(art => {
+            let articlesEtoilesVisibles = baseArticlesGlobal.filter(art => {
                 const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
                 const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
                 const passeFiltreDate = filtreDateSeuilGlobal === 0 || art.dateTimestamp >= filtreDateSeuilGlobal;
@@ -650,6 +645,20 @@
                 
                 return passeFiltreSource && passeFiltreTexte && passeFiltreDate && noteActuelle > 0;
             });
+
+            // Si le mode "Tout afficher" initial est actif, on applique la même réduction sélective pour l'exportation globale
+            if (sourcesActives.size === 0 && !termeRechercheGlobal) {
+                const categoriesVuExport = new Set();
+                articlesEtoilesVisibles = articlesEtoilesVisibles.filter(art => {
+                    const sourceCle = art.titreSource.toLowerCase().replace(/\s+/g, ' ').trim();
+                    const codeCat = DICTIONNAIRE_CATEGORIES[sourceCle] || "autres";
+                    if (codeCat !== "autres" && !categoriesVuExport.has(codeCat)) {
+                        categoriesVuExport.add(codeCat);
+                        return true;
+                    }
+                    return false;
+                });
+            }
 
             const boutonCopie = document.getElementById("btn-copy-all");
 
@@ -665,10 +674,8 @@
                 const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
                 const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
                 const notationEtoiles = "★".repeat(noteActuelle) + "☆".repeat(4 - noteActuelle);
-                const nœudTitre = document.querySelector(`[data-url-origin="${art.lien}"]`);
-                const texteFinalTitre = nœudTitre ? nœudTitre.textContent.replace(/✨/g, "").trim() : art.titreArticle;
 
-                blocSyntheseTextuel += `${idx + 1}. [${art.titreSource}] ${texteFinalTitre}\n   Évaluation : ${notationEtoiles} (${noteActuelle}/4)\n   Lien : ${art.lien}\n\n`;
+                blocSyntheseTextuel += `${idx + 1}. [${art.titreSource}] ${art.titreArticle}\n   Évaluation : ${notationEtoiles} (${noteActuelle}/4)\n   Lien : ${art.lien}\n\n`;
             });
 
             navigator.clipboard.writeText(blocSyntheseTextuel).then(() => {
@@ -685,24 +692,49 @@
             }
         }
 
+        /**
+         * @function genererRenduInterface
+         * @description Construit dynamiquement la mosaïque des cartes d'articles.
+         * Applique une réduction sémantique exclusive à l'état initial pour n'afficher que le dernier article de chaque axe métier.
+         */
         function genererRenduInterface() {
             const conteneurGrid = document.getElementById("timeline-container");
             const loaderInitial = document.getElementById("main-loader");
             if (loaderInitial) loaderInitial.remove();
             conteneurGrid.innerHTML = "";
             
-            const articlesFiltres = baseArticlesGlobal.filter(art => {
+            /* Phase 1 : Filtrage standard des données selon l'état des boutons cliqués et de la recherche */
+            let articlesFiltres = baseArticlesGlobal.filter(art => {
                 const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
                 const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
                 const passeFiltreDate = filtreDateSeuilGlobal === 0 || art.dateTimestamp >= filtreDateSeuilGlobal;
                 return passeFiltreSource && passeFiltreTexte && passeFiltreDate;
             });
             
+            /* Phase 2 : Optimisation de l'état initial (Filtre "Instant de Veille")
+               Si aucun filtre de source n'est actif et qu'aucune recherche textuelle n'est formulée,
+               on réduit la base pour ne conserver STRICTEMENT que la publication la plus récente de chaque catégorie. */
+            if (sourcesActives.size === 0 && !termeRechercheGlobal) {
+                const categoriesVuRendu = new Set();
+                articlesFiltres = articlesFiltres.filter(art => {
+                    const sourceCle = art.titreSource.toLowerCase().replace(/\s+/g, ' ').trim();
+                    const codeCat = DICTIONNAIRE_CATEGORIES[sourceCle] || "autres";
+                    
+                    /* Si la catégorie métier est valide et n'a pas encore été rencontrée dans l'ordre chronologique */
+                    if (codeCat !== "autres" && !categoriesVuRendu.has(codeCat)) {
+                        categoriesVuRendu.add(codeCat); /* Verrouillage de la catégorie */
+                        return true;                    /* Conservation de l'article (le plus récent) */
+                    }
+                    return false;                       /* Élimination des articles plus anciens de cette même catégorie */
+                });
+            }
+            
             if (articlesFiltres.length === 0) {
                 conteneurGrid.innerHTML = "<div class='loader'>Aucun article ne correspond aux critères.</div>";
                 return;
             }
             
+            /* Phase 3 : Construction graphique du DOM */
             articlesFiltres.forEach(art => {
                 const elementCarte = document.createElement("div");
                 elementCarte.className = "article-card";
