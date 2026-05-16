@@ -1,218 +1,130 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau de Bord de Veille - Géomatique & Topographie</title>
+/**
+ * RÔLE : Point d'entrée de l'application. Initialise le chargement après construction du DOM.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+    analyserFichierOPML();
+});
+
+/**
+ * RÔLE : Récupère le fichier local 'feeds.opml', extrait les URL des flux et lance leur traitement.
+ * LOGIQUE DE SÉCURITÉ : Vérifie la validité de la réponse HTTP et la conformité du code XML
+ * afin d'éviter les blocages silencieux en cas de désynchronisation de fichiers.
+ */
+async function analyserFichierOPML() {
+    const conteneurPrincipal = document.getElementById("flux-container");
     
-    <style>
-        /* BASE DE STYLE & VARIABLES */
-        :root {
-            --primary-color: #2c3e50;
-            --background-color: #f8f9fa;
-            --card-background: #ffffff;
-            --text-color: #333333;
-            --border-color: #e2e8f0;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-        }
-
-        /* JUSTIFICATION CSS : Utilisation de Flexbox pour le bandeau supérieur afin d'aligner 
-           le titre et les métadonnées de manière fluide et adaptative (responsive). */
-        header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        h1 { margin: 0; font-size: 1.5rem; }
-
-        /* JUSTIFICATION CSS : Utilisation de Grid Layout pour la grille principale. 
-           Le mode 'repeat(auto-fill, minmax(...))' permet de calculer automatiquement le nombre de 
-           colonnes selon la largeur de l'écran de l'utilisateur, idéal pour les supports mobiles. */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-            padding: 25px;
-        }
-
-        /* Classes spécifiques pour le ciblage et le rendu des sections de flux */
-        .feed-section {
-            background: var(--card-background);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .feed-title {
-            font-size: 1.1rem;
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 8px;
-            margin-top: 0;
-        }
-
-        .article-link {
-            display: block;
-            color: #3182ce;
-            text-decoration: none;
-            margin-bottom: 10px;
-            font-size: 0.95rem;
-        }
-
-        .article-link:hover { text-decoration: underline; }
+    try {
+        const reponse = await fetch('feeds.opml');
         
-        .article-date {
-            font-size: 0.75rem;
-            color: #718096;
-            margin-bottom: 12px;
+        // GESTION DES ERREURS HTTP : fetch ne levant pas d'erreur sur un 404, validation explicite requise.
+        if (!reponse.ok) {
+            throw new Error(`Impossible d'accéder au fichier 'feeds.opml' (Statut HTTP : ${reponse.status}).`);
         }
-    </style>
-</head>
-<body>
-
-    <header id="main-header">
-        <h1>Veille Technologique & Pédagogique - BTS MGTMN</h1>
-        <small>Source de configuration : feeds.opml</small>
-    </header>
-
-    <main id="flux-container" class="dashboard-grid"></main>
-
-    <script>
-        /**
-         * RÔLE : Point d'entrée de l'application. Initialise le chargement après construction du DOM.
-         */
-        document.addEventListener("DOMContentLoaded", () => {
-            analyserFichierOPML();
+        
+        const chaineDonnees = await reponse.text();
+        
+        const parseur = new DOMParser();
+        const documentXML = parseur.parseFromString(chaineDonnees, "text/xml");
+        
+        // GESTION DES ERREURS DE PARSING : Vérification de la présence d'une balise d'erreur XML.
+        if (documentXML.querySelector("parsererror")) {
+            throw new Error("Le fichier 'feeds.opml' n'est pas un document XML/OPML valide (Erreur de syntaxe).");
+        }
+        
+        const elementsOutline = documentXML.querySelectorAll("outline[xmlUrl]");
+        
+        // Cas où le fichier est valide mais ne contient aucun flux exploitable
+        if (elementsOutline.length === 0) {
+            conteneurPrincipal.innerHTML = "<p style='grid-column: 1/-1; text-align:center; color:#718096;'>Aucun flux valide trouvé dans le fichier OPML.</p>";
+            return;
+        }
+        
+        // Algorithme de déploiement des cartes de veille
+        elementsOutline.forEach(outline => {
+            const titreSource = outline.getAttribute("title") || outline.getAttribute("text") || "Source inconnue";
+            const urlFlux = outline.getAttribute("xmlUrl");
+            
+            if (urlFlux) {
+                creerBlocStructurel(titreSource, urlFlux);
+                chargerArticlesFlux(titreSource, urlFlux);
+            }
         });
+        
+    } catch (erreur) {
+        console.error("Échec de l'initialisation de la veille :", erreur);
+        
+        // INJECTION PROTOCOLAIRE D'ERREUR : Permet un diagnostic direct sur l'interface utilisateur.
+        conteneurPrincipal.innerHTML = `
+            <div style="grid-column: 1 / -1; background: #fff5f5; color: #c53030; padding: 25px; border-radius: 8px; border: 1px solid #fed7d7; font-family: monospace;">
+                <h3 style="margin-top:0;">[Erreur de chargement de l'infrastructure]</h3>
+                <p>${erreur.message}</p>
+                <small style="color: #718096;">Solution : Vérifiez que le fichier <strong>feeds.opml</strong> est bien nommé en minuscules et présent à la racine de votre dépôt principal.</small>
+            </div>
+        `;
+    }
+}
 
-        /**
-         * RÔLE : Récupère le fichier local 'feeds.opml', extrait les URL des flux et lance leur traitement.
-         * PARAMÈTRES D'ENTRÉE : Aucun.
-         * VALEUR RETOURNÉE : Aucune (Modification directe du DOM).
-         * LOGIQUE : Utilise l'API Fetch pour obtenir le fichier XML. Utilise DOMParser pour naviguer dans 
-         * l'arborescence et cibler les balises <outline> dotées d'un attribut 'xmlUrl'.
-         */
-        async function analyserFichierOPML() {
-            try {
-                const reponse = await fetch('feeds.opml');
-                const chaineDonnees = await reponse.text();
-                
-                const parseur = new DOMParser();
-                const documentXML = parseur.parseFromString(chaineDonnees, "text/xml");
-                
-                // Algorithme de sélection : Recherche de toutes les balises structurelles de flux RSS
-                const elementsOutline = documentXML.querySelectorAll("outline[xmlUrl]");
-                
-                elementsOutline.forEach(outline => {
-                    const titreSource = outline.getAttribute("title");
-                    const urlFlux = outline.getAttribute("xmlUrl");
-                    
-                    if (urlFlux) {
-                        creerBlocStructurel(titreSource, urlFlux);
-                        chargerArticlesFlux(titreSource, urlFlux);
-                    }
-                });
-            } catch (erreur) {
-                console.error("Erreur lors de l'analyse du fichier OPML :", erreur);
-            }
+/**
+ * RÔLE : Instancie une section HTML vide dans le conteneur pour garantir la structure de la grille.
+ */
+function creerBlocStructurel(titreSource, urlFlux) {
+    const conteneurPrincipal = document.getElementById("flux-container");
+    const section = document.createElement("section");
+    section.className = "feed-section";
+    
+    // LOGIQUE DE NETTOYAGE : Remplacement de btoa par une Regex pour éliminer tout risque lié aux caractères spéciaux.
+    const idValide = urlFlux.replace(/[^a-zA-Z0-9]/g, "");
+    section.id = `flux-${idValide}`;
+    
+    section.innerHTML = `<h2 class="feed-title">${titreSource}</h2><div class="articles-list" style="font-size:0.9rem; color:#a0aec0;">Synchro en cours...</div>`;
+    conteneurPrincipal.appendChild(section);
+}
+
+/**
+ * RÔLE : Interroge le flux distant via un proxy CORS, extrait les articles et les insère dans sa section.
+ */
+async function chargerArticlesFlux(titreSource, urlFlux) {
+    const idValide = urlFlux.replace(/[^a-zA-Z0-9]/g, "");
+    const conteneurArticles = document.querySelector(`#flux-${idValide} .articles-list`);
+    
+    const urlRequeteProxiee = `https://corsproxy.io/?${encodeURIComponent(urlFlux)}`;
+    
+    try {
+        const reponse = await fetch(urlRequeteProxiee);
+        if (!reponse.ok) throw new Error(`HTTP ${reponse.status}`);
+        
+        const texteBrut = await reponse.text();
+        const parseur = new DOMParser();
+        const xmlDoc = parseur.parseFromString(texteBrut, "text/xml");
+        
+        const estAtom = xmlDoc.querySelector("entry") !== null;
+        const balisesArticles = estAtom ? xmlDoc.querySelectorAll("entry") : xmlDoc.querySelectorAll("item");
+        
+        conteneurArticles.innerHTML = "";
+        
+        if (balisesArticles.length === 0) {
+            conteneurArticles.innerHTML = "<p style='font-size:0.85rem; color:#999; margin:0;'>Aucun article disponible.</p>";
+            return;
         }
-
-        /**
-         * RÔLE : Instancie une section HTML vide dans le conteneur pour garantir la structure de la grille.
-         * PARAMÈTRES D'ENTRÉE : 
-         * - titreSource (string) : Nom de l'éditeur ou du site de veille.
-         * - urlFlux (string) : URL du flux syndiqué servant d'identifiant unique pour l'injection.
-         * VALEUR RETOURNÉE : Aucune (Injection DOM).
-         */
-        function creerBlocStructurel(titreSource, urlFlux) {
-            const conteneurPrincipal = document.getElementById("flux-container");
-            const section = document.createElement("section");
-            section.className = "feed-section";
+        
+        const selectionArticles = Array.from(balisesArticles).slice(0, 4);
+        
+        selectionArticles.forEach(article => {
+            const titreArticle = article.querySelector("title")?.textContent || "Article sans titre";
+            let lienArticle = estAtom ? article.querySelector("link")?.getAttribute("href") : article.querySelector("link")?.textContent;
             
-            // Nettoyage de l'URL pour créer un identifiant valide (sans caractères spéciaux)
-            const idValide = btoa(urlFlux).replace(/=/g, "");
-            section.id = `flux-${idValide}`;
+            if (!lienArticle || lienArticle === "#") return;
             
-            section.innerHTML = `<h2 class="feed-title">${titreSource}</h2><div class="articles-list">Chargement...</div>`;
-            conteneurPrincipal.appendChild(section);
-        }
-
-        /**
-         * RÔLE : Interroge le flux distant via un proxy CORS, extrait les articles et les insère dans sa section.
-         * PARAMÈTRES D'ENTRÉE : 
-         * - titreSource (string) : Nom du flux.
-         * - urlFlux (string) : URL source du flux RSS.
-         * VALEUR RETOURNÉE : Aucune.
-         * LOGIQUE TECHNIQUE : Les requêtes HTTP directes vers des domaines tiers sont bloquées par les navigateurs (CORS).
-         * Nous encapsulons l'URL cible dans le proxy public 'corsproxy.io' pour contourner cette sécurité.
-         */
-        async function chargerArticlesFlux(titreSource, urlFlux) {
-            const idValide = btoa(urlFlux).replace(/=/g, "");
-            const conteneurArticles = document.querySelector(`#flux-${idValide} .articles-list`);
+            const elementAncre = document.createElement("a");
+            elementAncre.className = "article-link";
+            elementAncre.href = lienArticle.trim();
+            elementAncre.target = "_blank";
+            elementAncre.textContent = titreArticle;
             
-            const urlRequeteProxiee = `https://corsproxy.io/?${encodeURIComponent(urlFlux)}`;
-            
-            try {
-                const reponse = await fetch(urlRequeteProxiee);
-                if (!reponse.ok) throw new Error("HTTP Status " + reponse.status);
-                
-                const texteBrut = await reponse.text();
-                const parseur = new DOMParser();
-                const xmlDoc = parseur.parseFromString(texteBrut, "text/xml");
-                
-                // Gestion de la double norme : RSS (<item>) et Atom (<entry>)
-                const estAtom = xmlDoc.querySelector("entry") !== null;
-                const balisesArticles = estAtom ? xmlDoc.querySelectorAll("entry") : xmlDoc.querySelectorAll("item");
-                
-                conteneurArticles.innerHTML = ""; // Effacement du message de chargement
-                
-                if (balisesArticles.length === 0) {
-                    conteneurArticles.innerHTML = "<p style='font-size:0.85rem; color:#999;'>Aucun article récent.</p>";
-                    return;
-                }
-
-                // Algorithme de tri et restriction : Limitation aux 4 publications les plus récentes
-                const selectionArticles = Array.from(balisesArticles).slice(0, 4);
-                
-                selectionArticles.forEach(article => {
-                    const titreArticle = article.querySelector("title")?.textContent || "Article sans titre";
-                    
-                    // Extraction du lien hypertexte selon la structure de la norme détectée
-                    let lienArticle = "#";
-                    if (estAtom) {
-                        lienArticle = article.querySelector("link")?.getAttribute("href") || "#";
-                    } else {
-                        lienArticle = article.querySelector("link")?.textContent || "#";
-                    }
-                    
-                    const elementAncre = document.createElement("a");
-                    elementAncre.className = "article-link";
-                    elementAncre.href = lienArticle;
-                    elementAncre.target = "_blank";
-                    elementAncre.textContent = titreArticle;
-                    
-                    conteneurArticles.appendChild(elementAncre);
-                });
-                
-            } catch (erreur) {
-                conteneurArticles.innerHTML = "<p style='font-size:0.85rem; color:#e53e3e;'>Erreur de mise à jour.</p>";
-            }
-        }
-    </script>
-</body>
-</html>
+            conteneurArticles.appendChild(elementAncre);
+        });
+        
+    } catch (erreur) {
+        conteneurArticles.innerHTML = "<p style='font-size:0.85rem; color:#e53e3e; margin:0;'>Flux temporairement indisponible.</p>";
+    }
+}
