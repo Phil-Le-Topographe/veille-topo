@@ -83,7 +83,7 @@
         }
 
         /* JUSTIFICATION CSS : Utilisation de Flexbox pour aligner horizontalement la recherche 
-           et les nouveaux contrôles de dates de manière fluide et responsive. */
+           et la nouvelle barre d'outils temporelle et collaborative de manière fluide. */
         .search-zone-wrapper {
             display: flex;
             flex-wrap: wrap;
@@ -94,7 +94,7 @@
 
         .search-wrapper {
             position: relative;
-            flex: 1 1 350px; /* Extensible, avec une base minimale de 350px */
+            flex: 1 1 300px; /* Extensible, s'adapte à l'espace disponible */
         }
 
         .search-input {
@@ -112,7 +112,7 @@
 
         .search-input:focus { border-color: var(--accent-red); }
 
-        /* Style spécifique pour les inputs de type Date et Selecteurs temporels */
+        /* Conteneur pour regrouper le filtre de date et les actions d'export / étoiles */
         .date-filter-wrapper {
             display: flex;
             align-items: center;
@@ -349,6 +349,10 @@
                     <option value="custom">Sélectionner une date limite...</option>
                 </select>
                 <input type="date" id="input-custom-date" class="search-input" style="width: auto; padding: 7px 12px; display: none;" title="Masquer les articles publiés avant cette date">
+                
+                <button class="filter-btn" id="btn-copy-all" style="border-color: var(--text-muted);" title="Compiler et copier uniquement les fiches étoilées visibles à l'écran">📋 Copier le choix</button>
+                <button class="filter-btn" id="btn-reset-stars" style="border-color: var(--text-muted);" title="Effacer définitivement toutes les étoiles attribuées">⭐ Réinitialiser les notes</button>
+                <button class="filter-btn help-btn" id="btn-share-guide" style="padding: 6px 10px;" title="Protocole de partage de la sélection">ℹ️ Guide Partage</button>
             </div>
         </div>
 
@@ -356,8 +360,6 @@
             <div class="category-group">
                 <span class="category-label">Général :</span>
                 <button class="filter-btn clear-all active" id="btn-master-clear">🗂️ Tout afficher</button>
-                <button class="filter-btn" id="btn-copy-all" style="border-color: var(--text-muted);" title="Compiler et copier uniquement les fiches étoilées visibles à l'écran">📋 Tout copier</button>
-                <button class="filter-btn" id="btn-reset-stars" style="border-color: var(--text-muted);" title="Effacer définitivement toutes les étoiles attribuées">⭐ Réinitialiser les notes</button>
             </div>
         </div>
     </section>
@@ -424,8 +426,6 @@
         let listeSourcesUniques = new Set();
         let sourcesActives = new Set();
         let termeRechercheGlobal = "";
-        
-        // Variable d'état retenant l'horodatage Unix minimal sous lequel masquer les fiches
         let filtreDateSeuilGlobal = 0;
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -455,52 +455,30 @@
             });
         }
 
-        /**
-         * @function configurerFiltresTemporels
-         * @description Attache les écouteurs d'événements sur le select d'intervalle et le calendrier manuel.
-         * Calcule le décalage mathématique temporel en millisecondes.
-         */
         function configurerFiltresTemporels() {
             const selectRange = document.getElementById("select-date-range");
             const inputCalendar = document.getElementById("input-custom-date");
 
-            // Écouteur sur le menu déroulant
             selectRange.addEventListener("change", (e) => {
                 const choix = e.target.value;
                 const instantMaintenant = Date.now();
                 inputCalendar.style.display = (choix === "custom") ? "inline-block" : "none";
 
-                // Logique algorithmique de calcul de constantes de temps (24h, 3j, 1sem, 1mois)
                 switch (choix) {
-                    case "all":
-                        filtreDateSeuilGlobal = 0;
-                        break;
-                    case "24h":
-                        filtreDateSeuilGlobal = instantMaintenant - (24 * 60 * 60 * 1000);
-                        break;
-                    case "3d":
-                        filtreDateSeuilGlobal = instantMaintenant - (3 * 24 * 60 * 60 * 1000);
-                        break;
-                    case "1w":
-                        filtreDateSeuilGlobal = instantMaintenant - (7 * 24 * 60 * 60 * 1000);
-                        break;
-                    case "1m":
-                        filtreDateSeuilGlobal = instantMaintenant - (30 * 24 * 60 * 60 * 1000);
-                        break;
-                    case "custom":
-                        // Repose sur la valeur saisie dans le calendrier
-                        evaluerCalendrierManuel();
-                        return;
+                    case "all": filtreDateSeuilGlobal = 0; break;
+                    case "24h": filtreDateSeuilGlobal = instantMaintenant - (24 * 60 * 60 * 1000); break;
+                    case "3d": filtreDateSeuilGlobal = instantMaintenant - (3 * 24 * 60 * 60 * 1000); break;
+                    case "1w": filtreDateSeuilGlobal = instantMaintenant - (7 * 24 * 60 * 60 * 1000); break;
+                    case "1m": filtreDateSeuilGlobal = instantMaintenant - (30 * 24 * 60 * 60 * 1000); break;
+                    case "custom": evaluerCalendrierManuel(); return;
                 }
                 genererRenduInterface();
             });
 
-            // Écouteur sur l'input type date manuel
             inputCalendar.addEventListener("input", evaluerCalendrierManuel);
 
             function evaluerCalendrierManuel() {
                 if (inputCalendar.value) {
-                    // Analyse de la chaîne ISO YYYY-MM-DD renvoyée par l'élément input natif
                     const dateSelectionnee = new Date(inputCalendar.value);
                     filtreDateSeuilGlobal = dateSelectionnee.getTime();
                 } else {
@@ -534,6 +512,16 @@
         function configurerBoutonsGlobauxEvaluation() {
             document.getElementById("btn-copy-all").addEventListener("click", executerCopieEnMasse);
             document.getElementById("btn-reset-stars").addEventListener("click", purgerToutesLesEtoiles);
+            
+            // Écouteur pour le protocole didactique de partage destiné à l'équipe pédagogique
+            document.getElementById("btn-share-guide").addEventListener("click", () => {
+                alert(
+                    "💡 PROTOCOLE DE PARTAGE COLLABORATIF DE LA SELECTION :\n\n" +
+                    "1. Évaluez la pertinence des articles en leur attribuant des étoiles (de 1 à 4).\n" +
+                    "2. Cliquez sur le bouton 'Copier le choix' pour compiler automatiquement les seuls articles étoilés visibles à l'écran.\n" +
+                    "3. Ouvrez votre logiciel de messagerie et collez directement (Ctrl+V) le catalogue formaté dans un nouveau courriel pour le transmettre à l'équipe."
+                );
+            });
         }
 
         /* DATA PIPELINE */
@@ -690,7 +678,6 @@
 
         /* ORECHESTRATION ET COMPILATION EN BULK */
         function executerCopieEnMasse() {
-            // ALGORITHME DE SÉLECTION REPRENANT EXCLUSIVEMENT LES TROIS COUCHES DE FILTRAGE DONT LE FILTRE DATE
             const articlesEtoilesVisibles = baseArticlesGlobal.filter(art => {
                 const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
                 const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
@@ -731,7 +718,7 @@
 
             navigator.clipboard.writeText(blocSyntheseTextuel).then(() => {
                 const texteOriginal = boutonCopie.textContent;
-                boutonCopie.textContent = "✅ Sélection copiée !";
+                boutonCopie.textContent = "✅ Choix copié !";
                 setTimeout(() => boutonCopie.textContent = texteOriginal, 2500);
             });
         }
@@ -753,14 +740,10 @@
             if (loaderInitial) loaderInitial.remove();
             conteneurGrid.innerHTML = "";
             
-            // INTÉGRATION DE LA STRATÉGIE DE FILTRAGE QUADRIPLE MULTICRITÈRE
             const articlesFiltres = baseArticlesGlobal.filter(art => {
                 const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
                 const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
-                
-                // FILTRAGE TEMPOREL : Exclut l'élément si son timestamp est obsolète par rapport au seuil actif
                 const passeFiltreDate = filtreDateSeuilGlobal === 0 || art.dateTimestamp >= filtreDateSeuilGlobal;
-                
                 return passeFiltreSource && passeFiltreTexte && passeFiltreDate;
             });
             
