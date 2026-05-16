@@ -3,94 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau de Bord de Veille - Géomatique & Topographie</title>
+    <title>Portail de Veille Visuelle - Géomatique & Topographie</title>
     
     <style>
         /* ==========================================================================
-           VARIABLES GLOBALES ET THÉMATISATION (CSS VARIABLES)
+           VARIABLES GLOBALES DE THÉMATISATION (DESIGN SYSTEM)
            ========================================================================== */
         :root {
-            /* Couleurs structurelles basées sur une charte technique et professionnelle */
-            --primary-color: #2c3e50;       /* Bleu ardoise pour les en-têtes principaux */
-            --background-color: #f8f9fa;    /* Gris très clair pour le fond de page (confort visuel) */
-            --card-background: #ffffff;     /* Blanc pur pour détacher les modules de veille */
-            --text-color: #333333;          /* Gris foncé pour optimiser le contraste de lecture */
-            --border-color: #e2e8f0;        /* Gris subtil pour la délimitation des bordures */
+            --primary-dark: #1a202c;     /* Anthracite profond pour les textes majeurs */
+            --accent-red: #c53030;       /* Rouge institutionnel pour les rappels visuels */
+            --bg-main: #f7fafc;          /* Fond de page neutre pour limiter la fatigue visuelle */
+            --card-bg: #ffffff;          /* Blanc pur assurant le détachement des cartes */
+            --text-muted: #718096;       /* Gris intermédiaire pour les métadonnées et sous-titres */
+            --border-light: #e2e8f0;     /* Gris de délimitation pour les lignes de séparation */
+            --radius-md: 12px;           /* Rayon de courbure des angles pour un aspect moderne */
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--primary-dark);
             margin: 0;
             padding: 0;
+            line-height: 1.5;
         }
 
         /* ==========================================================================
-           JUSTIFICATION DE LA MISE EN PAGE (FLEXBOX & GRID)
+           JUSTIFICATION DE LA MISE EN PAGE ET DE L'ARCHITECTURE GRAPHIQUE
            ========================================================================== */
         
-        /* FLEXBOX : Choisi pour l'en-tête afin d'aligner horizontalement le titre et 
-           les métadonnées de manière fluide, avec un repli automatique (flex-wrap) 
-           sur les écrans étroits des terminaux mobiles. */
+        /* FLEXBOX : Alignement horizontal de l'en-tête principal. L'utilisation de 
+           'space-between' projette le titre à gauche et l'indicateur de configuration à droite, 
+           s'adaptant nativement à la largeur de l'écran. */
         header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 20px;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-light);
+            padding: 20px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
         }
 
-        h1 { 
-            margin: 0; 
-            font-size: 1.5rem; 
+        h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin: 0;
         }
 
-        /* GRID LAYOUT : Option technique incontournable pour un tableau de bord. 
-           La propriété 'repeat(auto-fill, minmax(350px, 1fr))' calcule dynamiquement 
-           le nombre optimal de colonnes par ligne selon la résolution du moniteur, 
-           garantissant une réactivité (responsiveness) native sans media queries complexes. */
-        .dashboard-grid {
+        /* GRID LAYOUT : Choix architectural indispensable pour l'affichage de cartes de taille uniforme.
+           La fonction minmax(300px, 1fr) impose une contrainte de largeur minimale de 300px par carte. 
+           Si l'espace disponible le permet, la grille calcule le nombre maximal de colonnes et distribue 
+           équitablement le reliquat d'espace (1fr). */
+        .timeline-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-            padding: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 40px;
         }
 
         /* ==========================================================================
-           CIBLAGE DES COMPOSANTS DE FLUX (CARDS)
+           COMPOSANTS : STRUCTURE DU BLOC DE CARTE (CARD ARCHITECTURE)
            ========================================================================== */
-        .feed-section {
-            background: var(--card-background);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            max-height: 400px;
-            overflow-y: auto; /* Permet le défilement interne si un flux est dense */
+        
+        /* FLEXBOX (Column) : La carte utilise Flexbox verticalement pour forcer les éléments 
+           interne à se positionner régulièrement. 'height: 100%' garantit que toutes les cartes 
+           d'une même ligne de la grille Grid partagent exactement la même hauteur. */
+        .article-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-decoration: none; /* La carte entière est un lien cliquable */
+            color: inherit;
         }
 
-        .feed-title {
-            font-size: 1.1rem;
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 8px;
-            margin-top: 0;
+        .article-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
-        .article-link {
-            display: block;
-            color: #3182ce;
-            text-decoration: none;
-            margin-bottom: 10px;
-            font-size: 0.95rem;
+        /* CONTENEUR IMAGE : Hauteur fixe imposée pour standardiser l'affichage. 
+           La propriété 'object-fit: cover' est cruciale : elle force le navigateur à redimensionner 
+           et recadrer l'image récupérée du flux RSS sans altérer son ratio d'aspect original (pas de distorsion). */
+        .card-image-wrapper {
+            width: 100%;
+            height: 180px;
+            background: #e2e8f0; /* Fond de secours pendant le chargement */
+            position: relative;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* FALLBACK GÉOMÉTRIQUE : Génère un dégradé élégant si le flux RSS ne contient aucune image */
+        .card-image-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #2c3e50 0%, #4a5568 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.2);
+            font-weight: bold;
+            font-size: 2rem;
+        }
+
+        .card-content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* Force le contenu à occuper tout l'espace vertical disponible */
+        }
+
+        .card-source {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent-red);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: 600;
             line-height: 1.4;
+            margin: 0 0 10px 0;
+            color: var(--primary-dark);
         }
 
-        .article-link:hover { 
-            text-decoration: underline; 
+        .card-excerpt {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin: 0 0 15px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3; /* Limite le résumé à exactement 3 lignes de texte */
+            -webkit-box-orient: vertical;  
+            overflow: hidden; /* Masque le texte excédentaire */
+        }
+
+        .card-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: auto; /* Pousse la date au bas absolu de la carte pour l'alignement */
+            border-top: 1px solid var(--border-light);
+            padding-top: 10px;
+        }
+
+        .loader {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 50px;
+            color: var(--text-muted);
+            font-size: 1.2rem;
         }
     </style>
 </head>
@@ -98,165 +173,175 @@
 
     <header id="main-header">
         <h1>Veille Technologique & Pédagogique - BTS MGTMN</h1>
-        <small>Configuration active : feeds.opml</small>
+        <small id="config-label" style="color: var(--text-muted);">Mode : Flux Chronologiques Combinés</small>
     </header>
 
-    <main id="flux-container" class="dashboard-grid"></main>
+    <main id="timeline-container" class="timeline-grid">
+        <div class="loader" id="main-loader">Initialisation de la grille et synchronisation des flux...</div>
+    </main>
 
     <script>
-        /**
-         * @function document.addEventListener
-         * @description Point d'entrée de l'application. Écoute l'événement DOMContentLoaded 
-         * pour s'assurer que la structure HTML est prête avant de lancer l'analyse du fichier OPML.
-         */
+        // Tableau global destiné à stocker l'intégralité des articles extraits de toutes les sources
+        let baseArticlesGlobal = [];
+
         document.addEventListener("DOMContentLoaded", () => {
-            analyserFichierOPML();
+            initialiserApplication();
         });
 
         /**
-         * @function analyserFichierOPML
-         * @description Récupère le fichier d'infrastructure 'feeds.opml' local, valide sa cohérence XML,
-         * extrait les métadonnées des flux (titres et URL) et orchestre la création des blocs graphiques.
-         * @param {void}
-         * @returns {Promise<void>}Modifie directement l'état du DOM.
+         * @function initialiserApplication
+         * @description Orchestre le cycle de vie de l'application : charge l'OPML, lance les requêtes 
+         * en parallèle, trie les résultats et commande le rendu graphique.
          */
-        async function analyserFichierOPML() {
-            const conteneurPrincipal = document.getElementById("flux-container");
-            
+        async function initialiserApplication() {
             try {
                 const reponse = await fetch('feeds.opml');
-                
-                // Algorithme de contrôle d'accès : Validation du statut de la transaction HTTP
-                if (!reponse.ok) {
-                    throw new Error(`Accès impossible au fichier de configuration (Statut HTTP : ${reponse.status}).`);
-                }
+                if (!reponse.ok) throw new Error("Fichier 'feeds.opml' introuvable.");
                 
                 const chaineDonnees = await reponse.text();
-                
                 const parseur = new DOMParser();
                 const documentXML = parseur.parseFromString(chaineDonnees, "text/xml");
                 
-                // Algorithme de contrôle de structure : Détection des erreurs de syntaxe XML
-                if (documentXML.querySelector("parsererror")) {
-                    throw new Error("Syntaxe XML invalide au sein du fichier 'feeds.opml'.");
-                }
-                
-                // Extraction sémantique des balises de syndication
                 const elementsOutline = documentXML.querySelectorAll("outline[xmlUrl]");
                 
-                if (elementsOutline.length === 0) {
-                    conteneurPrincipal.innerHTML = "<p style='grid-column: 1/-1; text-align:center; color:#718096;'>Aucun flux de veille détecté.</p>";
-                    return;
-                }
-                
-                // Itération synchrone pour l'initialisation de chaque module
-                elementsOutline.forEach(outline => {
-                    const titreSource = outline.getAttribute("title") || outline.getAttribute("text") || "Source indéterminée";
+                // ARCHITECTURE ASYNCHRONE : Création d'un tableau de promesses pour exécuter 
+                // l'ensemble des requêtes HTTP distantes de manière concomitante (parallélisation).
+                const promessesCollecte = Array.from(elementsOutline).map(outline => {
+                    const titreSource = outline.getAttribute("title") || outline.getAttribute("text") || "Source";
                     const urlFlux = outline.getAttribute("xmlUrl");
-                    
-                    if (urlFlux) {
-                        creerBlocStructurel(titreSource, urlFlux);
-                        chargerArticlesFlux(titreSource, urlFlux);
-                    }
+                    return collecterDonneesFlux(titreSource, urlFlux);
                 });
                 
-            } catch (erreur) {
-                console.error("Échec critique de l'initialisation :", erreur);
+                // Attente de la résolution de toutes les requêtes (qu'elles réussissent ou échouent)
+                await Promise.all(promessesCollecte);
                 
-                // Injection d'une alerte visuelle formalisée en cas de panne d'infrastructure
-                conteneurPrincipal.innerHTML = `
-                    <div style="grid-column: 1 / -1; background: #fff5f5; color: #c53030; padding: 25px; border-radius: 8px; border: 1px solid #fed7d7; font-family: monospace;">
-                        <h3 style="margin-top:0;">[Erreur d'initialisation de l'infrastructure]</h3>
-                        <p>${erreur.message}</p>
-                        <small style="color: #718096;">Action requise : Assurez-vous que le fichier 'feeds.opml' est localisé à la racine exacte de votre dépôt GitHub.</small>
-                    </div>
-                `;
+                // ALGORITHME DE TRI CHRONOLOGIQUE : Classe les articles du plus récent au plus ancien.
+                // Logique mathématique : Soustraction des horodatages Unix (timestamps) en millisecondes.
+                baseArticlesGlobal.sort((a, b) => b.dateObjet - a.dateObjet);
+                
+                genererRenduInterface();
+                
+            } catch (erreur) {
+                document.getElementById("timeline-container").innerHTML = `<div class="loader" style="color:#c53030;">Erreur critique : ${erreur.message}</div>`;
             }
         }
 
         /**
-         * @function creerBlocStructurel
-         * @description Génère la coquille HTML (la carte) pour un flux donné et l'insère dans la grille.
-         * @param {string} titreSource - Nom officiel de l'éditeur ou de l'institution.
-         * @param {string} urlFlux - URL technique du flux RSS/Atom servant à calculer l'identifiant DOM.
-         * @returns {void}
+         * @function collecterDonneesFlux
+         * @description Interroge un flux RSS/Atom via le proxy, extrait les données brutes et enrichit le tableau global.
+         * @param {string} titreSource - Nom éditeur du flux.
+         * @param {string} urlFlux - URL technique du flux.
          */
-        function creerBlocStructurel(titreSource, urlFlux) {
-            const conteneurPrincipal = document.getElementById("flux-container");
-            const section = document.createElement("section");
-            section.className = "feed-section";
-            
-            // Logique de hachage de chaîne : Nettoyage via une expression régulière pour exclure les caractères 
-            // interdits dans les attributs ID du DOM, garantissant un ciblage JavaScript ultérieur sans faille.
-            const idValide = urlFlux.replace(/[^a-zA-Z0-9]/g, "");
-            section.id = `flux-${idValide}`;
-            
-            section.innerHTML = `
-                <h2 class="feed-title">${titreSource}</h2>
-                <div class="articles-list" style="font-size:0.9rem; color:#a0aec0;">Synchronisation...</div>
-            `;
-            conteneurPrincipal.appendChild(section);
-        }
-
-        /**
-         * @function chargerArticlesFlux
-         * @description Interroge de manière asynchrone un flux tiers via une passerelle CORS, 
-         * parse les articles et extrait les métadonnées pour enrichir la carte correspondante.
-         * @param {string} titreSource - Nom du flux.
-         * @param {string} urlFlux - URL cible pour la collecte des articles.
-         * @returns {Promise<void>}
-         */
-        async function chargerArticlesFlux(titreSource, urlFlux) {
-            const idValide = urlFlux.replace(/[^a-zA-Z0-9]/g, "");
-            const conteneurArticles = document.querySelector(`#flux-${idValide} .articles-list`);
-            
-            // Traitement du cross-domain : Encapsulation de la requête dans un proxy CORS public
-            // pour contourner la politique de sécurité de même origine (Same-Origin Policy) des navigateurs.
+        async function collecterDonneesFlux(titreSource, urlFlux) {
             const urlRequeteProxiee = `https://corsproxy.io/?${encodeURIComponent(urlFlux)}`;
             
             try {
                 const reponse = await fetch(urlRequeteProxiee);
-                if (!reponse.ok) throw new Error(`Erreur réseau (Code : ${reponse.status})`);
+                if (!reponse.ok) return; // Échec silencieux d'un flux pour ne pas bloquer l'application générale
                 
                 const texteBrut = await reponse.text();
                 const parseur = new DOMParser();
                 const xmlDoc = parseur.parseFromString(texteBrut, "text/xml");
                 
-                // Algorithme de détection polymorphe : Identification de la norme (RSS vs Atom)
                 const estAtom = xmlDoc.querySelector("entry") !== null;
                 const balisesArticles = estAtom ? xmlDoc.querySelectorAll("entry") : xmlDoc.querySelectorAll("item");
                 
-                conteneurArticles.innerHTML = "";
+                Array.from(balisesArticles).slice(0, 5).forEach(article => {
+                    const titreArticle = article.querySelector("title")?.textContent || "Sans titre";
+                    
+                    let lienArticle = "#";
+                    if (estAtom) {
+                        lienArticle = article.querySelector("link")?.getAttribute("href") || "#";
+                    } else {
+                        lienArticle = article.querySelector("link")?.textContent || "#";
+                    }
+                    
+                    // Extraction et lissage de la date de publication
+                    const chaineDate = article.querySelector("pubDate")?.textContent || article.querySelector("updated")?.textContent || article.querySelector("published")?.textContent || "";
+                    const dateObjet = chaineDate ? new Date(chaineDate) : new Date(0); // Date zéro par défaut si absente
+                    
+                    // Extraction du résumé (nettoyage des balises HTML éventuelles)
+                    let descriptionBrute = article.querySelector("description")?.textContent || article.querySelector("summary")?.textContent || "";
+                    const fauxDiv = document.createElement("div");
+                    fauxDiv.innerHTML = descriptionBrute;
+                    const extraitTexte = fauxDiv.textContent || fauxDiv.innerText || "";
+                    
+                    // ALGORITHME POLYMORPHE D'EXTRACTION D'IMAGE : Analyse les structures courantes des flux
+                    let urlImage = null;
+                    
+                    // 1. Recherche via la balise standard <enclosure>
+                    const enclosure = article.querySelector("enclosure[type^='image']");
+                    if (enclosure) urlImage = enclosure.getAttribute("url");
+                    
+                    // 2. Recherche via les balises de l'espace de noms Media (media:content / media:thumbnail)
+                    if (!urlImage) {
+                        const mediaContent = article.getElementsByTagName("media:content")[0] || article.getElementsByTagName("media:thumbnail")[0];
+                        if (mediaContent) urlImage = mediaContent.getAttribute("url");
+                    }
+                    
+                    // 3. Recherche par expression régulière d'une balise <img> injectée dans le corps textuel HTML
+                    if (!urlImage) {
+                        const expressionImage = /<img[^>]+src="([^">]+)"/i;
+                        const correspondance = descriptionBrute.match(expressionImage);
+                        if (correspondance && correspondance[1]) urlImage = correspondance[1];
+                    }
+
+                    // Stockage de l'entité normalisée dans le catalogue global
+                    baseArticlesGlobal.push({
+                        titreSource: titreSource,
+                        titreArticle: titreArticle,
+                        lien: lienArticle.trim(),
+                        extrait: extraitTexte.trim(),
+                        dateObjet: dateObjet,
+                        dateAffichee: dateObjet.getTime() !== 0 ? dateObjet.toLocaleDateString('fr-FR', {day: 'numeric', month: 'short', year: 'numeric'}) : "Date inconnue",
+                        urlImage: urlImage
+                    });
+                });
+            } catch (e) {
+                // Analyse en échec ignorée pour préserver la continuité des autres sources
+            }
+        }
+
+        /**
+         * @function genererRenduInterface
+         * @description Parcourt le tableau d'éléments triés et injecte le code HTML des cartes graphiques.
+         */
+        function genererRenduInterface() {
+            const conteneur = document.getElementById("timeline-container");
+            const loader = document.getElementById("main-loader");
+            
+            if (loader) loader.remove();
+            
+            if (baseArticlesGlobal.length === 0) {
+                conteneur.innerHTML = "<div class='loader'>Aucun article n'a pu être synchronisé.</div>";
+                return;
+            }
+            
+            baseArticlesGlobal.forEach(art => {
+                const elementCarte = document.createElement("a");
+                elementCarte.className = "article-card";
+                elementCarte.href = art.lien;
+                elementCarte.target = "_blank";
                 
-                if (balisesArticles.length === 0) {
-                    conteneurArticles.innerHTML = "<p style='font-size:0.85rem; color:#999; margin:0;'>Aucune publication récente.</p>";
-                    return;
+                // Construction conditionnelle du bloc média (Image vs Dégradé géométrique)
+                let blocMediaHTML = `<div class="card-image-placeholder">3D</div>`;
+                if (art.urlImage) {
+                    blocMediaHTML = `<img src="${art.urlImage}" class="card-image" alt="Illustration" loading="lazy">`;
                 }
                 
-                // Limitation algorithmique : Extraction stricte des 4 publications les plus récentes
-                const selectionArticles = Array.from(balisesArticles).slice(0, 4);
-                
-                selectionArticles.forEach(article => {
-                    const titreArticle = article.querySelector("title")?.textContent || "Publication sans titre";
-                    
-                    // Extraction conditionnelle de l'hyperlien selon la structure de la norme détectée
-                    let lienArticle = estAtom ? article.querySelector("link")?.getAttribute("href") : article.querySelector("link")?.textContent;
-                    
-                    if (!lienArticle || lienArticle === "#") return;
-                    
-                    // Construction et injection géométrique de l'élément d'ancrage
-                    const elementAncre = document.createElement("a");
-                    elementAncre.className = "article-link";
-                    elementAncre.href = lienArticle.trim();
-                    elementAncre.target = "_blank"; // Ouverture dans un nouvel onglet pour préserver la session de veille
-                    elementAncre.textContent = titreArticle;
-                    
-                    conteneurArticles.appendChild(elementAncre);
-                });
-                
-            } catch (erreur) {
-                conteneurArticles.innerHTML = "<p style='font-size:0.85rem; color:#e53e3e; margin:0;'>Flux inaccessible.</p>";
-            }
+                elementCarte.innerHTML = `
+                    <div class="card-image-wrapper">
+                        ${blocMediaHTML}
+                    </div>
+                    <div class="card-content">
+                        <span class="card-source">${art.titreSource}</span>
+                        <h2 class="card-title">${art.titreArticle}</h2>
+                        <p class="card-excerpt">${art.extrait ? art.excerpt = art.extrait : "Consulter l'article complet pour analyser le contenu technique associé."}</p>
+                        <div class="card-date">Publié le ${art.dateAffichee}</div>
+                    </div>
+                `;
+                conteneur.appendChild(elementCarte);
+            });
         }
     </script>
 </body>
