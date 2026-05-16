@@ -3,40 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portail d'Ingénierie Documentaire - Géomatique & Topographie</title>
+    <title>Portail de Veille Documentaire - Topographie & Géomatique</title>
     
     <style>
         /* ==========================================================================
-           VARIABLES GLOBALES DE THÉMATISATION (DESIGN SYSTEM - MODE CLAIR)
+           VARIABLES GLOBALES DE CONFIGURATION DU DESIGN (DESIGN SYSTEM - MODE CLAIR)
+           Idéal pour l'affichage sur les écrans de laboratoires pédagogiques.
            ========================================================================== */
         :root {
-            --primary-dark: #1a202c;       /* Anthracite profond pour les textes majeurs */
-            --accent-red: #c53030;         /* Rouge institutionnel pour l'état actif et les titres */
-            --bg-main: #f7fafc;            /* Fond de page neutre pour limiter la fatigue visuelle */
-            --card-bg: #ffffff;            /* Blanc pur assurant le détachement des cartes */
-            --text-muted: #718096;         /* Gris intermédiaire pour les métadonnées et sous-titres */
-            --border-light: #e2e8f0;       /* Gris de délimitation pour les lignes de séparation */
-            --input-bg: #ffffff;           /* Fond des champs de saisie */
-            --star-color: #e2e8f0;         /* Gris par défaut pour les étoiles inactives */
-            --star-active: #ecc94b;        /* Jaune ambré pour les étoiles sélectionnées */
-            --radius-md: 12px;             /* Rayon de courbure des angles des cartes */
-            --radius-sm: 6px;              /* Rayon de courbure pour les boutons de filtrage */
+            --primary-dark: #1a202c;       /* Anthracite profond pour les textes principaux (forte lisibilité) */
+            --accent-red: #c53030;         /* Rouge institutionnel utilisé pour l'état actif et les repères visuels */
+            --bg-main: #f7fafc;            /* Fond de page neutre pour limiter la fatigue visuelle lors des sessions longues */
+            --card-bg: #ffffff;            /* Blanc pur assurant le détachement des modules d'information */
+            --text-muted: #718096;         /* Gris intermédiaire pour les métadonnées (dates, sources originelles) */
+            --border-light: #e2e8f0;       /* Gris de délimitation pour les grilles et séparateurs sémantiques */
+            --input-bg: #ffffff;           /* Fond des zones de saisie textuelle */
+            --star-color: #e2e8f0;         /* Teinte neutre pour les icônes d'évaluation inactives */
+            --star-active: #ecc94b;        /* Jaune ambré à haut contraste pour la sélection d'étoiles (notation) */
+            
+            /* Surcharges spécifiques pour la mise en relief des 9 nouvelles thématiques métiers */
+            --theme-header-bg: #edf2f7;    /* Fond de contraste clair pour les bandeaux de catégories */
+            --theme-header-text: #2d3748;  /* Couleur textuelle accentuée pour les titres de catégories */
+            
+            --radius-md: 12px;             /* Rayon de courbure appliqué aux fiches d'articles (cartes) */
+            --radius-sm: 6px;              /* Rayon de courbure minimal pour l'ergonomie des boutons d'interface */
         }
 
         /* ==========================================================================
-           SURCHARGE DE THÉMATISATION (DESIGN SYSTEM - MODE SOMBRE)
+           VARIABLES DE THÉMATISATION ALTERNATIVE (DESIGN SYSTEM - MODE SOMBRE)
+           Activé dynamiquement via l'injection de la classe .dark-theme sur la balise body.
            ========================================================================== */
         body.dark-theme {
             --primary-dark: #f7fafc;       
-            --accent-red: #fc8181;         
-            --bg-main: #0f172a;            /* Bleu nuit profond pour le fond général */
-            --card-bg: #1e293b;            /* Gris-bleu ardoise pour les modules de cartes */
+            --accent-red: #fc8181;         /* Rouge désaturé pour préserver le contraste sans éblouissement */
+            --bg-main: #0f172a;            /* Bleu nuit profond agissant comme absorbeur de lumière */
+            --card-bg: #1e293b;            /* Ardoise intermédiaire pour la structure des cartes */
             --text-muted: #94a3b8;         
             --border-light: #334155;       
             --input-bg: #1e293b;           
             --star-color: #475569;
+            
+            /* Surcharges sombres pour la mise en relief des 9 nouvelles thématiques métiers */
+            --theme-header-bg: #1e293b;    /* Bloc sombre imbriqué */
+            --theme-header-text: #e2e8f0;  /* Blanc cassé haut contraste */
         }
 
+        /* ==========================================================================
+           PROPRIÉTÉS STYLISTIQUES STRUCTURALES (RESET & LAYOUT BASE)
+           ========================================================================== */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-main);
@@ -47,9 +61,7 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* ==========================================================================
-           STRUCTURE DE LA PAGE ET MISES EN PAGE (FLEXBOX & GRID)
-           ========================================================================== */
+        /* En-tête principal : utilise Flexbox pour l'alignement bidirectionnel des titres et des actions */
         header {
             background-color: var(--card-bg);
             border-bottom: 1px solid var(--border-light);
@@ -73,6 +85,7 @@
             gap: 10px;
         }
 
+        /* Panneau de contrôle des tris et de la taxonomie métier */
         .control-panel {
             background-color: var(--card-bg);
             border-bottom: 1px solid var(--border-light);
@@ -117,24 +130,48 @@
             flex-wrap: wrap;
         }
 
+        /* ==========================================================================
+           CONCEPTION ERGONOMIQUE ET MISE EN RELIEF DES 9 NOUVELLES CATÉGORIES
+           ========================================================================== */
         .category-group {
             display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 10px;
-            padding: 5px 0;
+            flex-direction: column;         /* Alignement vertical : Titre au-dessus, boutons en-dessous */
+            gap: 12px;
+            padding: 16px;
+            background-color: var(--theme-header-bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            margin-bottom: 12px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
         }
 
+        /* Titre de la catégorie : Traitement typographique lourd pour faire ressortir l'axe métier */
         .category-label {
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            min-width: 120px;
+            font-size: 0.88rem;
+            font-weight: 800;
+            text-transform: uppercase;     /* Normalisation en capitales réglementaires */
+            color: var(--accent-red);
+            letter-spacing: 0.08em;        /* Augmentation de l'interlettrage pour la scannabilité visuelle */
+            border-left: 4px solid var(--accent-red); /* Repère géométrique de couleur stable */
+            padding-left: 12px;
+            margin: 0;
+            display: flex;
+            align-items: center;
         }
 
+        /* Conteneur Flexbox interne pour aligner les boutons des flux au sein de la thématique */
+        .category-buttons-block {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* ==========================================================================
+           COMPOSANTS INTERFACES COMPLEMENTAIRES (BOUTONS & FILTRES)
+           ========================================================================== */
         .filter-btn {
-            background-color: var(--bg-main);
+            background-color: var(--card-bg);
             color: var(--primary-dark);
             border: 1px solid var(--border-light);
             padding: 6px 14px;
@@ -155,7 +192,7 @@
             box-shadow: 0 2px 4px rgba(197, 48, 48, 0.2);
         }
 
-        .filter-btn.clear-all { border-style: dashed; font-weight: 700; }
+        .filter-btn.clear-all { border-style: dashed; font-weight: 700; margin-bottom: 5px; }
         
         .filter-btn.help-btn {
             background-color: transparent;
@@ -168,6 +205,7 @@
             color: var(--primary-dark);
         }
 
+        /* Mosaïque d'affichage : Grid Layout auto-adaptatif pour une réactivité totale (Responsive Design) */
         .timeline-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -176,7 +214,7 @@
         }
 
         /* ==========================================================================
-           COMPOSANTS GRAPHONOMIQUES : CARTES (CARDS)
+           COMPOSANTS GRAPHONOMIQUES : CARTES DOCUMENTAIRES (CARDS)
            ========================================================================== */
         .article-card {
             background: var(--card-bg);
@@ -269,7 +307,7 @@
         .loader { grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted); font-size: 1.1rem; }
 
         /* ==========================================================================
-           INTERFACES EMBARQUÉES : FENÊTRE MODALE DE DOCUMENTATION (HELP OVERLAY)
+           INTERFACES MODALES EN VUE OVERLAY (PENSE-BÊTE DE CONFIGURATION)
            ========================================================================== */
         .modal-overlay {
             position: fixed;
@@ -318,8 +356,8 @@
 
     <header id="main-header">
         <div>
-            <h1>Veille Technologique</h1>
-            <small id="cache-status" style="color: var(--text-muted);">Synchronisation réseau active...</small>
+            <h1>Veille Technologique & Réglementaire</h1>
+            <small id="cache-status" style="color: var(--text-muted);">Initialisation globale...</small>
         </div>
         <div class="header-actions">
             <div class="actions-top-row">
@@ -333,7 +371,7 @@
     <section class="control-panel">
         <div class="search-zone-wrapper">
             <div class="search-wrapper">
-                <input type="text" id="search-bar" class="search-input" placeholder="Rechercher un mot-clé, un logiciel, un capteur...">
+                <input type="text" id="search-bar" class="search-input" placeholder="Rechercher un mot-clé, un logiciel, un capteur, un auteur...">
             </div>
             
             <div class="date-filter-wrapper">
@@ -354,9 +392,8 @@
         </div>
 
         <div id="categories-filter-box">
-            <div class="category-group">
-                <span class="category-label">Général :</span>
-                <button class="filter-btn clear-all active" id="btn-master-clear">🗂️ Tout afficher</button>
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <button class="filter-btn clear-all active" id="btn-master-clear">🗂️ Tout afficher (Réinitialiser les filtres)</button>
             </div>
         </div>
     </section>
@@ -382,16 +419,21 @@
                     <strong>CRITICAL / RIGUEUR XML :</strong> Si l'URL du flux contient un caractère <code>&amp;</code> (esperluette), vous devez <strong>obligatoirement</strong> l'écrire sous sa forme échappée <code>&amp;amp;</code> dans le fichier OPML pour éviter un crash silencieux du parseur XML.
                 </div>
 
-                <h3>Opération 2 : Classification Métier (index.html)</h3>
+                <h3>Opération 2 : Classification Métier Révisée (index.html)</h3>
                 <p>Ouvrez le fichier <code>index.html</code> sur GitHub, passez en mode édition et insérez le nom exact de votre source <strong>strictement en minuscules</strong> au sein de l'objet global <code>DICTIONNAIRE_CATEGORIES</code> (début de script) :</p>
                 <pre>"nom exact de la source en minuscules": "code_categorie",</pre>
                 
-                <p>Codes métiers réglementaires de routage à utiliser :</p>
+                <p>Codes métiers réglementaires de routage (9 axes géomatiques) :</p>
                 <ul>
-                    <li><code>"sig"</code> : Dirige vers la ligne <strong>Logiciels & SIG</strong></li>
-                    <li><code>"materiel"</code> : Dirige vers la ligne <strong>Matériel & Capteurs</strong></li>
-                    <li><code>"institution"</code> : Dirige vers la ligne <strong>Institutions & Normes</strong></li>
-                    <li><code>"science"</code> : Dirige vers la ligne <strong>Sciences & Spatial</strong></li>
+                    <li><code>"carto"</code> : Cartographie – SIG – Toponymie</li>
+                    <li><code>"institution"</code> : Institutionnel – Associations</li>
+                    <li><code>"materiel"</code> : Matériels – Logiciels – Sociétés</li>
+                    <li><code>"gnss"</code> : GNSS – Spatial – Observation aérienne</li>
+                    <li><code>"geodesie"</code> : Géodésie – Topographie</li>
+                    <li><code>"drone"</code> : Drone – Systèmes aéroportés</li>
+                    <li><code>"archeo"</code> : Archéologie – Patrimoine</li>
+                    <li><code>"dd"</code> : Développement Durable</li>
+                    <li><code>"ia"</code> : Intelligence artificielle</li>
                 </ul>
 
                 <h3>Opération 3 : Prise en compte immédiate</h3>
@@ -401,31 +443,70 @@
     </div>
 
     <script>
+        /**
+         * @constant DICTIONNAIRE_CATEGORIES
+         * @description Matrice de routage sémantique qui associe l'identité minuscule brute d'une source 
+         * de données à l'une des 9 catégories réglementaires du pôle d'ingénierie.
+         */
         const DICTIONNAIRE_CATEGORIES = {
-            "qgis.org blog": "sig", "arcorama": "sig", "release notes from webodm": "sig", "release notes from cloudcompare": "sig", "agisoft photoscan": "sig",
-            "eu agency for the space programme - linking space to user needs": "materiel", "dronelife": "materiel", "lidar news": "materiel", "news": "materiel", "gps world": "materiel", "geospatial world": "materiel",
-            "flux rss des actualités": "institution", "conseil national de l'information géolocalisée - actualités": "institution", "cerema - actualité": "institution", "press releases": "institution", "ministère du partenariat avec les territoires et de la décentralisation ministère de la transition écologique, de l’énergie, du climat et de la prévention des risques ministère du logement et de la ré": "institution",
-            "epos-france": "science", "institut de physique du globe de paris": "science", "copernicus": "science", "theia": "science", "esa france": "science", "nasa": "science", "infoterre": "science", "\"collège de france\" - google actualités": "science",
-            "theia land": "science", "ign kiosque": "institution", "afigeo": "sig", "leica geosystems": "materiel", "trimble geospatial": "materiel", "topcon positioning": "materiel", "réseau orphéon": "materiel", "réseau teria": "materiel", "euspa pressroom": "science", "expertises territoires": "institution", "préventionbtp": "institution", "inrap": "science", "ordre des géomètres-experts": "institution", "techniques de l'ingénieur": "sig"
+            // 1. Cartographie – SIG – Toponymie
+            "qgis.org blog": "carto", "arcorama": "carto", "afigeo": "carto",
+            // 2. Institutionnel – Associations
+            "ordre des géomètres-experts": "institution", 
+            "flux rss des actualités": "institution", 
+            "conseil national de l'information géolocalisée - actualités": "institution", 
+            "expertises territoires": "institution", 
+            "cerema - actualité": "institution", 
+            "press releases": "institution", 
+            "ministère du partenariat avec les territoires et de la décentralisation ministère de la transition écologique, de l’énergie, du climat et de la prévention des risques ministère du logement et de la ré": "institution", 
+            "préventionbtp": "institution",
+            // 3. Matériels – Logiciels – Sociétés
+            "leica geosystems": "materiel", "trimble geospatial": "materiel", "topcon positioning": "materiel", "techniques de l'ingénieur": "materiel", "release notes from cloudcompare": "materiel",
+            // 4. GNSS – Spatial – Observation aérienne
+            "réseau orphéon": "gnss", "réseau teria": "gnss", "copernicus": "gnss", "esa france": "gnss", "nasa": "gnss", "euspa pressroom": "gnss", "eu agency for the space programme - linking space to user needs": "gnss", "gps world": "gnss", "geospatial world": "gnss", "news": "gnss",
+            // 5. Géodésie – Topographie
+            "ign kiosque": "geodesie", "infoterre": "geodesie", "epos-france": "geodesie", "institut de physique du globe de paris": "geodesie",
+            // 6. Drone – Systèmes aéroportés
+            "dronelife": "drone", "release notes from webodm": "drone", "lidar news": "drone",
+            // 7. Archéologie – Patrimoine
+            "inrap": "archeo",
+            // 8. Développement Durable
+            "theia land": "dd", "theia": "dd",
+            // 9. Intelligence artificielle
+            "\"collège de france\" - google actualités": "ia"
         };
 
+        /**
+         * @constant NOMS_CATEGORIES
+         * @description Nomenclature officielle des intitulés métiers pour le rendu graphique des bandeaux de filtrage.
+         */
         const NOMS_CATEGORIES = {
-            "sig": "Logiciels & SIG",
-            "materiel": "Matériel & Capteurs",
-            "institution": "Institutions & Normes",
-            "science": "Sciences & Spatial"
+            "carto": "Cartographie – SIG – Toponymie",
+            "institution": "Institutionnel – Associations",
+            "materiel": "Matériels – Logiciels – Sociétés",
+            "gnss": "GNSS – Spatial – Observation aérienne",
+            "geodesie": "Géodésie – Topographie",
+            "drone": "Drone – Systèmes aéroportés",
+            "archeo": "Archéologie – Patrimoine",
+            "dd": "Développement Durable",
+            "ia": "Intelligence artificielle"
         };
 
+        /* Identifiants des clés d'adressage pour le stockage persistant au sein du navigateur (LocalStorage) */
         const CACHE_KEY_DATA = "veille_topo_data_v2";
         const CACHE_KEY_TIME = "veille_topo_timestamp_v2";
-        const DUREE_CACHE = 3600000; 
+        const DUREE_CACHE = 3600000; /* Durée limite de rétention exprimée en millisecondes (soit 1 heure) */
 
+        /* Variables globales d'état pour la gestion dynamique des tris de l'interface */
         let baseArticlesGlobal = [];
         let listeSourcesUniques = new Set();
         let sourcesActives = new Set();
         let termeRechercheGlobal = "";
         let filtreDateSeuilGlobal = 0;
 
+        /**
+         * @description Point d'entrée principal de l'application (Cycle de vie d'initialisation du DOM).
+         */
         document.addEventListener("DOMContentLoaded", () => {
             configurerCommutateurTheme();
             configurerBarreRecherche();
@@ -436,7 +517,10 @@
             gererCycleDeVieDonnees();
         });
 
-        /* CONTROL INTERFACES */
+        /**
+         * @function configurerCommutateurTheme
+         * @description Gère l'inversion d'état du Design System pour basculer entre le mode clair et le mode sombre.
+         */
         function configurerCommutateurTheme() {
             const btn = document.getElementById("btn-toggle-theme");
             if (localStorage.getItem("theme_sombre") === "true") { document.body.classList.add("dark-theme"); }
@@ -446,6 +530,10 @@
             });
         }
 
+        /**
+         * @function configurerBarreRecherche
+         * @description Initialise l'écouteur d'événements sur le champ textuel pour filtrer dynamiquement l'index de cartes.
+         */
         function configurerBarreRecherche() {
             document.getElementById("search-bar").addEventListener("input", (e) => {
                 termeRechercheGlobal = e.target.value.toLowerCase().trim();
@@ -453,6 +541,10 @@
             });
         }
 
+        /**
+         * @function configurerFiltresTemporels
+         * @description Calcule de manière arithmétique le timestamp limite inférieur pour l'affichage des articles.
+         */
         function configurerFiltresTemporels() {
             const selectRange = document.getElementById("select-date-range");
             const inputCalendar = document.getElementById("input-custom-date");
@@ -486,6 +578,10 @@
             }
         }
 
+        /**
+         * @function configurerBoutonRafraichissement
+         * @description Force la purge des données locales pour déclencher une interrogation directe des serveurs.
+         */
         function configurerBoutonRafraichissement() {
             document.getElementById("btn-refresh-cache").addEventListener("click", () => {
                 localStorage.removeItem(CACHE_KEY_DATA);
@@ -494,6 +590,10 @@
             });
         }
 
+        /**
+         * @function configurerEvenementsModaleAide
+         * @description Gère l'affichage de la fenêtre modale contenant les directives de maintenance.
+         */
         function configurerEvenementsModaleAide() {
             const modal = document.getElementById("help-modal");
             const btnOpen = document.getElementById("btn-open-help");
@@ -501,27 +601,30 @@
 
             btnOpen.addEventListener("click", () => modal.classList.add("open"));
             btnClose.addEventListener("click", () => modal.classList.remove("open"));
-            
-            modal.addEventListener("click", (e) => {
-                if (e.target === modal) modal.classList.remove("open");
-            });
+            modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.remove("open"); });
         }
 
+        /**
+         * @function configurerBoutonsGlobauxEvaluation
+         * @description Initialise les fonctions d'exportation collective et de réinitialisation des notations.
+         */
         function configurerBoutonsGlobauxEvaluation() {
             document.getElementById("btn-copy-all").addEventListener("click", executerCopieEnMasse);
             document.getElementById("btn-reset-stars").addEventListener("click", purgerToutesLesEtoiles);
-            
             document.getElementById("btn-share-guide").addEventListener("click", () => {
                 alert(
                     "💡 PROTOCOLE DE PARTAGE COLLABORATIF DE LA SELECTION :\n\n" +
                     "1. Évaluez la pertinence des articles en leur attribuant des étoiles (de 1 à 4).\n" +
-                    "2. Cliquez sur le bouton 'Copier le choix' pour compiler automatiquement les seuls articles étoilés visibles à l'écran.\n" +
-                    "3. Ouvrez votre logiciel de messagerie et collez directement (Ctrl+V) le catalogue formaté dans un nouveau courriel pour le transmettre à l'équipe."
+                    "2. Cliquez sur le bouton 'Copier le choix' pour compiler automatiquement les seuls articles étoilés visibles.\n" +
+                    "3. Ouvrez votre messagerie et collez directement (Ctrl+V) le catalogue formaté dans votre courriel."
                 );
             });
         }
 
-        /* DATA PIPELINE */
+        /**
+         * @function gererCycleDeVieDonnees
+         * @description Gère l'interrogation de la mémoire tampon locale ou ordonne le requêtage réseau en fonction du temps écoulé.
+         */
         async function gererCycleDeVieDonnees() {
             const cacheTimestamp = localStorage.getItem(CACHE_KEY_TIME);
             const cacheDonnees = localStorage.getItem(CACHE_KEY_DATA);
@@ -540,6 +643,10 @@
             }
         }
 
+        /**
+         * @function initialiserCollecteReseau
+         * @description Lit le fichier d'index OPML, orchestre le téléchargement parallèle des sources et gère la mise en cache.
+         */
         async function initialiserCollecteReseau() {
             try {
                 const reponse = await fetch('feeds.opml');
@@ -574,18 +681,10 @@
 
         /**
          * @function collecterDonneesFlux
-         * @description Analyse la nature de l'URL cible (locale ou distante) pour appliquer un routage réseau conditionnel,
-         * télécharge le document XML (Flux RSS ou fichier scrapé local) et peuple le catalogue d'articles global.
-         * @param {string} titreSource - Libellé officiel de la source documentaire.
-         * @param {string} urlFlux - Lien hypertexte ou chemin d'accès au fichier de données.
-         * @returns {Promise<void>}
+         * @description Applique un algorithme de routage réseau conditionnel (local vs proxy externe) pour analyser le XML.
          */
         async function collecterDonneesFlux(titreSource, urlFlux) {
-            // ALGORITHME DE ROUTAGE SÉCURISÉ : Détermine si la cible nécessite l'usage du serveur proxy CORS
             const estUrlDistant = urlFlux.startsWith("http://") || urlFlux.startsWith("https://");
-            
-            // Si la source est locale (ex: 'theia_land.xml'), on l'interroge en direct sans proxy.
-            // Si la source est distante, le passage par le proxy est requis pour contourner la barrière des règles CORS.
             const urlCibleFinale = estUrlDistant ? `https://corsproxy.io/?${encodeURIComponent(urlFlux)}` : urlFlux;
 
             try {
@@ -638,25 +737,44 @@
             } catch (e) {}
         }
 
-        /* FILTERS INTERFACE BUILDING */
+        /**
+         * @function genererStructureBoutonsCategories
+         * @description Construit dynamiquement les 9 blocs thématiques métiers mis en relief (HTML sémantique complexe).
+         */
         function genererStructureBoutonsCategories() {
             const boitePrincipale = document.getElementById("categories-filter-box");
-            let distribution = { "sig": [], "materiel": [], "institution": [], "science": [], "autres": [] };
             
+            /* Initialisation de la distribution sémantique sur 9 axes distincts */
+            let distribution = { 
+                "carto": [], "institution": [], "materiel": [], 
+                "gnss": [], "geodesie": [], "drone": [], 
+                "archeo": [], "dd": [], "ia": [], "autres": [] 
+            };
+            
+            /* Répartition des identités au sein de la matrice */
             listeSourcesUniques.forEach(source => {
                 const sourceCle = source.toLowerCase().replace(/\s+/g, ' ').trim();
                 const codeCat = DICTIONNAIRE_CATEGORIES[sourceCle] || "autres";
                 distribution[codeCat].push(source);
             });
 
+            /* Rendu algorithmique des conteneurs thématiques */
             for (const [idCategorie, tableauSources] of Object.entries(distribution)) {
                 if (tableauSources.length === 0 || idCategorie === "autres") continue;
-                const conteneurLigne = document.createElement("div");
-                conteneurLigne.className = "category-group";
-                const étiquette = document.createElement("span");
-                étiquette.className = "category-label";
-                étiquette.textContent = NOMS_CATEGORIES[idCategorie] + " :";
-                conteneurLigne.appendChild(étiquette);
+                
+                /* Création du grand bloc enveloppant de catégorie mis en relief */
+                const conteneurGroupe = document.createElement("div");
+                conteneurGroupe.className = "category-group";
+                
+                /* En-tête typographique textuelle de mise en valeur */
+                const titreLabel = document.createElement("h3");
+                titreLabel.className = "category-label";
+                titreLabel.textContent = NOMS_CATEGORIES[idCategorie];
+                conteneurGroupe.appendChild(titreLabel);
+                
+                /* Sous-bloc horizontal Flexbox pour recevoir les boutons */
+                const conteneurBoutons = document.createElement("div");
+                conteneurBoutons.className = "category-buttons-block";
                 
                 tableauSources.sort().forEach(source => {
                     const bouton = document.createElement("button");
@@ -674,9 +792,11 @@
                         if (sourcesActives.size === 0) { document.getElementById("btn-master-clear").classList.add("active"); }
                         genererRenduInterface();
                     });
-                    conteneurLigne.appendChild(bouton);
+                    conteneurBoutons.appendChild(bouton);
                 });
-                boitePrincipale.appendChild(conteneurLigne);
+                
+                conteneurGroupe.appendChild(conteneurBoutons);
+                boitePrincipale.appendChild(conteneurGroupe);
             }
 
             document.getElementById("btn-master-clear").addEventListener("click", function() {
@@ -687,7 +807,10 @@
             });
         }
 
-        /* ORECHESTRATION ET COMPILATION EN BULK */
+        /**
+         * @function executerCopieEnMasse
+         * @description Compile et formate dans le presse-papiers le catalogue textuel des articles étoilés visibles.
+         */
         function executerCopieEnMasse() {
             const articlesEtoilesVisibles = baseArticlesGlobal.filter(art => {
                 const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
@@ -704,7 +827,7 @@
 
             if (articlesEtoilesVisibles.length === 0) {
                 const texteOriginal = boutonCopie.textContent;
-                boutonCopie.textContent = "⚠️ Aucun article étoilé";
+                boutonCopie.textContent = "⚠️ Aucun article étoilé visible";
                 setTimeout(() => boutonCopie.textContent = texteOriginal, 2500);
                 return;
             }
@@ -734,6 +857,10 @@
             });
         }
 
+        /**
+         * @function purgerToutesLesEtoiles
+         * @description Efface définitivement toutes les clés de notation stockées au sein du LocalStorage.
+         */
         function purgerToutesLesEtoiles() {
             const confirmationEnseignante = confirm("Voulez-vous réinitialiser définitivement toutes les évaluations attribuées par l'équipe pédagogique ?");
             if (confirmationEnseignante) {
@@ -744,7 +871,10 @@
             }
         }
 
-        /* INTERFACE RENDERING & TRANSLATION ENGINE */
+        /**
+         * @function genererRenduInterface
+         * @description Construit le rendu sémantique des cartes d'articles et active le moteur de traduction asynchrone.
+         */
         function genererRenduInterface() {
             const conteneurGrid = document.getElementById("timeline-container");
             const loaderInitial = document.getElementById("main-loader");
@@ -840,6 +970,10 @@
             });
         }
 
+        /**
+         * @function lancerTraductionAsynchrone
+         * @description Interroge l'API de traduction Google de manière asynchrone pour traiter les contenus anglophones.
+         */
         async function lancerTraductionAsynchrone(idDOM, texteOriginal, estUnTitre) {
             const urlTraduction = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=fr&dt=t&q=${encodeURIComponent(texteOriginal)}`;
             try {
