@@ -28,5 +28,7 @@
     <outline text="Ministère de la Transition écologique" title="Ministère de la Transition écologique" type="rss" xmlUrl="https://www.ecologie.gouv.fr/rss-actualites.xml" htmlUrl="https://www.ecologie.gouv.fr/"/>
     <outline text="Flux RSS des actualités IGN" title="Flux RSS des actualités IGN" type="rss" xmlUrl="https://www.ign.fr/actualites/rss.xml" htmlUrl="https://www.ign.fr/"/>
     <outline text="CNIG - Actualités" title="CNIG - Actualités" type="rss" xmlUrl="https://cnig.gouv.fr/spip.php?page=backend&amp;id_rubrique=1" htmlUrl="https://cnig.gouv.fr/"/>
+    <outline text="Theia Land" title="Theia Land" type="rss" xmlUrl="theia_land.xml" htmlUrl="https://www.theia-land.fr/actualites/"/>
+    <outline text="IGN Kiosque" title="IGN Kiosque" type="rss" xmlUrl="ign_kiosque.xml" htmlUrl="https://www.ign.fr/institut/kiosque"/>
   </body>
 </opml>
