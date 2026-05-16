@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau de Bord Documentaire - Topographie & Géomatique</title>
+    <title>Tableau de Bord Documentaire - Topographie &amp; Géomatique</title>
     
     <style>
         /* ==========================================================================
-           VARIABLES GLOBALES DE CONFIGURATION (DESIGN SYSTEM - MODE CLAIR)
+           VARIABLES GLOBALES DE THÉMATISATION (DESIGN SYSTEM - MODE CLAIR)
            ========================================================================== */
         :root {
             --primary-dark: #1a202c;       /* Anthracite profond pour les textes majeurs */
@@ -21,13 +21,13 @@
             --star-color: #e2e8f0;         /* Teinte des étoiles inactives */
             --star-active: #ecc94b;        /* Jaune ambré pour les étoiles sélectionnées */
             
-            /* Surcharges colorimétriques pour la mise en relief des blocs thématiques */
-            --theme-header-bg: #f8fafc;    /* Fond subtil pour les conteneurs de catégories */
-            --theme-header-text: #2d3748;  /* Couleur du texte des titres de catégories */
+            /* Couleurs de mise en relief des 9 bandeaux de catégories métiers */
+            --theme-header-bg: #f8fafc;    
+            --theme-header-text: #2d3748;  
             
             --radius-md: 12px;             /* Rayon de courbure des cartes d'articles */
             --radius-sm: 6px;              /* Rayon de courbure des boutons et filtres */
-            --header-height: 70px;         /* Hauteur fixe de la barre supérieure pour le calcul des hauteurs de panneaux */
+            --header-height: 70px;         /* Hauteur fixe de la barre supérieure */
         }
 
         /* ==========================================================================
@@ -49,8 +49,8 @@
         }
 
         /* ==========================================================================
-           MIGRATION VERS L'ARCHITECTURE DASHBOARD (CSS GRID APPLIQUÉ AU BODY)
-           Désactive le défilement global de la page pour créer des zones indépendantes.
+           PROPRIÉTÉS DE CONFINEMENT DE LA PAGE (ANTI-CRASH TRADUCTION)
+           Le body redevient un bloc standard à hauteur bloquée pour stabiliser le flux.
            ========================================================================== */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -60,54 +60,55 @@
             padding: 0;
             line-height: 1.5;
             transition: background-color 0.2s ease, color 0.2s ease;
-            
-            /* Configuration du Grid Layout Global */
-            display: grid;
-            grid-template-rows: var(--header-height) 1fr; /* Ligne 1 : Header fixe | Ligne 2 : Zone applicative */
-            height: 100vh;                                 /* Verrouille la hauteur sur la totalité de la fenêtre */
-            overflow: hidden;                              /* Interdit le défilement de la page entière */
+            height: 100vh;
+            overflow: hidden;             /* Interdit formellement le défilement général de la page */
         }
 
         /* ==========================================================================
-           STRUCTURE 1 : BARRE SUPÉRIEURE FIXE (HEADER)
+           STRUCTURE FIXE 1 : BARRE SUPÉRIEURE (HEADER)
+           Positionnée de manière absolue au sommet du viewport.
            ========================================================================== */
         header {
-            grid-row: 1;                                   /* Positionnement sur la première ligne du Grid global */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
             background-color: var(--sidebar-bg);
             border-bottom: 1px solid var(--border-light);
             padding: 0 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 10;
-            height: var(--header-height);
+            z-index: 100;                 /* Assure la primauté d'affichage sur les éléments défilants */
             box-sizing: border-box;
         }
 
         header h1 { font-size: 1.25rem; margin: 0; font-weight: 700; }
         header small { font-size: 0.75rem; display: block; }
-
         .header-actions { display: flex; align-items: center; gap: 10px; }
 
         /* ==========================================================================
-           STRUCTURE 2 : CONTENEUR PRINCIPAL DISPATCHER (APP LAYOUT)
-           Sépare l'écran en deux colonnes asynchrones disposées sous la barre supérieure.
+           STRUCTURE FIXE 2 : DISPATCHER DU TABLEAU DE BORD (APP LAYOUT)
+           Positionné au pixel près sous le header, occupant 100% de la hauteur restante.
            ========================================================================== */
         .app-layout {
-            grid-row: 2;                                   /* Occupe la seconde ligne du Grid global */
-            display: grid;
-            grid-template-columns: 380px 1fr;              /* Colonne 1 : Filtres (380px) | Colonne 2 : Articles (Reste de l'espace) */
-            height: 100%;
-            width: 100%;
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;                 /* Utilisation de Flexbox pour une répartition horizontale étanche */
             overflow: hidden;
         }
 
         /* ==========================================================================
-           STRUCTURE 3 : PANNEAU LATÉRAL GAUCHE DE SÉLECTION (SIDEBAR)
-           Contient les 9 catégories métiers avec un défilement vertical interne dédié.
+           STRUCTURE FIXE 3 : PANNEAU LATÉRAL GAUCHE (SIDEBAR)
+           Largeur fixe de 380px, défilement vertical interne indépendant.
            ========================================================================== */
         .sidebar-panel {
-            grid-column: 1;                                /* Positionnement sur la colonne de gauche */
+            width: 380px;
+            flex-shrink: 0;                /* Interdit au panneau de se déformer ou de se réduire */
             background-color: var(--sidebar-bg);
             border-right: 1px solid var(--border-light);
             padding: 20px;
@@ -116,10 +117,10 @@
             flex-direction: column;
             gap: 12px;
             height: 100%;
-            overflow-y: auto;                              /* Active le défilement si les 9 catégories dépassent de l'écran */
+            overflow-y: auto;              /* Défilement vertical interne pour les 9 catégories */
         }
 
-        /* Mise en relief sémantique des blocs thématiques métiers */
+        /* Graphonomie de mise en relief des blocs thématiques métiers */
         .category-group {
             display: flex;
             flex-direction: column;
@@ -137,47 +138,69 @@
             text-transform: uppercase;
             color: var(--accent-red);
             letter-spacing: 0.06em;
-            border-left: 3px solid var(--accent-red);      /* Repère géométrique de couleur stable */
+            border-left: 3px solid var(--accent-red); /* Repère de couleur stable */
             padding-left: 10px;
             margin: 0 0 4px 0;
         }
 
         .category-buttons-block {
             display: flex;
-            flex-wrap: wrap;                               /* Autorise le retour à la ligne automatique des boutons */
+            flex-wrap: wrap;
             gap: 6px;
         }
 
         /* ==========================================================================
-           STRUCTURE 4 : ZONE DE LECTURE DROITE (MAIN CONTENT AREA)
-           Contient les filtres globaux en en-tête et la grille d'articles indépendante.
+           STRUCTURE FIXE 4 : ESPACE DE LECTURE DROIT (CONTENT AREA)
+           Prend la totalité de l'espace horizontal restant et gère sa propre grille.
            ========================================================================== */
         .content-area {
-            grid-column: 2;                                /* Positionnement sur la colonne de droite */
+            flex-grow: 1;                  /* Absorbe dynamiquement tout l'espace disponible à droite */
             display: flex;
             flex-direction: column;
             height: 100%;
             overflow: hidden;
         }
 
-        /* Barre de contrôle supérieure de la zone de lecture */
+        /* Barre de filtrage textuel et temporel */
         .content-control-bar {
             background-color: var(--sidebar-bg);
             border-bottom: 1px solid var(--border-light);
             padding: 15px 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
             box-sizing: border-box;
-            flex-shrink: 0;                                /* Interdit la réduction de cette barre lors du calcul des hauteurs */
+            flex-shrink: 0;                /* Bloque la hauteur de la barre de recherche */
         }
 
-        /* Mosaïque d'affichage des fiches : Défilement vertical indépendant */
+        .search-zone-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .search-wrapper { position: relative; flex: 1 1 250px; }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            background-color: var(--input-bg);
+            color: var(--primary-dark);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .search-input:focus { border-color: var(--accent-red); }
+
+        .date-filter-wrapper { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+        /* Grille des cartes d'articles : Défilement vertical totalement indépendant */
         .timeline-grid {
-            flex-grow: 1;                                  /* Absorbe la totalité de l'espace vertical restant */
-            overflow-y: auto;                              /* Active le défilement vertical autonome pour la grille */
+            flex-grow: 1;                  /* Remplit l'intégralité de la hauteur disponible */
+            overflow-y: auto;              /* Active le défilement fluide des fiches */
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Mosaïque réactive (Responsive Design) */
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 25px;
             padding: 30px;
             box-sizing: border-box;
@@ -185,7 +208,7 @@
         }
 
         /* ==========================================================================
-           COMPOSANTS GRAPHONOMIQUES INTERNES (BOUTONS & CARTES)
+           COMPOSANTS INTERFACES GÉNÉRIQUES (BOUTONS & CARTES)
            ========================================================================== */
         .filter-btn {
             background-color: var(--card-bg);
@@ -199,22 +222,17 @@
             transition: all 0.15s ease;
             user-select: none;
         }
-
         .filter-btn:hover { background-color: var(--border-light); }
-
         .filter-btn.active {
             background-color: var(--accent-red);
             color: #ffffff;
             border-color: var(--accent-red);
             box-shadow: 0 2px 4px rgba(197, 48, 48, 0.15);
         }
-
         .filter-btn.clear-all { border-style: dashed; font-weight: 700; width: 100%; text-align: center; }
-        
         .filter-btn.help-btn { background-color: transparent; border-color: var(--text-muted); color: var(--text-muted); font-weight: bold; }
-        .filter-btn.help-btn:hover { background-color: var(--bg-main); color: var(--primary-dark); }
 
-        /* Style des modules d'information (Cartes d'articles) */
+        /* Fiches d'articles documentaires */
         .article-card {
             background: var(--card-bg);
             border: 1px solid var(--border-light);
@@ -228,11 +246,7 @@
             color: inherit;
             text-decoration: none;
         }
-
-        .article-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.08);
-        }
+        .article-card:hover { transform: translateY(-3px); box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.08); }
 
         .card-image-wrapper { width: 100%; height: 140px; background: var(--border-light); position: relative; }
         .card-image { width: 100%; height: 100%; object-fit: cover; }
@@ -249,12 +263,39 @@
 
         .card-evaluation-row { margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
         .star-rating-box { display: flex; gap: 3px; }
-        .star-item { font-size: 1rem; cursor: pointer; color: var(--star-color); transition: transform 0.1s ease; }
-        .star-item:hover { transform: scale(1.2); }
+        .star-item { font-size: 1rem; cursor: pointer; color: var(--star-color); }
         .star-item.active { color: var(--star-active); }
-        
         .card-date { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 4px; }
         .loader { grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted); font-size: 1rem; }
+
+        /* ==========================================================================
+           ISOLATION HERMÉTIQUE DE LA FENÊTRE MODALE D'AIDE
+           L'usage exclusif de display: none garantit l'absence d'interférence en ligne.
+           ========================================================================== */
+        .modal-overlay {
+            display: none;                /* Neutralisation totale du composant par défaut */
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center; align-items: center;
+            z-index: 9999;                /* Priorité absolue d'affichage au-dessus du tableau de bord */
+        }
+        .modal-overlay.open { display: flex; } /* Activation de l'affichage en mode popup uniquement */
+
+        .modal-container {
+            background-color: var(--card-bg);
+            color: var(--primary-dark);
+            width: 90%; max-width: 800px; height: 80vh;
+            border-radius: var(--radius-md);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+        }
+        .modal-header { padding: 20px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; background-color: var(--theme-header-bg); }
+        .modal-header h2 { margin: 0; font-size: 1.2rem; color: var(--accent-red); }
+        .modal-body { padding: 25px; overflow-y: auto; font-size: 0.9rem; }
+        .modal-body pre { background-color: var(--theme-header-bg); padding: 12px; border-radius: 6px; border: 1px solid var(--border-light); overflow-x: auto; font-family: monospace; }
     </style>
 </head>
 <body>
@@ -273,13 +314,12 @@
 
     <div class="app-layout">
         
-        <aside class="sidebar-panel" id="sidebar-filters">
+        <aside class="sidebar-panel">
             <button class="filter-btn clear-all active" id="btn-master-clear">🗂️ Tout afficher (Reset)</button>
-            <div id="categories-filter-box" style="display: flex; flex-direction: column; gap: 12px;"></div>
+            <div id="categories-filter-box"></div>
         </aside>
         
         <section class="content-area">
-            
             <div class="content-control-bar">
                 <div class="search-zone-wrapper">
                     <div class="search-wrapper">
@@ -297,7 +337,7 @@
                         </select>
                         <input type="date" id="input-custom-date" class="search-input" style="width: auto; padding: 7px 12px; display: none;">
                         
-                        <button class="filter-btn" id="btn-copy-all" style="border-color: var(--text-muted);" title="Compiler et copier uniquement les fiches étoilées visibles à l'écran">📋 Copier le choix</button>
+                        <button class="filter-btn" id="btn-copy-all" style="border-color: var(--text-muted);" title="Compiler et copier uniquement les fiches étoilées visibles">📋 Copier le choix</button>
                         <button class="filter-btn" id="btn-reset-stars" style="border-color: var(--text-muted);" title="Effacer toutes les étoiles attribuées">⭐ Réinitialiser les notes</button>
                         <button class="filter-btn help-btn" id="btn-share-guide" style="padding: 6px 10px;">ℹ️ Guide</button>
                     </div>
@@ -307,7 +347,6 @@
             <main id="timeline-container" class="timeline-grid">
                 <div class="loader" id="main-loader">Chargement du catalogue de veille...</div>
             </main>
-            
         </section>
     </div>
 
@@ -340,10 +379,6 @@
     </div>
 
     <script>
-        /**
-         * @constant DICTIONNAIRE_CATEGORIES
-         * @description Matrice d'aiguillage sémantique associant la clé normalisée d'un flux à l'un des 9 thèmes.
-         */
         const DICTIONNAIRE_CATEGORIES = {
             "qgis.org blog": "carto", "arcorama": "carto", "afigeo": "carto",
             "ordre des géomètres-experts": "institution", "flux rss des actualités": "institution", "conseil national de l'information géolocalisée - actualités": "institution", "expertises territoires": "institution", "cerema - actualité": "institution", "press releases": "institution", "ministère du partenariat avec les territoires et de la décentralisation ministère de la transition écologique, de l’énergie, du climat et de la prévention des risques ministère du logement et de la ré": "institution", "préventionbtp": "institution",
@@ -356,10 +391,6 @@
             "\"collège de france\" - google actualités": "ia"
         };
 
-        /**
-         * @constant NOMS_CATEGORIES
-         * @description Nomenclature d'affichage pour la génération des en-têtes graphiques de la Sidebar.
-         */
         const NOMS_CATEGORIES = {
             "carto": "Cartographie – SIG – Toponymie",
             "institution": "Institutionnel – Associations",
@@ -382,9 +413,6 @@
         let termeRechercheGlobal = "";
         let filtreDateSeuilGlobal = 0;
 
-        /**
-         * @description Gestionnaire d'initialisation du DOM. Active les modules d'interface.
-         */
         document.addEventListener("DOMContentLoaded", () => {
             configurerCommutateurTheme();
             configurerBarreRecherche();
@@ -569,10 +597,6 @@
             } catch (e) {}
         }
 
-        /**
-         * @function genererStructureBoutonsCategories
-         * @description Répartit les sources lues dans la Sidebar gauche selon la nomenclature géomatique à 9 axes.
-         */
         function genererStructureBoutonsCategories() {
             const boitePrincipale = document.getElementById("categories-filter-box");
             boitePrincipale.innerHTML = "";
