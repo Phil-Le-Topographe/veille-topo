@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss version="2.0">
+  <channel>
+    <title>IGN Kiosque</title>
+    <link>https://www.ign.fr/institut/kiosque</link>
+    <description>Flux de veille hybride généré automatiquement pour l'entité IGN Kiosque.</description>
+    <pubDate>Sat, 16 May 2026 12:38:00 GMT</pubDate>
+    <item>
+      <title>IGN Mag</title>
+      <link>https://www.ign.fr/</link>
+      <description>IGN Mag est le magazine bimédia de l'institut. Accessible en ligne et dans une édition papier diffusée trois fois par an, IGN Mag vous apporte un éclairage sur le monde de l'information géographique et forestière et ses enjeux.</description>
+      <pubDate>Sat, 16 May 2026 12:38:01 GMT</pubDate>
+    </item>
+    <item>
+      <title>Actualité sans titre explicite</title>
+      <link>https://boutique.ign.fr/</link>
+      <description>Boutique
+Voir le site</description>
+      <pubDate>Sat, 16 May 2026 12:38:01 GMT</pubDate>
+    </item>
+    <item>
+      <title>Actualité sans titre explicite</title>
+      <link>https://www.ign.fr/telechargez-application-cartographique-cartes-ign</link>
+      <description>Application Cartes IGN
+Découvrir l'application</description>
+      <pubDate>Sat, 16 May 2026 12:38:01 GMT</pubDate>
+    </item>
+    <item>
+      <title>Actualité sans titre explicite</title>
+      <link>https://remonterletemps.ign.fr/</link>
+      <description>Remonter le temps
+Voir le site</description>
+      <pubDate>Sat, 16 May 2026 12:38:01 GMT</pubDate>
+    </item>
+    <item>
+      <title>Actualité sans titre explicite</title>
+      <link>https://www.geoportail.gouv.fr/</link>
+      <description>Géoportail
+Voir le site</description>
+      <pubDate>Sat, 16 May 2026 12:38:01 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,100 @@
+[
+  {
+    "nom": "Theia Land",
+    "url": "https://www.theia-land.fr/actualites/",
+    "container_css": "article, .post, .card",
+    "titre_css": "h2, h3, .title",
+    "balise_lien": "a"
+  },
+  {
+    "nom": "IGN Kiosque",
+    "url": "https://www.ign.fr/institut/kiosque",
+    "container_css": ".views-row, article, .card",
+    "titre_css": "h2, h3, .title",
+    "balise_lien": "a"
+  },
+  {
+    "nom": "Afigeo",
+    "url": "https://www.afigeo.asso.fr/actualites/",
+    "container_css": "article, .post, .card",
+    "titre_css": "h2, h3, .title",
+    "balise_lien": "a"
+  },
+  {
+    "nom": "Leica Geosystems",
+    "url": "https://leica-geosystems.com/fr-fr/about-us/news-room/news-overview",
+    "container_css": ".card, .news-item, article",
+    "titre_css": "h2, h3, .title",
+    "balise_lien": "a"
+  },
+  {
+    "nom": "Trimble Geospatial",
+    "url": "https://geospatial.trimble.com/blog/geospatial/en-US",
+    "container_css": ".post-item, article, .blog-post",
+    "titre_css": "h2, h3, .title",
+    "balise_lien": "a"
+  },
+  {
+    "nom": "Topcon Positioning",
+    "url": "https://www.topconpositioning.com/solutions/infrastructure/surveying?product=&_page=1",
+    "container_css": ".views-row, .product-item, .card",
+    "titre_css": "h2, h3, .title",
+    "balise_lien": "a"
+  },
+  {
+    "nom": "Réseau Orphéon",
+    "url": "https://reseau-orpheon.fr/News/ipgorph",
+    "container_css": "article, .post, .news-card",
+    "titre_css": "h2, h3, .title",
+    "balise_lien": "a"
+  },
+  {
+    "nom": "Réseau Teria",
+    "url": "https://www.reseau-teria.com/",
+    "container_css": ".post, article, .card",
+    "titre_css": "h2, h3, .title",
+    "balise_lien": "a"
+  },
+  {
+    "nom": "EUSPA Pressroom",
+    "url": "https://www.euspa.europa.eu/pressroom",
+    "container_css": ".views-row, article, .news-item",
+    "titre_css": "h2, h3, .title",
+    "balise_lien": "a"
+  },
+  {
+    "nom": "Expertises Territoires",
+    "url": "https://www.expertises-territoires.fr/",
+    "container_css": ".card, article, .post-summary",
+    "titre_css": "h2, h3, .title",
+    "balise_lien": "a"
+  },
+  {
+    "nom": "PréventionBTP",
+    "url": "https://www.preventionbtp.fr/actualites",
+    "container_css": "article, .card, .news-item",
+    "titre_css": "h2, h3, .title",
+    "balise_lien": "a"
+  },
+  {
+    "nom": "INRAP",
+    "url": "https://www.inrap.fr/actualites/recherche",
+    "container_css": ".views-row, article, .search-result",
+    "titre_css": "h2, h3, .title",
+    "balise_lien": "a"
+  },
+  {
+    "nom": "Ordre des Géomètres-Experts",
+    "url": "https://www.geometre-expert.fr/actus-infos/",
+    "container_css": "article, .post, .card",
+    "titre_css": "h2, h3, .title",
+    "balise_lien": "a"
+  },
+  {
+    "nom": "Techniques de l'Ingénieur",
+    "url": "https://www.techniques-ingenieur.fr/actualite/",
+    "container_css": "article, .post-item, .card",
+    "titre_css": "h2, h3, .title",
+    "balise_lien": "a"
+  }
+]

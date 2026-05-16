@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss version="2.0">
+  <channel>
+    <title>PréventionBTP</title>
+    <link>https://www.preventionbtp.fr/actualites</link>
+    <description>Flux de veille hybride généré automatiquement pour l'entité PréventionBTP.</description>
+    <pubDate>Sat, 16 May 2026 12:38:19 GMT</pubDate>
+    <item>
+      <title>Analyse en cours d'ajustement structurel pour PréventionBTP</title>
+      <link>https://www.preventionbtp.fr/actualites</link>
+      <description>Le script est en attente de synchronisation géométrique des classes de styles CSS.</description>
+      <pubDate>Sat, 16 May 2026 12:38:19 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

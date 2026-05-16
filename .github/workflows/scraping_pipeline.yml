@@ -1,0 +1,38 @@
+name: Pipeline d'Extraction Documentaire Hybride
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write # Octroi impératif des droits d'écriture sur le dépôt pour publier les fichiers XML
+
+jobs:
+  run_scraper:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chargement des sources du dépôt
+        uses: actions/checkout@v4
+
+      - name: Initialisation de la machine virtuelle Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Installation des modules d'analyse réseau
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
+
+      - name: Exécution du script d'ingénierie documentaire
+        run: python scraper.py
+
+      - name: Enregistrement et publication des flux XML sur le dépôt public
+        run: |
+          git config --global user.name "Automate Veille Topo"
+          git config --global user.email "automate-veille@github.com"
+          git add *.xml
+          # Vérification de sécurité : n'effectue un commit que si des changements de textes ont eu lieu
+          git diff-index --quiet HEAD || git commit -m "🔄 MàJ automatique des flux scrapés (Moteur Automate)"
+          git push
