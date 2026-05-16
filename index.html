@@ -7,7 +7,7 @@
     
     <style>
         /* ==========================================================================
-           VARIABLES GLOBALES DE THÉMATISATION (DESIGN SYSTEM - MODE CLAIR) 
+           VARIABLES GLOBALES DE THÉMATISATION (DESIGN SYSTEM - MODE CLAIR)
            ========================================================================== */
         :root {
             --primary-dark: #1a202c;       /* Anthracite profond pour les textes majeurs */
@@ -82,8 +82,6 @@
             gap: 15px;
         }
 
-        /* JUSTIFICATION CSS : Utilisation de Flexbox pour aligner horizontalement la recherche 
-           et la nouvelle barre d'outils temporelle et collaborative de manière fluide. */
         .search-zone-wrapper {
             display: flex;
             flex-wrap: wrap;
@@ -94,7 +92,7 @@
 
         .search-wrapper {
             position: relative;
-            flex: 1 1 300px; /* Extensible, s'adapte à l'espace disponible */
+            flex: 1 1 300px;
         }
 
         .search-input {
@@ -112,7 +110,6 @@
 
         .search-input:focus { border-color: var(--accent-red); }
 
-        /* Conteneur pour regrouper le filtre de date et les actions d'export / étoiles */
         .date-filter-wrapper {
             display: flex;
             align-items: center;
@@ -408,21 +405,8 @@
             "qgis.org blog": "sig", "arcorama": "sig", "release notes from webodm": "sig", "release notes from cloudcompare": "sig", "agisoft photoscan": "sig",
             "eu agency for the space programme - linking space to user needs": "materiel", "dronelife": "materiel", "lidar news": "materiel", "news": "materiel", "gps world": "materiel", "geospatial world": "materiel",
             "flux rss des actualités": "institution", "conseil national de l'information géolocalisée - actualités": "institution", "cerema - actualité": "institution", "press releases": "institution", "ministère du partenariat avec les territoires et de la décentralisation ministère de la transition écologique, de l’énergie, du climat et de la prévention des risques ministère du logement et de la ré": "institution",
-            "epos-france": "science", "institut de physique du globe de paris": "science", "copernicus": "science", "theia": "science", "esa france": "science", "nasa": "science", "infoterre": "science", "\"collège de france\" - google actualités": "science"
-            "theia land": "science", 
-            "ign kiosque": "institution", 
-            "afigeo": "sig", 
-            "leica geosystems": "materiel", 
-            "trimble geospatial": "materiel", 
-            "topcon positioning": "materiel", 
-            "réseau orphéon": "materiel", 
-            "réseau teria": "materiel", 
-            "euspa pressroom": "science", 
-            "expertises territoires": "institution", 
-            "préventionbtp": "institution", 
-            "inrap": "science", 
-            "ordre des géomètres-experts": "institution", 
-            "techniques de l'ingénieur": "sig",
+            "epos-france": "science", "institut de physique du globe de paris": "science", "copernicus": "science", "theia": "science", "esa france": "science", "nasa": "science", "infoterre": "science", "\"collège de france\" - google actualités": "science",
+            "theia land": "science", "ign kiosque": "institution", "afigeo": "sig", "leica geosystems": "materiel", "trimble geospatial": "materiel", "topcon positioning": "materiel", "réseau orphéon": "materiel", "réseau teria": "materiel", "euspa pressroom": "science", "expertises territoires": "institution", "préventionbtp": "institution", "inrap": "science", "ordre des géomètres-experts": "institution", "techniques de l'ingénieur": "sig"
         };
 
         const NOMS_CATEGORIES = {
@@ -527,7 +511,6 @@
             document.getElementById("btn-copy-all").addEventListener("click", executerCopieEnMasse);
             document.getElementById("btn-reset-stars").addEventListener("click", purgerToutesLesEtoiles);
             
-            // Écouteur pour le protocole didactique de partage destiné à l'équipe pédagogique
             document.getElementById("btn-share-guide").addEventListener("click", () => {
                 alert(
                     "💡 PROTOCOLE DE PARTAGE COLLABORATIF DE LA SELECTION :\n\n" +
@@ -589,10 +572,24 @@
             }
         }
 
+        /**
+         * @function collecterDonneesFlux
+         * @description Analyse la nature de l'URL cible (locale ou distante) pour appliquer un routage réseau conditionnel,
+         * télécharge le document XML (Flux RSS ou fichier scrapé local) et peuple le catalogue d'articles global.
+         * @param {string} titreSource - Libellé officiel de la source documentaire.
+         * @param {string} urlFlux - Lien hypertexte ou chemin d'accès au fichier de données.
+         * @returns {Promise<void>}
+         */
         async function collecterDonneesFlux(titreSource, urlFlux) {
-            const urlRequeteProxiee = `https://corsproxy.io/?${encodeURIComponent(urlFlux)}`;
+            // ALGORITHME DE ROUTAGE SÉCURISÉ : Détermine si la cible nécessite l'usage du serveur proxy CORS
+            const estUrlDistant = urlFlux.startsWith("http://") || urlFlux.startsWith("https://");
+            
+            // Si la source est locale (ex: 'theia_land.xml'), on l'interroge en direct sans proxy.
+            // Si la source est distante, le passage par le proxy est requis pour contourner la barrière des règles CORS.
+            const urlCibleFinale = estUrlDistant ? `https://corsproxy.io/?${encodeURIComponent(urlFlux)}` : urlFlux;
+
             try {
-                const reponse = await fetch(urlRequeteProxiee);
+                const reponse = await fetch(urlCibleFinale);
                 if (!reponse.ok) return;
                 const texteBrut = await reponse.text();
                 const parseur = new DOMParser();
