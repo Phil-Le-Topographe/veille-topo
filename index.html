@@ -8,37 +8,39 @@
     
     <style>
         /* ==========================================================================
-           VARIABLES GLOBALES DE THÉMATISATION (DESIGN SYSTEM - MODE CLAIR)
+           VARIABLES GLOBALES DE CONFIGURATION (DESIGN SYSTEM - MODE CLAIR)
+           Centralisation des propriétés pour assurer la maintenance du style.
            ========================================================================== */
         :root {
-            --primary-dark: #1a202c;       /* Anthracite profond assurant une forte lisibilité textuelle */
-            --accent-red: #c53030;         /* Rouge institutionnel servant de repère visuel pour l'état actif */
-            --bg-main: #f7fafc;            /* Fond de page clair limitant la fatigue oculaire */
-            --sidebar-bg: #ffffff;         /* Fond blanc pur pour isoler le panneau de configuration gauche */
-            --card-bg: #ffffff;            /* Fond des fiches documentaires */
-            --text-muted: #718096;         /* Gris intermédiaire dédié aux métadonnées (dates, sources) */
-            --border-light: #e2e8f0;       /* Teinte de délimitation des modules et des grilles */
-            --input-bg: #ffffff;           /* Fond des zones de saisie et formulaires */
-            --star-color: #e2e8f0;         /* Couleur par défaut des icônes de notation inactives */
-            --star-active: #ecc94b;        /* Jaune ambré à fort contraste pour les fiches étoilées */
+            --primary-dark: #1a202c;       /* Anthracite profond pour le texte principal (contraste élevé) */
+            --accent-red: #c53030;         /* Rouge institutionnel signalant l'état actif et les repères */
+            --bg-main: #f7fafc;            /* Teinte claire pour le fond de la zone de lecture */
+            --sidebar-bg: #ffffff;         /* Blanc pur pour l'isolation du panneau de gauche */
+            --card-bg: #ffffff;            /* Fond blanc pour le détachement des cartes d'actualités */
+            --text-muted: #718096;         /* Gris neutre intermédiaire pour les métadonnées de veille */
+            --border-light: #e2e8f0;       /* Lignes de délimitation géométrique des modules */
+            --input-bg: #ffffff;           /* Fond des champs de saisie de texte */
+            --star-color: #e2e8f0;         /* Teinte des étoiles d'évaluation inactives */
+            --star-active: #ecc94b;        /* Jaune ambré à haut contraste pour le choix enseignant */
             
-            /* Teintes dédiées à la mise en relief des 9 bandeaux de catégories métiers */
-            --theme-header-bg: #f8fafc;    
+            /* Surcharges chromatiques appliquées aux en-têtes des 9 catégories métiers */
+            --theme-header-bg: #f8fafc;    /* Fond de contraste léger pour les blocs de la Sidebar */
             --theme-header-text: #2d3748;  
             
-            --radius-md: 12px;             /* Rayon de courbure des angles des cartes d'articles */
-            --radius-sm: 6px;              /* Rayon d'arrondi des boutons de l'interface */
+            --radius-md: 12px;             /* Rayon de courbure des angles des fiches documentaires */
+            --radius-sm: 6px;              /* Rayon d'arrondi des boutons de commande */
             --header-height: 70px;         /* Hauteur fixe de la barre supérieure de navigation */
         }
 
         /* ==========================================================================
            VARIABLES DE THÉMATISATION ALTERNATIVE (DESIGN SYSTEM - MODE SOMBRE)
+           Activé par l'injection de la classe .dark-theme sur la balise body.
            ========================================================================== */
         body.dark-theme {
             --primary-dark: #f7fafc;       
-            --accent-red: #fc8181;         
-            --bg-main: #0f172a;            
-            --sidebar-bg: #1e293b;         
+            --accent-red: #fc8181;         /* Rouge désaturé limitant l'éblouissement sur fond sombre */
+            --bg-main: #0f172a;            /* Bleu nuit profond agissant comme absorbeur de lumière */
+            --sidebar-bg: #1e293b;         /* Ardoise sombre pour le panneau de contrôle */
             --card-bg: #1e293b;            
             --text-muted: #94a3b8;         
             --border-light: #334155;       
@@ -50,20 +52,21 @@
         }
 
         /* ==========================================================================
-           PROPRIÉTÉS DE SÉCURISATION DU FLUX (CONFINEMENT ABSOLU VUE)
+           PROPRIÉTÉS DE SÉCURISATION DU PLAN DE VUE (VIEWPORT LOCK)
+           Le masquage du débordement général empêche l'apparition d'un scroll global.
            ========================================================================== */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-main);
             color: var(--primary-dark);
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             line-height: 1.5;
             transition: background-color 0.2s ease, color 0.2s ease;
             height: 100vh;
             overflow: hidden;             
         }
 
+        /* En-tête supérieur fixe ancré de manière absolue au sommet du viewport */
         header {
             position: fixed;
             top: 0; left: 0; width: 100%;
@@ -82,16 +85,21 @@
         header small { font-size: 0.75rem; display: block; }
         .header-actions { display: flex; align-items: center; gap: 10px; }
 
+        /* ==========================================================================
+           INNER APP LAYOUT (SPLIT-SCREEN DOUBLE COLONNE)
+           Ajusté dynamiquement au pixel près sous la barre supérieure fixe.
+           ========================================================================== */
         .app-layout {
             position: fixed;
             top: var(--header-height); left: 0; right: 0; bottom: 0;
-            display: flex;
+            display: flex;                 /* Flexbox horizontal assurant l'étanchéité des deux zones */
             overflow: hidden;
         }
 
+        /* Panneau latéral gauche fixe (Sidebar) : Défilement vertical interne indépendant */
         .sidebar-panel {
             width: 380px;
-            flex-shrink: 0;                
+            flex-shrink: 0;                /* Interdit toute déformation ou écrasement de la largeur */
             background-color: var(--sidebar-bg);
             border-right: 1px solid var(--border-light);
             padding: 20px;
@@ -103,6 +111,7 @@
             overflow-y: auto;              
         }
 
+        /* Graphonomie de mise en relief des 9 blocs de catégories métiers */
         .category-group {
             display: flex;
             flex-direction: column;
@@ -120,31 +129,33 @@
             text-transform: uppercase;
             color: var(--accent-red);
             letter-spacing: 0.06em;
-            border-left: 3px solid var(--accent-red); 
+            border-left: 3px solid var(--accent-red); /* Repère de couleur stable rouge */
             padding-left: 10px;
             margin: 0 0 4px 0;
         }
 
         .category-buttons-block {
             display: flex;
-            flex-wrap: wrap;               
+            flex-wrap: wrap;               /* Autorise le retour à la ligne des boutons de flux */
             gap: 6px;
         }
 
+        /* Espace de traitement et d'affichage droit */
         .content-area {
-            flex-grow: 1;                  
+            flex-grow: 1;                  /* Absorbe la totalité de la largeur résiduelle du viewport */
             display: flex;
             flex-direction: column;
             height: 100%;
             overflow: hidden;
         }
 
+        /* Barre supérieure de filtrage et de recherche par mots-clés */
         .content-control-bar {
             background-color: var(--sidebar-bg);
             border-bottom: 1px solid var(--border-light);
             padding: 15px 30px;
             box-sizing: border-box;
-            flex-shrink: 0;
+            flex-shrink: 0;                /* Verrouille fermement la hauteur du module de recherche */
         }
 
         .search-zone-wrapper {
@@ -172,11 +183,15 @@
 
         .date-filter-wrapper { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
+        /* ==========================================================================
+           CONTENEUR DE RENDU DES CARTES : ZONE DU DÉFILEMENT INFINI
+           L'activation de overflow-y: auto isole l'ascenseur de défilement ici.
+           ========================================================================== */
         .timeline-grid {
-            flex-grow: 1;                  
-            overflow-y: auto;              
+            flex-grow: 1;                  /* Remplit tout l'espace vertical résiduel sous la recherche */
+            overflow-y: auto;              /* RENDU CRITIQUE : Active le scroll indépendant ciblé par le script */
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Grille adaptative automatique */
             gap: 25px;
             padding: 30px;
             box-sizing: border-box;
@@ -184,7 +199,7 @@
         }
 
         /* ==========================================================================
-           COMPOSANTS GRAPHONOMIQUES : BOUTONS ET CARTES
+           COMPOSANTS INTERFACES GÉNÉRIQUES (BOUTONS & CARTES)
            ========================================================================== */
         .filter-btn {
             background-color: var(--card-bg);
@@ -205,10 +220,12 @@
             border-color: var(--accent-red);
             box-shadow: 0 2px 4px rgba(197, 48, 48, 0.15);
         }
+        /* Bouton Reset principal mis en valeur graphiquement */
         .filter-btn.clear-all { background-color: var(--accent-red); color: #ffffff; border-color: var(--accent-red); font-weight: 700; width: 100%; text-align: center; }
         .filter-btn.clear-all:hover { background-color: #a52828; }
         .filter-btn.help-btn { background-color: transparent; border-color: var(--text-muted); color: var(--text-muted); font-weight: bold; }
 
+        /* Fiches d'actualités documentaires (Cards) */
         .article-card {
             background: var(--card-bg);
             border: 1px solid var(--border-light);
@@ -234,9 +251,6 @@
         .card-title { font-size: 0.92rem; font-weight: 600; line-height: 1.3; margin: 0 0 8px 0; color: var(--primary-dark); }
         .card-excerpt { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 12px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-        .translated-text { border-left: 2px solid #3182ce; padding-left: 6px; font-style: italic; }
-        .translated-title { border-left: 2px solid #3182ce; padding-left: 6px; display: block; }
-
         .card-evaluation-row { margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
         .star-rating-box { display: flex; gap: 3px; }
         .star-item { font-size: 1rem; cursor: pointer; color: var(--star-color); }
@@ -245,7 +259,7 @@
         .loader { grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted); font-size: 1rem; }
 
         /* ==========================================================================
-           ISOLATION HERMÉTIQUE DE LA MODALE D'AIDE
+           ISOLATION HERMÉTIQUE DE LA MODALE D'AIDE (SÉCURITÉ DISPLAY)
            ========================================================================== */
         .modal-overlay {
             display: none;                
@@ -311,8 +325,6 @@
                             <option value="custom">Sélectionner une date limite...</option>
                         </select>
                         <input type="date" id="input-custom-date" class="search-input" style="width: auto; padding: 7px 12px; display: none;">
-                        
-                        <select id="select-pagination" class="search-input" style="width: auto; padding: 9px 12px; display: none; border-color: var(--accent-red); font-weight: bold;" title="Naviguer à travers les pages d'archives"></select>
                         
                         <button class="filter-btn" id="btn-copy-all" style="border-color: var(--text-muted);" title="Compiler et copier uniquement les fiches étoilées visibles">📋 Copier le choix</button>
                         <button class="filter-btn" id="btn-reset-stars" style="border-color: var(--text-muted);" title="Effacer toutes les étoiles attribuées">⭐ Réinitialiser les notes</button>
@@ -384,17 +396,16 @@
         const CACHE_KEY_TIME = "veille_topo_timestamp_v2";
         const DUREE_CACHE = 3600000; 
 
-        /* Variables d'état globales de l'application */
         let baseArticlesGlobal = [];
         let listeSourcesUniques = new Set();
         let sourcesActives = new Set();
         let termeRechercheGlobal = "";
         let filtreDateSeuilGlobal = 0;
         
-        /* NOUVELLES CLÉS LOGIQUES POUR LA PAGINATION */
-        let estModeSnapshot = true;      // Drapeau d'état initial (Vrai à l'ouverture de la page)
-        let pageActuelle = 1;            // Index de la page active au sein du mode archive
-        const ARTICLES_PAR_PAGE = 12;    // Volume de fiches affichées par bloc de page
+        /* VARIABLES D'ÉTAT DU COMPORTEMENT DE DÉFILEMENT INFINI */
+        let estModeSnapshot = true;         // Gère la restriction initiale (1 article max par axe métier)
+        let articlesVisiblesLimite = 12;    // Volume de cartes autorisées à s'afficher simultanément en mode complet
+        let totalArticlesFiltrésActuels = 0; // Mémoire tampon du volume d'articles total qualifié
 
         document.addEventListener("DOMContentLoaded", () => {
             configurerCommutateurTheme();
@@ -403,7 +414,7 @@
             configurerBoutonRafraichissement();
             configurerEvenementsModaleAide();
             configurerBoutonsGlobauxEvaluation();
-            configurerMenuPagination();
+            configurerCapteurDefilementInfini(); /* Activation de la surveillance de l'ascenseur */
             gererCycleDeVieDonnees();
         });
 
@@ -419,8 +430,8 @@
         function configurerBarreRecherche() {
             document.getElementById("search-bar").addEventListener("input", (e) => {
                 termeRechercheGlobal = e.target.value.toLowerCase().trim();
-                estModeSnapshot = false;  // La saisie d'un texte désactive le mode snapshot restrictif
-                pageActuelle = 1;         // Réinitialisation automatique à la page 1
+                estModeSnapshot = false;     // Saisir un texte casse l'instantané d'en-tête
+                articlesVisiblesLimite = 12; // Réinitialisation de la jauge de défilement
                 genererRenduInterface();
             });
         }
@@ -433,8 +444,8 @@
                 const choix = e.target.value;
                 const instantMaintenant = Date.now();
                 inputCalendar.style.display = (choix === "custom") ? "inline-block" : "none";
-                estModeSnapshot = false;  // Un filtrage par date désactive l'instantané fixe
-                pageActuelle = 1;
+                estModeSnapshot = false;
+                articlesVisiblesLimite = 12;
 
                 switch (choix) {
                     case "all": filtreDateSeuilGlobal = 0; break;
@@ -457,7 +468,7 @@
                     filtreDateSeuilGlobal = 0;
                 }
                 estModeSnapshot = false;
-                pageActuelle = 1;
+                articlesVisiblesLimite = 12;
                 genererRenduInterface();
             }
         }
@@ -488,15 +499,34 @@
         }
 
         /**
-         * @function configurerMenuPagination
-         * @description Intercepte le changement de valeur du menu déroulant pour modifier la page de lecture active.
+         * @function configurerCapteurDefilementInfini
+         * @description Intercepte l'événement d'oscillation de l'ascenseur sur le div de rendu des cartes.
+         * Rôle didactique : Illustrer la confrontation géométrique de scrollTop, clientHeight et scrollHeight.
          */
-        function configurerMenuPagination() {
-            document.getElementById("select-pagination").addEventListener("change", (e) => {
-                pageActuelle = parseInt(e.target.value);
-                genererRenduInterface();
-                // Remonte automatiquement l'ascenseur vertical de la zone d'affichage pour le confort de lecture
-                document.getElementById("timeline-container").scrollTop = 0;
+        function configurerCapteurDefilementInfini() {
+            const conteneurMosaïque = document.getElementById("timeline-container");
+            
+            conteneurMosaïque.addEventListener("scroll", () => {
+                // Si l'interface est confinée dans le mode snapshot d'accueil, le défilement infini est inhibé
+                if (estModeSnapshot) return;
+                
+                /**
+                 * ÉQUATION GÉOMÉTRIQUE DU BAS DE PAGE :
+                 * conteneurMosaïque.scrollTop : Distance pixel glissée hors écran vers le haut.
+                 * conteneurMosaïque.clientHeight : Hauteur physique visible de la fenêtre d'affichage.
+                 * conteneurMosaïque.scrollHeight : Hauteur totale théorique du composant incluant la zone masquée.
+                 * Un seuil tampon de 150px est instauré pour précharger avant l'arrêt complet de l'œil.
+                 */
+                const positionBasseActuelle = conteneurMosaïque.scrollTop + conteneurMosaïque.clientHeight;
+                const seuilDeclenchementRéseau = conteneurMosaïque.scrollHeight - 150;
+                
+                if (positionBasseActuelle >= seuilDeclenchementRéseau) {
+                    /* Si le volume affiché est inférieur au gisement d'actualités filtrées disposé en mémoire */
+                    if (articlesVisiblesLimite < totalArticlesFiltrésActuels) {
+                        articlesVisiblesLimite += 12; // Extension par incrément d'un bloc de 12 fiches
+                        genererRenduInterface();      // Injection des cartes complémentaires sans rupture de focus
+                    }
+                }
             });
         }
 
@@ -632,8 +662,8 @@
                     bouton.textContent = source;
                     bouton.addEventListener("click", () => {
                         document.getElementById("btn-master-clear").classList.remove("active");
-                        estModeSnapshot = false; // Cliquer sur un bouton de flux désactive l'instantané fixe
-                        pageActuelle = 1;        // Retour à la page 1
+                        estModeSnapshot = false; 
+                        articlesVisiblesLimite = 12; // Réinitialisation de la jauge lors d'un clic de filtre ciblé
                         
                         if (sourcesActives.has(source)) {
                             sourcesActives.delete(source);
@@ -652,19 +682,22 @@
                 boitePrincipale.appendChild(conteneurGroupe);
             }
 
-            /* MODIFICATION TECHNIQUE DU BOUTON DE RÉINITIALISATION GLOBALE */
             document.getElementById("btn-master-clear").addEventListener("click", function() {
                 sourcesActives.clear();
                 document.querySelectorAll(".sidebar-panel .filter-btn").forEach(b => b.classList.remove("active"));
                 this.classList.add("active");
                 
-                /* EXIGENCE UTILISATEUR COMPRISE : Clic Reset = Afficher TOUTES les news sous forme paginée */
+                /* VALIDATION PROTOCOLE EXIGENCE UTILISATEUR : 
+                   Le clic sur Tout afficher brise le mode snapshot initial,
+                   replace le curseur au début (12) et libère l'intégralité du défilement infini. */
                 estModeSnapshot = false;  
-                pageActuelle = 1;         
+                articlesVisiblesLimite = 12; 
                 termeRechercheGlobal = "";
                 document.getElementById("search-bar").value = "";
                 
                 genererRenduInterface();
+                // Repositionne l'ascenseur au sommet de la grille pour le confort visuel
+                document.getElementById("timeline-container").scrollTop = 0;
             });
         }
 
@@ -727,16 +760,18 @@
 
         /**
          * @function genererRenduInterface
-         * @description Gère l'aiguillage sémantique du rendu des cartes et l'injection du sélecteur de pagination.
+         * @description Construit dynamiquement la mosaïque des cartes d'articles.
+         * Intègre l'algorithme d'étêtage sémantique (Snapshot) ou de découpage arithmétique (Défilement infini).
          */
         function genererRenduInterface() {
             const conteneurGrid = document.getElementById("timeline-container");
-            const selectPagination = document.getElementById("select-pagination");
             const loaderInitial = document.getElementById("main-loader");
             if (loaderInitial) loaderInitial.remove();
-            conteneurGrid.innerHTML = "";
             
-            /* Étape 1 : Filtrage des métadonnées selon les critères temporels et textuels */
+            // Si c'est le premier rendu de la session, on nettoie le tableau de bord
+            if (articlesVisiblesLimite === 12 || estModeSnapshot) { conteneurGrid.innerHTML = ""; }
+            
+            /* Phase 1 : Filtrage des métadonnées de base selon la recherche ou la temporalité */
             let articlesFiltres = baseArticlesGlobal.filter(art => {
                 const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
                 const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
@@ -744,9 +779,9 @@
                 return passeFiltreSource && passeFiltreTexte && passeFiltreDate;
             });
             
-            /* Étape 2 : Aiguillage vers l'un des deux modes d'affichage */
+            /* Phase 2 : Calcul de l'aiguillage structurel */
             if (estModeSnapshot) {
-                /* MODE ACCUEIL FIXE : Une seule actualité par axe thématique */
+                /* A. MODE SNAPSHOT INITIAL : Isolement sémantique exclusif (1 seul article par catégorie métier) */
                 const categoriesVuRendu = new Set();
                 articlesFiltres = articlesFiltres.filter(art => {
                     const sourceCle = art.titreSource.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -757,41 +792,22 @@
                     }
                     return false;
                 });
-                // Le menu de pagination reste masqué dans cette configuration d'enveloppe simplifiée
-                selectPagination.style.display = "none";
             } else {
-                /* MODE ARCHIVE GLOBALE COMPLET AVEC MENU DÉROULANT DE PAGINATION */
-                const totalArticles = articlesFiltres.length;
-                const totalPages = Math.ceil(totalArticles / ARTICLES_PAR_PAGE) || 1;
+                /* B. MODE ARCHIVE COMPLÈTE (DÉFILEMENT INFINI) */
+                totalArticlesFiltrésActuels = articlesFiltres.length; // Enregistrement de la hauteur théorique maximale
                 
-                // Sécurisation de l'index de page
-                if (pageActuelle > totalPages) pageActuelle = totalPages;
-                
-                // Reconstruction dynamique des options du menu déroulant au fil du volume d'articles trouvés
-                selectPagination.innerHTML = "";
-                for (let i = 1; i <= totalPages; i++) {
-                    const option = document.createElement("option");
-                    option.value = i;
-                    option.textContent = `📖 Page ${i} / ${totalPages} (${totalArticles} actualités)`;
-                    if (i === pageActuelle) option.selected = true;
-                    selectPagination.appendChild(option);
-                }
-                
-                // Visibilité conditionnelle du menu déroulant (uniquement si le volume de données requiert plus d'une page)
-                selectPagination.style.display = (totalPages > 1) ? "inline-block" : "none";
-                
-                // Tronquage arithmétique de l'index du tableau pour n'isoler que le bloc utile à la page courante
-                const indiceDebut = (pageActuelle - 1) * ARTICLES_PAR_PAGE;
-                const indiceFin = indiceDebut + ARTICLES_PAR_PAGE;
-                articlesFiltres = articlesFiltres.slice(indiceDebut, indiceFin);
+                // On applique un découpage (slice) du tableau de l'index 0 jusqu'à la limite autorisée par le scroll
+                articlesFiltres = articlesFiltres.slice(0, articlesVisiblesLimite);
             }
             
-            if (articlesFiltres.length === 0) {
+            if (articlesFiltres.length === 0 && conteneurGrid.children.length === 0) {
                 conteneurGrid.innerHTML = "<div class='loader'>Aucun article ne correspond aux critères.</div>";
                 return;
             }
             
-            /* Étape 3 : Rendu des cartes fiches documentaires au sein du DOM */
+            /* Phase 3 : Nettoyage et ré-injection sémantique dans la grille */
+            conteneurGrid.innerHTML = "";
+            
             articlesFiltres.forEach(art => {
                 const elementCarte = document.createElement("div");
                 elementCarte.className = "article-card";
@@ -850,7 +866,7 @@
                     });
                 });
 
-                /* Analyse sémantique et traduction asynchrone des flux anglophones */
+                /* Traitement de détection linguistique et traduction automatique */
                 const regexAnglais = /\b(the|and|of|in|to|for|with|on|at|by|from|new|release|software|drone|satellite|surveying|update|news|gps|world|lidar|geospatial)\b/i;
                 if (art.titreArticle && regexAnglais.test(art.titreArticle)) { lancerTraductionAsynchrone(idTitre, art.titreArticle, true); }
                 if (art.extrait && !art.extrait.startsWith("Consulter") && regexAnglais.test(art.extrait)) { lancerTraductionAsynchrone(idExtrait, art.extrait, false); }
