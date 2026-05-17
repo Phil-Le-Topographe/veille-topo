@@ -37,8 +37,8 @@
         body.dark-theme {
             --primary-dark: #f7fafc;       
             --accent-red: #fc8181;         
-            --bg-main: #0f172a;            /* Bleu nuit profond agissant comme absorbeur de lumière */
-            --sidebar-bg: #1e293b;         /* Ardoise sombre pour le panneau latéral gauche */
+            --bg-main: #0f172a;            
+            --sidebar-bg: #1e293b;         
             --card-bg: #1e293b;            
             --text-muted: #94a3b8;         
             --border-light: #334155;       
@@ -64,7 +64,6 @@
             overflow: hidden;             
         }
 
-        /* En-tête supérieur fixe positionné de manière absolue au sommet du viewport */
         header {
             position: fixed;
             top: 0; left: 0; width: 100%;
@@ -83,9 +82,6 @@
         header small { font-size: 0.75rem; display: block; }
         .header-actions { display: flex; align-items: center; gap: 10px; }
 
-        /* ==========================================================================
-           ARCHITECTURE DASHBOARD DOUBLE COLONNE COULISSANTE (LAYOUT FIXE)
-           ========================================================================== */
         .app-layout {
             position: fixed;
             top: var(--header-height); left: 0; right: 0; bottom: 0;
@@ -93,7 +89,6 @@
             overflow: hidden;
         }
 
-        /* Panneau latéral gauche fixe (Sidebar) dédié à la taxonomie à 9 axes */
         .sidebar-panel {
             width: 380px;
             flex-shrink: 0;                
@@ -108,7 +103,6 @@
             overflow-y: auto;              
         }
 
-        /* Conteneurs enveloppants pour la mise en relief des catégories métiers */
         .category-group {
             display: flex;
             flex-direction: column;
@@ -137,7 +131,6 @@
             gap: 6px;
         }
 
-        /* Espace de lecture droit absorbant la totalité de la largeur restante */
         .content-area {
             flex-grow: 1;                  
             display: flex;
@@ -146,7 +139,6 @@
             overflow: hidden;
         }
 
-        /* Barre supérieure de recherche et filtres temporels */
         .content-control-bar {
             background-color: var(--sidebar-bg);
             border-bottom: 1px solid var(--border-light);
@@ -180,7 +172,6 @@
 
         .date-filter-wrapper { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-        /* Grille d'affichage des cartes : Défilement vertical totalement indépendant */
         .timeline-grid {
             flex-grow: 1;                  
             overflow-y: auto;              
@@ -193,7 +184,7 @@
         }
 
         /* ==========================================================================
-           COMPOSANTS GRAPHONOMIQUES : BOUTONS ET CARTES (CARDS)
+           COMPOSANTS GRAPHONOMIQUES : BOUTONS ET CARTES
            ========================================================================== */
         .filter-btn {
             background-color: var(--card-bg);
@@ -214,10 +205,10 @@
             border-color: var(--accent-red);
             box-shadow: 0 2px 4px rgba(197, 48, 48, 0.15);
         }
-        .filter-btn.clear-all { border-style: dashed; font-weight: 700; width: 100%; text-align: center; }
+        .filter-btn.clear-all { background-color: var(--accent-red); color: #ffffff; border-color: var(--accent-red); font-weight: 700; width: 100%; text-align: center; }
+        .filter-btn.clear-all:hover { background-color: #a52828; }
         .filter-btn.help-btn { background-color: transparent; border-color: var(--text-muted); color: var(--text-muted); font-weight: bold; }
 
-        /* Fiches d'actualités documentaires */
         .article-card {
             background: var(--card-bg);
             border: 1px solid var(--border-light);
@@ -243,7 +234,6 @@
         .card-title { font-size: 0.92rem; font-weight: 600; line-height: 1.3; margin: 0 0 8px 0; color: var(--primary-dark); }
         .card-excerpt { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 12px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-        /* Styles spécifiques appliqués pour marquer graphiquement les textes traduits */
         .translated-text { border-left: 2px solid #3182ce; padding-left: 6px; font-style: italic; }
         .translated-title { border-left: 2px solid #3182ce; padding-left: 6px; display: block; }
 
@@ -255,7 +245,7 @@
         .loader { grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted); font-size: 1rem; }
 
         /* ==========================================================================
-           ISOLATION HERMÉTIQUE DE LA MODALE D'AIDE (SÉCURITÉ DISPLAY)
+           ISOLATION HERMÉTIQUE DE LA MODALE D'AIDE
            ========================================================================== */
         .modal-overlay {
             display: none;                
@@ -321,6 +311,8 @@
                             <option value="custom">Sélectionner une date limite...</option>
                         </select>
                         <input type="date" id="input-custom-date" class="search-input" style="width: auto; padding: 7px 12px; display: none;">
+                        
+                        <select id="select-pagination" class="search-input" style="width: auto; padding: 9px 12px; display: none; border-color: var(--accent-red); font-weight: bold;" title="Naviguer à travers les pages d'archives"></select>
                         
                         <button class="filter-btn" id="btn-copy-all" style="border-color: var(--text-muted);" title="Compiler et copier uniquement les fiches étoilées visibles">📋 Copier le choix</button>
                         <button class="filter-btn" id="btn-reset-stars" style="border-color: var(--text-muted);" title="Effacer toutes les étoiles attribuées">⭐ Réinitialiser les notes</button>
@@ -392,11 +384,17 @@
         const CACHE_KEY_TIME = "veille_topo_timestamp_v2";
         const DUREE_CACHE = 3600000; 
 
+        /* Variables d'état globales de l'application */
         let baseArticlesGlobal = [];
         let listeSourcesUniques = new Set();
         let sourcesActives = new Set();
         let termeRechercheGlobal = "";
         let filtreDateSeuilGlobal = 0;
+        
+        /* NOUVELLES CLÉS LOGIQUES POUR LA PAGINATION */
+        let estModeSnapshot = true;      // Drapeau d'état initial (Vrai à l'ouverture de la page)
+        let pageActuelle = 1;            // Index de la page active au sein du mode archive
+        const ARTICLES_PAR_PAGE = 12;    // Volume de fiches affichées par bloc de page
 
         document.addEventListener("DOMContentLoaded", () => {
             configurerCommutateurTheme();
@@ -405,6 +403,7 @@
             configurerBoutonRafraichissement();
             configurerEvenementsModaleAide();
             configurerBoutonsGlobauxEvaluation();
+            configurerMenuPagination();
             gererCycleDeVieDonnees();
         });
 
@@ -420,6 +419,8 @@
         function configurerBarreRecherche() {
             document.getElementById("search-bar").addEventListener("input", (e) => {
                 termeRechercheGlobal = e.target.value.toLowerCase().trim();
+                estModeSnapshot = false;  // La saisie d'un texte désactive le mode snapshot restrictif
+                pageActuelle = 1;         // Réinitialisation automatique à la page 1
                 genererRenduInterface();
             });
         }
@@ -432,6 +433,8 @@
                 const choix = e.target.value;
                 const instantMaintenant = Date.now();
                 inputCalendar.style.display = (choix === "custom") ? "inline-block" : "none";
+                estModeSnapshot = false;  // Un filtrage par date désactive l'instantané fixe
+                pageActuelle = 1;
 
                 switch (choix) {
                     case "all": filtreDateSeuilGlobal = 0; break;
@@ -453,6 +456,8 @@
                 } else {
                     filtreDateSeuilGlobal = 0;
                 }
+                estModeSnapshot = false;
+                pageActuelle = 1;
                 genererRenduInterface();
             }
         }
@@ -479,6 +484,19 @@
             document.getElementById("btn-reset-stars").addEventListener("click", purgerToutesLesEtoiles);
             document.getElementById("btn-share-guide").addEventListener("click", () => {
                 alert("📋 MODE D'EMPLOI :\n1. Notez les articles pertinents (1 à 4 étoiles).\n2. Cliquez sur 'Copier le choix' pour extraire les fiches cochées.\n3. Collez directement le résultat dans un courriel.");
+            });
+        }
+
+        /**
+         * @function configurerMenuPagination
+         * @description Intercepte le changement de valeur du menu déroulant pour modifier la page de lecture active.
+         */
+        function configurerMenuPagination() {
+            document.getElementById("select-pagination").addEventListener("change", (e) => {
+                pageActuelle = parseInt(e.target.value);
+                genererRenduInterface();
+                // Remonte automatiquement l'ascenseur vertical de la zone d'affichage pour le confort de lecture
+                document.getElementById("timeline-container").scrollTop = 0;
             });
         }
 
@@ -547,7 +565,7 @@
                 
                 if (balisesArticles.length > 0) { listeSourcesUniques.add(titreSource); }
 
-                Array.from(balisesArticles).slice(0, 5).forEach(article => {
+                Array.from(balisesArticles).forEach(article => {
                     const titreArticle = article.querySelector("title")?.textContent || "Sans titre";
                     let lienArticle = estAtom ? article.querySelector("link")?.getAttribute("href") : article.querySelector("link")?.textContent;
                     let chaineDate = article.querySelector("pubDate")?.textContent || article.querySelector("updated")?.textContent || article.querySelector("published")?.textContent || article.querySelector("date")?.textContent || "";
@@ -614,6 +632,9 @@
                     bouton.textContent = source;
                     bouton.addEventListener("click", () => {
                         document.getElementById("btn-master-clear").classList.remove("active");
+                        estModeSnapshot = false; // Cliquer sur un bouton de flux désactive l'instantané fixe
+                        pageActuelle = 1;        // Retour à la page 1
+                        
                         if (sourcesActives.has(source)) {
                             sourcesActives.delete(source);
                             bouton.classList.remove("active");
@@ -631,10 +652,18 @@
                 boitePrincipale.appendChild(conteneurGroupe);
             }
 
+            /* MODIFICATION TECHNIQUE DU BOUTON DE RÉINITIALISATION GLOBALE */
             document.getElementById("btn-master-clear").addEventListener("click", function() {
                 sourcesActives.clear();
                 document.querySelectorAll(".sidebar-panel .filter-btn").forEach(b => b.classList.remove("active"));
                 this.classList.add("active");
+                
+                /* EXIGENCE UTILISATEUR COMPRISE : Clic Reset = Afficher TOUTES les news sous forme paginée */
+                estModeSnapshot = false;  
+                pageActuelle = 1;         
+                termeRechercheGlobal = "";
+                document.getElementById("search-bar").value = "";
+                
                 genererRenduInterface();
             });
         }
@@ -651,7 +680,7 @@
                 return passeFiltreSource && passeFiltreTexte && passeFiltreDate && noteActuelle > 0;
             });
 
-            if (sourcesActives.size === 0 && !termeRechercheGlobal) {
+            if (estModeSnapshot) {
                 const categoriesVuExport = new Set();
                 articlesEtoilesVisibles = articlesEtoilesVisibles.filter(art => {
                     const sourceCle = art.titreSource.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -696,12 +725,18 @@
             }
         }
 
+        /**
+         * @function genererRenduInterface
+         * @description Gère l'aiguillage sémantique du rendu des cartes et l'injection du sélecteur de pagination.
+         */
         function genererRenduInterface() {
             const conteneurGrid = document.getElementById("timeline-container");
+            const selectPagination = document.getElementById("select-pagination");
             const loaderInitial = document.getElementById("main-loader");
             if (loaderInitial) loaderInitial.remove();
             conteneurGrid.innerHTML = "";
             
+            /* Étape 1 : Filtrage des métadonnées selon les critères temporels et textuels */
             let articlesFiltres = baseArticlesGlobal.filter(art => {
                 const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
                 const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
@@ -709,7 +744,9 @@
                 return passeFiltreSource && passeFiltreTexte && passeFiltreDate;
             });
             
-            if (sourcesActives.size === 0 && !termeRechercheGlobal) {
+            /* Étape 2 : Aiguillage vers l'un des deux modes d'affichage */
+            if (estModeSnapshot) {
+                /* MODE ACCUEIL FIXE : Une seule actualité par axe thématique */
                 const categoriesVuRendu = new Set();
                 articlesFiltres = articlesFiltres.filter(art => {
                     const sourceCle = art.titreSource.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -720,6 +757,33 @@
                     }
                     return false;
                 });
+                // Le menu de pagination reste masqué dans cette configuration d'enveloppe simplifiée
+                selectPagination.style.display = "none";
+            } else {
+                /* MODE ARCHIVE GLOBALE COMPLET AVEC MENU DÉROULANT DE PAGINATION */
+                const totalArticles = articlesFiltres.length;
+                const totalPages = Math.ceil(totalArticles / ARTICLES_PAR_PAGE) || 1;
+                
+                // Sécurisation de l'index de page
+                if (pageActuelle > totalPages) pageActuelle = totalPages;
+                
+                // Reconstruction dynamique des options du menu déroulant au fil du volume d'articles trouvés
+                selectPagination.innerHTML = "";
+                for (let i = 1; i <= totalPages; i++) {
+                    const option = document.createElement("option");
+                    option.value = i;
+                    option.textContent = `📖 Page ${i} / ${totalPages} (${totalArticles} actualités)`;
+                    if (i === pageActuelle) option.selected = true;
+                    selectPagination.appendChild(option);
+                }
+                
+                // Visibilité conditionnelle du menu déroulant (uniquement si le volume de données requiert plus d'une page)
+                selectPagination.style.display = (totalPages > 1) ? "inline-block" : "none";
+                
+                // Tronquage arithmétique de l'index du tableau pour n'isoler que le bloc utile à la page courante
+                const indiceDebut = (pageActuelle - 1) * ARTICLES_PAR_PAGE;
+                const indiceFin = indiceDebut + ARTICLES_PAR_PAGE;
+                articlesFiltres = articlesFiltres.slice(indiceDebut, indiceFin);
             }
             
             if (articlesFiltres.length === 0) {
@@ -727,6 +791,7 @@
                 return;
             }
             
+            /* Étape 3 : Rendu des cartes fiches documentaires au sein du DOM */
             articlesFiltres.forEach(art => {
                 const elementCarte = document.createElement("div");
                 elementCarte.className = "article-card";
@@ -785,19 +850,13 @@
                     });
                 });
 
-                /* ==========================================================================
-                   DÉTECTION SÉMANTIQUE ET TRADUCTION AUTOMATIQUE DES FLUX ANGLOPHONES
-                   ========================================================================== */
+                /* Analyse sémantique et traduction asynchrone des flux anglophones */
                 const regexAnglais = /\b(the|and|of|in|to|for|with|on|at|by|from|new|release|software|drone|satellite|surveying|update|news|gps|world|lidar|geospatial)\b/i;
                 if (art.titreArticle && regexAnglais.test(art.titreArticle)) { lancerTraductionAsynchrone(idTitre, art.titreArticle, true); }
                 if (art.extrait && !art.extrait.startsWith("Consulter") && regexAnglais.test(art.extrait)) { lancerTraductionAsynchrone(idExtrait, art.extrait, false); }
             });
         }
 
-        /**
-         * @function lancerTraductionAsynchrone
-         * @description Gère l'appel décentralisé vers l'API Google Translate et injecte le résultat dans le DOM.
-         */
         async function lancerTraductionAsynchrone(idDOM, texteOriginal, estUnTitre) {
             const urlTraduction = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=fr&dt=t&q=${encodeURIComponent(texteOriginal)}`;
             try {
