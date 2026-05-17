@@ -9,20 +9,21 @@
     <style>
         /* ==========================================================================
            VARIABLES GLOBALES DE CONFIGURATION (DESIGN SYSTEM - MODE CLAIR)
+           Centralisation pour simplifier la maintenance et l'adaptation des styles.
            ========================================================================== */
         :root {
-            --primary-dark: #1a202c;       /* Anthracite profond pour le texte principal (contraste élevé) */
-            --accent-red: #c53030;         /* Rouge institutionnel signalant l'état actif et les repères */
-            --bg-main: #f7fafc;            /* Teinte claire pour le fond de la zone de lecture */
-            --sidebar-bg: #ffffff;         /* Blanc pur pour l'isolation du panneau de gauche */
-            --card-bg: #ffffff;            /* Fond blanc pour le détachement des cartes d'actualités */
-            --text-muted: #718096;         /* Gris neutre intermédiaire pour les métadonnées de veille */
-            --border-light: #e2e8f0;       /* Lignes de délimitation géométrique des modules */
-            --input-bg: #ffffff;           /* Fond des champs de saisie de texte */
-            --star-color: #e2e8f0;         /* Teinte des étoiles d'évaluation inactives */
-            --star-active: #ecc94b;        /* Jaune ambré à haut contraste pour le choix enseignant */
+            --primary-dark: #1a202c;       /* Anthracite profond assurant un contraste textuel élevé (APCA) */
+            --accent-red: #c53030;         /* Rouge de repère pour l'état actif des filtres métiers */
+            --bg-main: #f7fafc;            /* Teinte neutre claire limitant la fatigue visuelle des utilisateurs */
+            --sidebar-bg: #ffffff;         /* Fond blanc pur isolant la zone de contrôle latérale gauche */
+            --card-bg: #ffffff;            /* Fond des fiches assurant le détachement sémantique des cartes */
+            --text-muted: #718096;         /* Gris intermédiaire dédié aux métadonnées temporelles et sources */
+            --border-light: #e2e8f0;       /* Lignes fines de délimitation structurelle des modules */
+            --input-bg: #ffffff;           /* Fond des zones de saisie textuelle */
+            --star-color: #e2e8f0;         /* Couleur neutre des icônes de notation inactives */
+            --star-active: #ecc94b;        /* Jaune ambré à haut contraste pour la sélection d'actualités */
             
-            /* Surcharges chromatiques appliquées aux en-têtes des 9 catégories métiers */
+            /* Couleurs d'accentuation pour les en-têtes des 9 thématiques métiers */
             --theme-header-bg: #f8fafc;    
             --theme-header-text: #2d3748;  
             
@@ -33,12 +34,13 @@
 
         /* ==========================================================================
            VARIABLES DE THÉMATISATION ALTERNATIVE (DESIGN SYSTEM - MODE SOMBRE)
+           Activé par l'injection dynamique de la classe .dark-theme sur la balise body.
            ========================================================================== */
         body.dark-theme {
             --primary-dark: #f7fafc;       
             --accent-red: #fc8181;         
-            --bg-main: #0f172a;            
-            --sidebar-bg: #1e293b;         
+            --bg-main: #0f172a;            /* Bleu nuit profond agissant comme absorbeur de lumière */
+            --sidebar-bg: #1e293b;         /* Ardoise sombre pour le panneau de commande */
             --card-bg: #1e293b;            
             --text-muted: #94a3b8;         
             --border-light: #334155;       
@@ -51,6 +53,7 @@
 
         /* ==========================================================================
            PROPRIÉTÉS DE SÉCURISATION DU PLAN DE VUE (VIEWPORT LOCK)
+           Le masquage du débordement général empêche l'apparition d'un scroll global parasite.
            ========================================================================== */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -63,7 +66,7 @@
             overflow: hidden;             
         }
 
-        /* En-tête supérieur fixe positionné de manière absolue */
+        /* En-tête supérieur fixe ancré au sommet du viewport */
         header {
             position: fixed;
             top: 0; left: 0; width: 100%;
@@ -83,19 +86,19 @@
         .header-actions { display: flex; align-items: center; gap: 10px; }
 
         /* ==========================================================================
-           ARCHITECTURE DASHBOARD DOUBLE COLONNE SPLIT-SCREEN
+           ARCHITECTURE DASHBOARD DOUBLE COLONNE FIXE (SPLIT-SCREEN WORKSPACE)
            ========================================================================== */
         .app-layout {
             position: fixed;
             top: var(--header-height); left: 0; right: 0; bottom: 0;
-            display: flex;                 
+            display: flex;                 /* Répartition horizontale étanche */
             overflow: hidden;
         }
 
-        /* Panneau latéral gauche fixe (Sidebar) avec défilement interne */
+        /* Panneau latéral gauche fixe (Sidebar) avec défilement vertical interne autonome */
         .sidebar-panel {
             width: 380px;
-            flex-shrink: 0;                
+            flex-shrink: 0;                /* Interdit toute réduction de la largeur utile */
             background-color: var(--sidebar-bg);
             border-right: 1px solid var(--border-light);
             padding: 20px;
@@ -107,6 +110,7 @@
             overflow-y: auto;              
         }
 
+        /* Enveloppes thématiques de mise en relief des 9 catégories métiers */
         .category-group {
             display: flex;
             flex-direction: column;
@@ -124,7 +128,7 @@
             text-transform: uppercase;
             color: var(--accent-red);
             letter-spacing: 0.06em;
-            border-left: 3px solid var(--accent-red); 
+            border-left: 3px solid var(--accent-red); /* Repère de couleur rouge sémantique stable */
             padding-left: 10px;
             margin: 0 0 4px 0;
         }
@@ -135,16 +139,16 @@
             gap: 6px;
         }
 
-        /* Espace de traitement et d'affichage droit */
+        /* Espace d'affichage et d'analyse droit */
         .content-area {
-            flex-grow: 1;                  
+            flex-grow: 1;                  /* Absorbe l'intégralité de la largeur résiduelle */
             display: flex;
             flex-direction: column;
             height: 100%;
             overflow: hidden;
         }
 
-        /* Barre supérieure de filtrage et de recherche */
+        /* Barre supérieure fixe de filtrage textuel et temporel */
         .content-control-bar {
             background-color: var(--sidebar-bg);
             border-bottom: 1px solid var(--border-light);
@@ -178,10 +182,13 @@
 
         .date-filter-wrapper { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-        /* Grille des cartes d'articles : Zone étanche du défilement infini */
+        /* ==========================================================================
+           GRILLE DE DÉFILEMENT INFINI (TIMELINE GRID)
+           L'ascenseur vertical est strictement confiné au sein de ce composant.
+           ========================================================================== */
         .timeline-grid {
             flex-grow: 1;                  
-            overflow-y: auto;              /* RENDU CRITIQUE : Active l'ascenseur de défilement indépendant */
+            overflow-y: auto;              /* RENDU CRITIQUE : Zone d'activation de la scrollbar */
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
             gap: 25px;
@@ -191,7 +198,7 @@
         }
 
         /* ==========================================================================
-           COMPOSANTS GRAPHONOMIQUES : BOUTONS ET CARTES
+           COMPOSANTS GRAPHONOMIQUES INTERNES
            ========================================================================== */
         .filter-btn {
             background-color: var(--card-bg);
@@ -216,6 +223,7 @@
         .filter-btn.clear-all:hover { background-color: #a52828; }
         .filter-btn.help-btn { background-color: transparent; border-color: var(--text-muted); color: var(--text-muted); font-weight: bold; }
 
+        /* Fiches d'actualités (Cards) : Rendu à hauteur adaptative fluide */
         .article-card {
             background: var(--card-bg);
             border: 1px solid var(--border-light);
@@ -223,6 +231,7 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            min-height: 360px;             /* Sécurité structurelle anti-écrasement */
             height: 100%;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -231,7 +240,7 @@
         }
         .article-card:hover { transform: translateY(-3px); box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.08); }
 
-        .card-image-wrapper { width: 100%; height: 140px; background: var(--border-light); position: relative; }
+        .card-image-wrapper { width: 100%; height: 140px; background: var(--border-light); position: relative; flex-shrink: 0; }
         .card-image { width: 100%; height: 100%; object-fit: cover; }
         .card-image-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, #2c3e50 0%, #4a5568 100%); display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.1); }
         .card-image-placeholder svg { width: 35px; height: 35px; fill: currentColor; }
@@ -241,6 +250,9 @@
         .card-title { font-size: 0.92rem; font-weight: 600; line-height: 1.3; margin: 0 0 8px 0; color: var(--primary-dark); }
         .card-excerpt { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 12px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
+        .translated-text { border-left: 2px solid #3182ce; padding-left: 6px; font-style: italic; }
+        .translated-title { border-left: 2px solid #3182ce; padding-left: 6px; display: block; }
+
         .card-evaluation-row { margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
         .star-rating-box { display: flex; gap: 3px; }
         .star-item { font-size: 1rem; cursor: pointer; color: var(--star-color); }
@@ -248,27 +260,9 @@
         .card-date { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 4px; }
         .loader { grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted); font-size: 1rem; }
 
-        /* Modale d'aide sémantique isolée */
-        .modal-overlay {
-            display: none;                
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: rgba(0, 0, 0, 0.6);
-            justify-content: center; align-items: center;
-            z-index: 9999;                
-        }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 9999; }
         .modal-overlay.open { display: flex; } 
-
-        .modal-container {
-            background-color: var(--card-bg);
-            color: var(--primary-dark);
-            width: 90%; max-width: 800px; height: 80vh;
-            border-radius: var(--radius-md);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-            display: flex; flex-direction: column;
-            overflow: hidden;
-            border: 1px solid var(--border-light);
-        }
+        .modal-container { background-color: var(--card-bg); color: var(--primary-dark); width: 90%; max-width: 800px; height: 80vh; border-radius: var(--radius-md); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border-light); }
         .modal-header { padding: 20px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; background-color: var(--theme-header-bg); }
         .modal-header h2 { margin: 0; font-size: 1.2rem; color: var(--accent-red); }
         .modal-body { padding: 25px; overflow-y: auto; font-size: 0.9rem; }
@@ -290,7 +284,6 @@
     </header>
 
     <div class="app-layout">
-        
         <aside class="sidebar-panel">
             <button class="filter-btn clear-all active" id="btn-master-clear">🗂️ Tout afficher (Reset)</button>
             <div id="categories-filter-box"></div>
@@ -418,7 +411,7 @@
             document.getElementById("search-bar").addEventListener("input", (e) => {
                 termeRechercheGlobal = e.target.value.toLowerCase().trim();
                 estModeSnapshot = false;     
-                articlesVisiblesLimite = 12; 
+                articlesVisiblesLimite = 24; // Initialisation sécurisée à 24 pour remplir le plan de vue
                 genererRenduInterface();
             });
         }
@@ -432,7 +425,7 @@
                 const instantMaintenant = Date.now();
                 inputCalendar.style.display = (choix === "custom") ? "inline-block" : "none";
                 estModeSnapshot = false;
-                articlesVisiblesLimite = 12;
+                articlesVisiblesLimite = 24;
 
                 switch (choix) {
                     case "all": filtreDateSeuilGlobal = 0; break;
@@ -455,7 +448,7 @@
                     filtreDateSeuilGlobal = 0;
                 }
                 estModeSnapshot = false;
-                articlesVisiblesLimite = 12;
+                articlesVisiblesLimite = 24;
                 genererRenduInterface();
             }
         }
@@ -492,11 +485,11 @@
                 if (estModeSnapshot) return;
                 
                 const positionBasseActuelle = conteneurMosaïque.scrollTop + conteneurMosaïque.clientHeight;
-                const seuilDeclenchementRéseau = conteneurMosaïque.scrollHeight - 150;
+                const seuilDeclenchement = conteneurMosaïque.scrollHeight - 200; // Déclenchement anticipé à 200px du bas
                 
-                if (positionBasseActuelle >= seuilDeclenchementRéseau) {
+                if (positionBasseActuelle >= seuilDeclenchement) {
                     if (articlesVisiblesLimite < totalArticlesFiltrésActuels) {
-                        articlesVisiblesLimite += 12; 
+                        articlesVisiblesLimite += 12; // Injection incrémentielle saine de 12 fiches supplémentaires
                         genererRenduInterface();      
                     }
                 }
@@ -636,7 +629,7 @@
                     bouton.addEventListener("click", () => {
                         document.getElementById("btn-master-clear").classList.remove("active");
                         estModeSnapshot = false; 
-                        articlesVisiblesLimite = 12; 
+                        articlesVisiblesLimite = 24; 
                         
                         if (sourcesActives.has(source)) {
                             sourcesActives.delete(source);
@@ -660,8 +653,9 @@
                 document.querySelectorAll(".sidebar-panel .filter-btn").forEach(b => b.classList.remove("active"));
                 this.classList.add("active");
                 
+                /* LE CAPTEUR D'AMORÇAGE SÉCURISÉ INITIALISE LE FLUX À 24 ARTICLES */
                 estModeSnapshot = false;  
-                articlesVisiblesLimite = 12; 
+                articlesVisiblesLimite = 24; 
                 termeRechercheGlobal = "";
                 document.getElementById("search-bar").value = "";
                 
@@ -729,18 +723,18 @@
 
         /**
          * @function genererRenduInterface
-         * @description Construit dynamiquement la mosaïque des cartes d'articles.
-         * ALGORITHME AJUSTÉ : Évalue la présence d'une scrollbar. Si absente, charge automatique la suite.
+         * @description Construit le rendu linéaire des cartes au sein du DOM.
+         * L'élimination complète de la récursion synchrone restaure la stabilité géométrique globale.
          */
         function genererRenduInterface() {
             const conteneurGrid = document.getElementById("timeline-container");
             const loaderInitial = document.getElementById("main-loader");
             if (loaderInitial) loaderInitial.remove();
             
-            // Étape 1 : Sauvegarde synchrone de la position de l'ascenseur
+            // Étape 1 : Mémorisation de la position de l'ascenseur pour éviter les sauts visuels
             const memoireScroll = conteneurGrid.scrollTop;
             
-            /* Étape 2 : Filtrage de la base de données */
+            /* Étape 2 : Traitement des filtres de la base de données */
             let articlesFiltres = baseArticlesGlobal.filter(art => {
                 const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
                 const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
@@ -748,9 +742,8 @@
                 return passeFiltreSource && passeFiltreTexte && passeFiltreDate;
             });
             
-            /* Étape 3 : Application des aiguillages stricts de structures */
+            /* Étape 3 : Application des découpes de tableaux selon l'état structurel */
             if (estModeSnapshot) {
-                /* A. CONFIGURATION ACCUEIL INSTANTANÉ */
                 const categoriesVuRendu = new Set();
                 articlesFiltres = articlesFiltres.filter(art => {
                     const sourceCle = art.titreSource.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -762,7 +755,6 @@
                     return false;
                 });
             } else {
-                /* B. CONFIGURATION ARCHIVE COMPLÈTE AVEC SÉCURISATION */
                 totalArticlesFiltrésActuels = articlesFiltres.length;
                 articlesFiltres = articlesFiltres.slice(0, articlesVisiblesLimite);
             }
@@ -772,7 +764,7 @@
                 return;
             }
             
-            /* Étape 4 : Rendu des cartes fiches documentaires au sein du DOM */
+            /* Étape 4 : Ré-injection saine des éléments au sein de la grille Grid */
             conteneurGrid.innerHTML = "";
             
             articlesFiltres.forEach(art => {
@@ -833,27 +825,15 @@
                     });
                 });
 
+                /* Traduction asynchrone sécurisée des flux anglophones */
                 const regexAnglais = /\b(the|and|of|in|to|for|with|on|at|by|from|new|release|software|drone|satellite|surveying|update|news|gps|world|lidar|geospatial)\b/i;
                 if (art.titreArticle && regexAnglais.test(art.titreArticle)) { lancerTraductionAsynchrone(idTitre, art.titreArticle, true); }
                 if (art.extrait && !art.extrait.startsWith("Consulter") && regexAnglais.test(art.extrait)) { lancerTraductionAsynchrone(idExtrait, art.extrait, false); }
             });
 
-            // Étape 5 : Restauration immédiate de l'ascenseur pour éviter les sauts visuels
+            // Étape 5 : Restauration de la position pour garantir la continuité du défilement infini
             if (!estModeSnapshot) {
                 conteneurGrid.scrollTop = memoireScroll;
-            }
-
-            /* ==========================================================================
-               BOUCLE DE VÉRIFICATION RÉCURSIVE DE SÉCURITÉ DE L'ASCENSEUR (AUTO-FILL)
-               Si la hauteur du contenu dessiné (scrollHeight) est inférieure ou égale à 
-               la hauteur physique de la fenêtre (clientHeight), cela veut dire qu'il n'y a 
-               pas d'ascenseur. Le script charge alors un bloc de plus de manière automatique.
-               ========================================================================== */
-            if (!estModeSnapshot && articlesVisiblesLimite < totalArticlesFiltrésActuels) {
-                if (conteneurGrid.scrollHeight <= conteneurGrid.clientHeight) {
-                    articlesVisiblesLimite += 12; // Injection d'un incrément sémantique supplémentaire
-                    genererRenduInterface();      // Relance récursive immédiate
-                }
             }
         }
 
