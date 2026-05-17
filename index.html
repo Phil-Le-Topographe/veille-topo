@@ -63,6 +63,7 @@
             overflow: hidden;             
         }
 
+        /* En-tête supérieur fixe positionné de manière absolue */
         header {
             position: fixed;
             top: 0; left: 0; width: 100%;
@@ -82,7 +83,7 @@
         .header-actions { display: flex; align-items: center; gap: 10px; }
 
         /* ==========================================================================
-           INNER APP LAYOUT (SPLIT-SCREEN DOUBLE COLONNE)
+           ARCHITECTURE DASHBOARD DOUBLE COLONNE SPLIT-SCREEN
            ========================================================================== */
         .app-layout {
             position: fixed;
@@ -91,6 +92,7 @@
             overflow: hidden;
         }
 
+        /* Panneau latéral gauche fixe (Sidebar) avec défilement interne */
         .sidebar-panel {
             width: 380px;
             flex-shrink: 0;                
@@ -133,6 +135,7 @@
             gap: 6px;
         }
 
+        /* Espace de traitement et d'affichage droit */
         .content-area {
             flex-grow: 1;                  
             display: flex;
@@ -141,6 +144,7 @@
             overflow: hidden;
         }
 
+        /* Barre supérieure de filtrage et de recherche */
         .content-control-bar {
             background-color: var(--sidebar-bg);
             border-bottom: 1px solid var(--border-light);
@@ -174,12 +178,10 @@
 
         .date-filter-wrapper { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-        /* ==========================================================================
-           CONTENEUR DE RENDU DES CARTES : ZONE DU DÉFILEMENT INFINI
-           ========================================================================== */
+        /* Grille des cartes d'articles : Zone étanche du défilement infini */
         .timeline-grid {
             flex-grow: 1;                  
-            overflow-y: auto;              /* Active le scroll indépendant ciblé par le script */
+            overflow-y: auto;              /* RENDU CRITIQUE : Active l'ascenseur de défilement indépendant */
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
             gap: 25px;
@@ -189,7 +191,7 @@
         }
 
         /* ==========================================================================
-           COMPOSANTS GRAPHONOMIQUES : BOUTONS ET CARTES (CARDS)
+           COMPOSANTS GRAPHONOMIQUES : BOUTONS ET CARTES
            ========================================================================== */
         .filter-btn {
             background-color: var(--card-bg);
@@ -239,9 +241,6 @@
         .card-title { font-size: 0.92rem; font-weight: 600; line-height: 1.3; margin: 0 0 8px 0; color: var(--primary-dark); }
         .card-excerpt { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 12px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-        .translated-text { border-left: 2px solid #3182ce; padding-left: 6px; font-style: italic; }
-        .translated-title { border-left: 2px solid #3182ce; padding-left: 6px; display: block; }
-
         .card-evaluation-row { margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
         .star-rating-box { display: flex; gap: 3px; }
         .star-item { font-size: 1rem; cursor: pointer; color: var(--star-color); }
@@ -249,9 +248,7 @@
         .card-date { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 4px; }
         .loader { grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted); font-size: 1rem; }
 
-        /* ==========================================================================
-           ISOLATION HERMÉTIQUE DE LA MODALE D'AIDE (SÉCURITÉ DISPLAY)
-           ========================================================================== */
+        /* Modale d'aide sémantique isolée */
         .modal-overlay {
             display: none;                
             position: fixed;
@@ -733,17 +730,17 @@
         /**
          * @function genererRenduInterface
          * @description Construit dynamiquement la mosaïque des cartes d'articles.
-         * CORRECTION : Repose sur le booléen estModeSnapshot pour libérer le défilement complet.
+         * ALGORITHME AJUSTÉ : Évalue la présence d'une scrollbar. Si absente, charge automatique la suite.
          */
         function genererRenduInterface() {
             const conteneurGrid = document.getElementById("timeline-container");
             const loaderInitial = document.getElementById("main-loader");
             if (loaderInitial) loaderInitial.remove();
             
-            // Étape 1 : Sauvegarde synchrone de l'ascenseur pour éliminer le saut visuel vers le haut
+            // Étape 1 : Sauvegarde synchrone de la position de l'ascenseur
             const memoireScroll = conteneurGrid.scrollTop;
             
-            /* Étape 2 : Filtrage sémantique initial par texte ou par date */
+            /* Étape 2 : Filtrage de la base de données */
             let articlesFiltres = baseArticlesGlobal.filter(art => {
                 const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
                 const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
@@ -751,9 +748,9 @@
                 return passeFiltreSource && passeFiltreTexte && passeFiltreDate;
             });
             
-            /* Étape 3 : Application des règles structurelles selon l'état du drapeau logique */
+            /* Étape 3 : Application des aiguillages stricts de structures */
             if (estModeSnapshot) {
-                /* A. MODE ACCUEIL FIXE : Une seule actualité par axe thématique */
+                /* A. CONFIGURATION ACCUEIL INSTANTANÉ */
                 const categoriesVuRendu = new Set();
                 articlesFiltres = articlesFiltres.filter(art => {
                     const sourceCle = art.titreSource.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -765,7 +762,7 @@
                     return false;
                 });
             } else {
-                /* B. MODE ARCHIVE COMPLÈTE AVEC TRONÇONNAGE PROGRESSIF */
+                /* B. CONFIGURATION ARCHIVE COMPLÈTE AVEC SÉCURISATION */
                 totalArticlesFiltrésActuels = articlesFiltres.length;
                 articlesFiltres = articlesFiltres.slice(0, articlesVisiblesLimite);
             }
@@ -841,9 +838,22 @@
                 if (art.extrait && !art.extrait.startsWith("Consulter") && regexAnglais.test(art.extrait)) { lancerTraductionAsynchrone(idExtrait, art.extrait, false); }
             });
 
-            // Étape 5 : Restauration immédiate de l'ascenseur pour un défilement infini transparent
+            // Étape 5 : Restauration immédiate de l'ascenseur pour éviter les sauts visuels
             if (!estModeSnapshot) {
                 conteneurGrid.scrollTop = memoireScroll;
+            }
+
+            /* ==========================================================================
+               BOUCLE DE VÉRIFICATION RÉCURSIVE DE SÉCURITÉ DE L'ASCENSEUR (AUTO-FILL)
+               Si la hauteur du contenu dessiné (scrollHeight) est inférieure ou égale à 
+               la hauteur physique de la fenêtre (clientHeight), cela veut dire qu'il n'y a 
+               pas d'ascenseur. Le script charge alors un bloc de plus de manière automatique.
+               ========================================================================== */
+            if (!estModeSnapshot && articlesVisiblesLimite < totalArticlesFiltrésActuels) {
+                if (conteneurGrid.scrollHeight <= conteneurGrid.clientHeight) {
+                    articlesVisiblesLimite += 12; // Injection d'un incrément sémantique supplémentaire
+                    genererRenduInterface();      // Relance récursive immédiate
+                }
             }
         }
 
