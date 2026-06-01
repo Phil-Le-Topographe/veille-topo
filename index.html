@@ -1,864 +1,780 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" translate="no">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portail d'Ingénierie Documentaire - Géomatique & Topographie</title>
-    
-    <style>
-        /* ==========================================================================
-           VARIABLES GLOBALES DE THÉMATISATION (DESIGN SYSTEM - MODE CLAIR)
-           ========================================================================== */
-        :root {
-            --primary-dark: #1a202c;       /* Anthracite profond pour les textes majeurs */
-            --accent-red: #c53030;         /* Rouge institutionnel pour l'état actif et les titres */
-            --bg-main: #f7fafc;            /* Fond de page neutre pour limiter la fatigue visuelle */
-            --card-bg: #ffffff;            /* Blanc pur assurant le détachement des cartes */
-            --text-muted: #718096;         /* Gris intermédiaire pour les métadonnées et sous-titres */
-            --border-light: #e2e8f0;       /* Gris de délimitation pour les lignes de séparation */
-            --input-bg: #ffffff;           /* Fond des champs de saisie */
-            --star-color: #e2e8f0;         /* Gris par défaut pour les étoiles inactives */
-            --star-active: #ecc94b;        /* Jaune ambré pour les étoiles sélectionnées */
-            --radius-md: 12px;             /* Rayon de courbure des angles des cartes */
-            --radius-sm: 6px;              /* Rayon de courbure pour les boutons de filtrage */
-        }
-
-        /* ==========================================================================
-           SURCHARGE DE THÉMATISATION (DESIGN SYSTEM - MODE SOMBRE)
-           ========================================================================== */
-        body.dark-theme {
-            --primary-dark: #f7fafc;       
-            --accent-red: #fc8181;         
-            --bg-main: #0f172a;            /* Bleu nuit profond pour le fond général */
-            --card-bg: #1e293b;            /* Gris-bleu ardoise pour les modules de cartes */
-            --text-muted: #94a3b8;         
-            --border-light: #334155;       
-            --input-bg: #1e293b;           
-            --star-color: #475569;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-main);
-            color: var(--primary-dark);
-            margin: 0;
-            padding: 0;
-            line-height: 1.5;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        /* ==========================================================================
-           STRUCTURE DE LA PAGE ET MISES EN PAGE (FLEXBOX & GRID)
-           ========================================================================== */
-        header {
-            background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border-light);
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .header-actions {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 10px;
-        }
-
-        .actions-top-row {
-            display: flex;
-            gap: 10px;
-        }
-
-        .control-panel {
-            background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border-light);
-            padding: 20px 40px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .search-zone-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-items: center;
-            width: 100%;
-        }
-
-        .search-wrapper {
-            position: relative;
-            flex: 1 1 300px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 10px 15px;
-            background-color: var(--input-bg);
-            color: var(--primary-dark);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-sm);
-            font-size: 0.9rem;
-            outline: none;
-            box-sizing: border-box;
-            transition: border-color 0.2s ease;
-        }
-
-        .search-input:focus { border-color: var(--accent-red); }
-
-        .date-filter-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .category-group {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 10px;
-            padding: 5px 0;
-        }
-
-        .category-label {
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            min-width: 120px;
-        }
-
-        .filter-btn {
-            background-color: var(--bg-main);
-            color: var(--primary-dark);
-            border: 1px solid var(--border-light);
-            padding: 6px 14px;
-            font-size: 0.82rem;
-            font-weight: 500;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            user-select: none;
-        }
-
-        .filter-btn:hover { background-color: var(--border-light); }
-
-        .filter-btn.active {
-            background-color: var(--accent-red);
-            color: #ffffff;
-            border-color: var(--accent-red);
-            box-shadow: 0 2px 4px rgba(197, 48, 48, 0.2);
-        }
-
-        .filter-btn.clear-all { border-style: dashed; font-weight: 700; }
-        
-        .filter-btn.help-btn {
-            background-color: transparent;
-            border-color: var(--text-muted);
-            color: var(--text-muted);
-            font-weight: bold;
-        }
-        .filter-btn.help-btn:hover {
-            background-color: var(--bg-main);
-            color: var(--primary-dark);
-        }
-
-        .timeline-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
-            padding: 40px;
-        }
-
-        /* ==========================================================================
-           COMPOSANTS GRAPHONOMIQUES : CARTES (CARDS)
-           ========================================================================== */
-        .article-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            color: inherit;
-            text-decoration: none;
-        }
-
-        .article-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-image-wrapper {
-            width: 100%;
-            height: 160px;
-            background: var(--border-light);
-            position: relative;
-        }
-
-        .card-image { width: 100%; height: 100%; object-fit: cover; }
-
-        .card-image-placeholder {
-            width: 100%; height: 100%;
-            background: linear-gradient(135deg, #2c3e50 0%, #4a5568 100%);
-            display: flex; align-items: center; justify-content: center;
-            color: rgba(255, 255, 255, 0.15);
-        }
-
-        .card-image-placeholder svg { width: 40px; height: 40px; fill: currentColor; }
-
-        .card-content { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
-
-        .card-source { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-red); font-weight: 700; margin-bottom: 8px; }
-
-        .card-title { font-size: 1rem; font-weight: 600; line-height: 1.4; margin: 0 0 10px 0; color: var(--primary-dark); }
-
-        .card-excerpt { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 15px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-
-        .translated-text { border-left: 2px solid #3182ce; padding-left: 6px; font-style: italic; }
-        
-        .translated-title { border-left: 2px solid #3182ce; padding-left: 6px; display: block; }
-
-        .card-evaluation-row {
-            margin-top: auto; 
-            border-top: 1px solid var(--border-light);
-            padding-top: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .star-rating-box { display: flex; gap: 4px; }
-
-        .star-item {
-            font-size: 1.15rem;
-            cursor: pointer;
-            color: var(--star-color);
-            transition: color 0.15s ease, transform 0.1s ease;
-        }
-        .star-item:hover { transform: scale(1.2); }
-        .star-item.active { color: var(--star-active); }
-
-        .action-icon-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 4px 8px;
-            font-size: 0.8rem;
-            border-radius: 4px;
-            border: 1px solid transparent;
-            transition: all 0.2s ease;
-        }
-        .action-icon-btn:hover {
-            background-color: var(--bg-main);
-            border-color: var(--border-light);
-            color: var(--primary-dark);
-        }
-
-        .card-date { font-size: 0.68rem; color: var(--text-muted); margin-bottom: 5px; }
-
-        .loader { grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted); font-size: 1.1rem; }
-
-        /* ==========================================================================
-           INTERFACES EMBARQUÉES : FENÊTRE MODALE DE DOCUMENTATION (HELP OVERLAY)
-           ========================================================================== */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 1000;
-            opacity: 0; pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal-overlay.open { opacity: 1; pointer-events: auto; }
-
-        .modal-container {
-            background-color: var(--card-bg);
-            color: var(--primary-dark);
-            width: 90%; max-width: 800px; height: 80vh;
-            border-radius: var(--radius-md);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-            display: flex; flex-direction: column;
-            overflow: hidden;
-            border: 1px solid var(--border-light);
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-light);
-            display: flex; justify-content: space-between; align-items: center;
-            background-color: var(--bg-main);
-        }
-
-        .modal-header h2 { margin: 0; font-size: 1.2rem; color: var(--accent-red); }
-
-        .modal-body { padding: 25px; overflow-y: auto; font-size: 0.9rem; }
-
-        .modal-body h3 { color: var(--accent-red); margin-top: 20px; border-bottom: 1px solid var(--border-light); padding-bottom: 5px; }
-
-        .modal-body code { background-color: var(--bg-main); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: bold; }
-
-        .modal-body pre { background-color: var(--bg-main); padding: 12px; border-radius: 6px; border: 1px solid var(--border-light); overflow-x: auto; font-family: monospace; }
-        
-        .modal-note { background-color: rgba(49, 130, 206, 0.1); border-left: 4px solid #3182ce; padding: 10px 15px; margin: 15px 0; border-radius: 0 4px 4px 0; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>Tableau de Bord Documentaire - Topographie &amp; Géomatique</title>
+<style>
+/* ==========================================================================
+VARIABLES GLOBALES DE CONFIGURATION (DESIGN SYSTEM - MODE CLAIR)
+Centralisation pour simplifier la maintenance et l'adaptation des styles.
+========================================================================== */
+:root {
+--primary-dark: #1a202c; /* Anthracite profond assurant un contraste textuel élevé (APCA) */
+--accent-red: #c53030; /* Rouge de repère pour l'état actif des filtres métiers */
+--bg-main: #f7fafc; /* Teinte neutre claire limitant la fatigue visuelle des utilisateurs */
+--sidebar-bg: #ffffff; /* Fond blanc pur isolant la zone de contrôle latérale gauche */
+--card-bg: #ffffff; /* Fond des fiches assurant le détachement sémantique des cartes */
+--text-muted: #718096; /* Gris intermédiaire dédié aux métadonnées temporelles et sources */
+--border-light: #e2e8f0; /* Lignes fines de délimitation structurelle des modules */
+--input-bg: #ffffff; /* Fond des zones de saisie textuelle */
+--star-color: #e2e8f0; /* Couleur neutre des icônes de notation inactives */
+--star-active: #ecc94b; /* Jaune ambré à haut contraste pour la sélection d'actualités */
+/* Couleurs d'accentuation pour les en-têtes des 9 thématiques métiers */
+--theme-header-bg: #f8fafc;
+--theme-header-text: #2d3748;
+--radius-md: 12px; /* Rayon de courbure des angles des fiches documentaires */
+--radius-sm: 6px; /* Rayon d'arrondi des boutons de commande */
+--header-height: 70px; /* Hauteur fixe de la barre supérieure de navigation */
+}
+/* ==========================================================================
+VARIABLES DE THÉMATISATION ALTERNATIVE (DESIGN SYSTEM - MODE SOMBRE)
+Activé par l'injection dynamique de la classe .dark-theme sur la balise body.
+========================================================================== */
+body.dark-theme {
+--primary-dark: #f7fafc;
+--accent-red: #fc8181;
+--bg-main: #0f172a; /* Bleu nuit profond agissant comme absorbeur de lumière */
+--sidebar-bg: #1e293b; /* Ardoise sombre pour le panneau de commande */
+--card-bg: #1e293b;
+--text-muted: #94a3b8;
+--border-light: #334155;
+--input-bg: #0f172a;
+--star-color: #475569;
+--theme-header-bg: #111827;
+--theme-header-text: #e2e8f0;
+}
+/* ==========================================================================
+PROPRIÉTÉS DE SÉCURISATION DU PLAN DE VUE (VIEWPORT LOCK)
+Le masquage du débordement général empêche l'apparition d'un scroll global parasite.
+========================================================================== */
+body {
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+background-color: var(--bg-main);
+color: var(--primary-dark);
+margin: 0; padding: 0;
+line-height: 1.5;
+transition: background-color 0.2s ease, color 0.2s ease;
+height: 100vh;
+overflow: hidden;
+}
+/* En-tête supérieur fixe ancré au sommet du viewport */
+header {
+position: fixed;
+top: 0; left: 0; width: 100%;
+height: var(--header-height);
+background-color: var(--sidebar-bg);
+border-bottom: 1px solid var(--border-light);
+padding: 0 30px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+z-index: 100;
+box-sizing: border-box;
+}
+header h1 { font-size: 1.25rem; margin: 0; font-weight: 700; }
+header small { font-size: 0.75rem; display: block; }
+.header-actions { display: flex; align-items: center; gap: 10px; }
+/* ==========================================================================
+ARCHITECTURE DASHBOARD DOUBLE COLONNE FIXE (SPLIT-SCREEN WORKSPACE)
+========================================================================== */
+.app-layout {
+position: fixed;
+top: var(--header-height); left: 0; right: 0; bottom: 0;
+display: flex; /* Répartition horizontale étanche */
+overflow: hidden;
+}
+/* Panneau latéral gauche fixe (Sidebar) avec défilement vertical interne autonome */
+.sidebar-panel {
+width: 380px;
+flex-shrink: 0; /* Interdit toute réduction de la largeur utile */
+background-color: var(--sidebar-bg);
+border-right: 1px solid var(--border-light);
+padding: 20px;
+box-sizing: border-box;
+display: flex;
+flex-direction: column;
+gap: 12px;
+height: 100%;
+overflow-y: auto;
+}
+/* Enveloppes thématiques de mise en relief des 9 catégories métiers */
+.category-group {
+display: flex;
+flex-direction: column;
+gap: 10px;
+padding: 14px;
+background-color: var(--theme-header-bg);
+border: 1px solid var(--border-light);
+border-radius: var(--radius-md);
+transition: all 0.2s ease;
+}
+.category-label {
+font-size: 0.8rem;
+font-weight: 800;
+text-transform: uppercase;
+color: var(--accent-red);
+letter-spacing: 0.06em;
+border-left: 3px solid var(--accent-red); /* Repère de couleur rouge sémantique stable */
+padding-left: 10px;
+margin: 0 0 4px 0;
+}
+.category-buttons-block {
+display: flex;
+flex-wrap: wrap;
+gap: 6px;
+}
+/* Espace d'affichage et d'analyse droit */
+.content-area {
+flex-grow: 1; /* Absorbe l'intégralité de la largeur résiduelle */
+display: flex;
+flex-direction: column;
+height: 100%;
+overflow: hidden;
+}
+/* Barre supérieure fixe de filtrage textuel et temporel */
+.content-control-bar {
+background-color: var(--sidebar-bg);
+border-bottom: 1px solid var(--border-light);
+padding: 15px 30px;
+box-sizing: border-box;
+flex-shrink: 0;
+}
+.search-zone-wrapper {
+display: flex;
+flex-wrap: wrap;
+gap: 15px;
+align-items: center;
+width: 100%;
+}
+.search-wrapper { position: relative; flex: 1 1 250px; }
+.search-input {
+width: 100%;
+padding: 10px 15px;
+background-color: var(--input-bg);
+color: var(--primary-dark);
+border: 1px solid var(--border-light);
+border-radius: var(--radius-sm);
+font-size: 0.9rem;
+outline: none;
+box-sizing: border-box;
+}
+.search-input:focus { border-color: var(--accent-red); }
+.date-filter-wrapper { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+/* ==========================================================================
+GRILLE DE DÉFILEMENT INFINI (TIMELINE GRID)
+L'ascenseur vertical est strictement confiné au sein de ce composant.
+========================================================================== */
+.timeline-grid {
+flex-grow: 1;
+overflow-y: auto; /* RENDU CRITIQUE : Zone d'activation de la scrollbar */
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+gap: 25px;
+padding: 30px;
+box-sizing: border-box;
+background-color: var(--bg-main);
+}
+/* ==========================================================================
+COMPOSANTS GRAPHONOMIQUES INTERNES
+========================================================================== */
+.filter-btn {
+background-color: var(--card-bg);
+color: var(--primary-dark);
+border: 1px solid var(--border-light);
+padding: 5px 12px;
+font-size: 0.78rem;
+font-weight: 500;
+border-radius: var(--radius-sm);
+cursor: pointer;
+transition: all 0.15s ease;
+user-select: none;
+}
+.filter-btn:hover { background-color: var(--border-light); }
+.filter-btn.active {
+background-color: var(--accent-red);
+color: #ffffff;
+border-color: var(--accent-red);
+box-shadow: 0 2px 4px rgba(197, 48, 48, 0.15);
+}
+.filter-btn.clear-all { background-color: var(--accent-red); color: #ffffff; border-color: var(--accent-red); font-weight: 700; width: 100%; text-align: center; }
+.filter-btn.clear-all:hover { background-color: #a52828; }
+.filter-btn.help-btn { background-color: transparent; border-color: var(--text-muted); color: var(--text-muted); font-weight: bold; }
+/* Fiches d'actualités (Cards) : Rendu à hauteur adaptative fluide */
+.article-card {
+background: var(--card-bg);
+border: 1px solid var(--border-light);
+border-radius: var(--radius-md);
+overflow: hidden;
+display: flex;
+flex-direction: column;
+min-height: 360px; /* Sécurité structurelle anti-écrasement */
+height: 100%;
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+transition: transform 0.2s ease, box-shadow 0.2s ease;
+color: inherit;
+text-decoration: none;
+}
+.article-card:hover { transform: translateY(-3px); box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.08); }
+.card-image-wrapper { width: 100%; height: 140px; background: var(--border-light); position: relative; flex-shrink: 0; }
+.card-image { width: 100%; height: 100%; object-fit: cover; }
+.card-image-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, #2c3e50 0%, #4a5568 100%); display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.1); }
+.card-image-placeholder svg { width: 35px; height: 35px; fill: currentColor; }
+.card-content { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+.card-source { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-red); font-weight: 700; margin-bottom: 6px; }
+.card-title { font-size: 0.92rem; font-weight: 600; line-height: 1.3; margin: 0 0 8px 0; color: var(--primary-dark); }
+.card-excerpt { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 12px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.translated-text { border-left: 2px solid #3182ce; padding-left: 6px; font-style: italic; }
+.translated-title { border-left: 2px solid #3182ce; padding-left: 6px; display: block; }
+.card-evaluation-row { margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+.star-rating-box { display: flex; gap: 3px; }
+.star-item { font-size: 1rem; cursor: pointer; color: var(--star-color); }
+.star-item.active { color: var(--star-active); }
+.card-date { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 4px; }
+.loader { grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted); font-size: 1rem; }
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 9999; }
+.modal-overlay.open { display: flex; }
+.modal-container { background-color: var(--card-bg); color: var(--primary-dark); width: 90%; max-width: 800px; height: 80vh; border-radius: var(--radius-md); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border-light); }
+.modal-header { padding: 20px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; background-color: var(--theme-header-bg); }
+.modal-header h2 { margin: 0; font-size: 1.2rem; color: var(--accent-red); }
+.modal-body { padding: 25px; overflow-y: auto; font-size: 0.9rem; }
+.modal-body pre { background-color: var(--theme-header-bg); padding: 12px; border-radius: 6px; border: 1px solid var(--border-light); overflow-x: auto; font-family: monospace; }
+</style>
 </head>
 <body>
+<header id="main-header">
+<div>
+<h1>Veille Technologique</h1>
+<small id="cache-status" style="color: var(--text-muted);">Initialisation du système...</small>
+</div>
+<div class="header-actions">
+<button class="filter-btn" id="btn-refresh-cache" title="Forcer la purge du cache local">🔄 Actualiser</button>
+<button class="filter-btn" id="btn-toggle-theme" title="Basculer entre le mode clair et le mode sombre">🌓 Thème</button>
+<button class="filter-btn help-btn" id="btn-open-help" title="Ouvrir le pense-bête de maintenance">❓ Aide</button>
+</div>
+</header>
 
-    <header id="main-header">
-        <div>
-            <h1>Veille Technologique</h1>
-            <small id="cache-status" style="color: var(--text-muted);">Synchronisation réseau active...</small>
-        </div>
-        <div class="header-actions">
-            <div class="actions-top-row">
-                <button class="filter-btn" id="btn-refresh-cache" title="Forcer la purge du cache local">🔄 Actualiser</button>
-                <button class="filter-btn" id="btn-toggle-theme" title="Basculer entre le mode clair et le mode sombre">🌓 Thème</button>
-            </div>
-            <button class="filter-btn help-btn" id="btn-open-help" title="Ouvrir le pense-bête de maintenance">❓ Aide Maintenance</button>
-        </div>
-    </header>
+<div class="app-layout">
+<aside class="sidebar-panel">
+<button class="filter-btn clear-all active" id="btn-master-clear">🗂️ Tout afficher (Reset)</button>
+<div id="categories-filter-box"></div>
+</aside>
+<section class="content-area">
+<div class="content-control-bar">
+<div class="search-zone-wrapper">
+<div class="search-wrapper">
+<input type="text" id="search-bar" class="search-input" placeholder="Filtrer en temps réel par mot-clé, logiciel, capteur...">
+</div>
+<div class="date-filter-wrapper">
+<select id="select-date-range" class="search-input" style="width: auto; padding: 9px 12px;">
+<option value="all">📅 Toutes les dates</option>
+<option value="24h">Dernières 24 heures</option>
+<option value="3d">Derniers 3 jours</option>
+<option value="1w">Depuis 1 semaine</option>
+<option value="1m">Depuis 1 mois</option>
+<option value="custom">Sélectionner une date limite...</option>
+</select>
+<input type="date" id="input-custom-date" class="search-input" style="width: auto; padding: 7px 12px; display: none;">
+<button class="filter-btn" id="btn-copy-all" style="border-color: var(--text-muted);" title="Compiler et copier uniquement les fiches étoilées visibles">📋 Copier le choix</button>
+<button class="filter-btn" id="btn-reset-stars" style="border-color: var(--text-muted);" title="Effacer toutes les étoiles attribuées">⭐ Réinitialiser les notes</button>
+<button class="filter-btn help-btn" id="btn-share-guide" style="padding: 6px 10px;">ℹ️ Guide</button>
+</div>
+</div>
+</div>
+<main id="timeline-container" class="timeline-grid">
+<div class="loader" id="main-loader">Chargement du catalogue de veille...</div>
+</main>
+</section>
+</div>
 
-    <section class="control-panel">
-        <div class="search-zone-wrapper">
-            <div class="search-wrapper">
-                <input type="text" id="search-bar" class="search-input" placeholder="Rechercher un mot-clé, un logiciel, un capteur...">
-            </div>
-            
-            <div class="date-filter-wrapper">
-                <select id="select-date-range" class="search-input" style="width: auto; padding: 9px 12px;">
-                    <option value="all">📅 Toutes les dates</option>
-                    <option value="24h">Dernières 24 heures</option>
-                    <option value="3d">Derniers 3 jours</option>
-                    <option value="1w">Depuis 1 semaine</option>
-                    <option value="1m">Depuis 1 mois</option>
-                    <option value="custom">Sélectionner une date limite...</option>
-                </select>
-                <input type="date" id="input-custom-date" class="search-input" style="width: auto; padding: 7px 12px; display: none;" title="Masquer les articles publiés avant cette date">
-                
-                <button class="filter-btn" id="btn-copy-all" style="border-color: var(--text-muted);" title="Compiler et copier uniquement les fiches étoilées visibles à l'écran">📋 Copier le choix</button>
-                <button class="filter-btn" id="btn-reset-stars" style="border-color: var(--text-muted);" title="Effacer définitivement toutes les étoiles attribuées">⭐ Réinitialiser les notes</button>
-                <button class="filter-btn help-btn" id="btn-share-guide" style="padding: 6px 10px;" title="Protocole de partage de la sélection">ℹ️ Guide Partage</button>
-            </div>
-        </div>
+<div id="help-modal" class="modal-overlay">
+<div class="modal-container">
+<div class="modal-header">
+<h2>PENSE-BÊTE DE MAINTENANCE OPÉRATIONNELLE</h2>
+<button class="filter-btn" id="btn-close-help">Fermer ✕</button>
+</div>
+<div class="modal-body">
+<p>Ce guide rappelle la procédure pour ajouter une source de veille sans rompre le rendu dynamique de l'interface.</p>
+<h3>Opération 1 : Déclaration du flux (feeds.opml)</h3>
+<pre>&lt;outline text="Nom Source" title="Nom Source" type="rss" xmlUrl="URL_DU_FLUX" htmlUrl="URL_SITE"/&gt;</pre>
+<h3>Opération 2 : Classification Métier Révisée (index.html)</h3>
+<pre>"nom exact de la source en minuscules": "code_categorie",</pre>
+<p>Codes des 9 axes géomatiques réglementaires :</p>
+<ul>
+<li><code>"carto"</code> : Cartographie – SIG – Toponymie</li>
+<li><code>"institution"</code> : Institutionnel – Associations</li>
+<li><code>"materiel"</code> : Matériels – Logiciels – Sociétés</li>
+<li><code>"gnss"</code> : GNSS – Spatial – Observation aérienne</li>
+<li><code>"geodesie"</code> : Géodésie – Topographie</li>
+<li><code>"drone"</code> : Drone – Systèmes aéroportés</li>
+<li><code>"archeo"</code> : Archéologie – Patrimoine</li>
+<li><code>"dd"</code> : Développement Durable</li>
+<li><code>"ia"</code> : Intelligence artificielle</li>
+</ul>
+</div>
+</div>
+</div>
 
-        <div id="categories-filter-box">
-            <div class="category-group">
-                <span class="category-label">Général :</span>
-                <button class="filter-btn clear-all active" id="btn-master-clear">🗂️ Tout afficher</button>
-            </div>
-        </div>
-    </section>
+<script>
+const DICTIONNAIRE_CATEGORIES = {
+"qgis.org blog": "carto", "arcorama": "carto", "afigeo": "carto",
 
-    <main id="timeline-container" class="timeline-grid">
-        <div class="loader" id="main-loader">Initialisation du cache et chargement des flux...</div>
-    </main>
+"ordre des géomètres-experts": "institution", "flux rss des actualités": "institution", "conseil national de l'information géolocalisée - actualités": "institution", "expertises territoires": "institution", "cerema - actualité": "institution", "press releases": "institution", "ministère du partenariat avec les territoires et de la décentralisation ministère de la transition écologique, de l'énergie, du climat et de la prévention des risques ministère du logement et de la ré": "institution", "préventionbtp": "institution",
 
-    <div id="help-modal" class="modal-overlay">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h2>PENSE-BÊTE DE MAINTENANCE OPÉRATIONNELLE</h2>
-                <button class="filter-btn" id="btn-close-help">Fermer ✕</button>
-            </div>
-            <div class="modal-body">
-                <p>Ce guide interne rappelle la procédure stricte pour ajouter de nouvelles sources de veille au sein de l'application sans rompre les scripts de rendu dynamique.</p>
-                
-                <h3>Opération 1 : Déclaration du flux (feeds.opml)</h3>
-                <p>Ouvrez le fichier <code>feeds.opml</code> sur GitHub, passez en mode édition (crayon) et insérez votre nouvelle ligne juste au-dessus de la balise finale <code>&lt;/body&gt;</code> :</p>
-                <pre>&lt;outline text="Nom Source" title="Nom Source" type="rss" xmlUrl="URL_DU_FLUX" htmlUrl="URL_SITE"/&gt;</pre>
-                
-                <div class="modal-note">
-                    <strong>CRITICAL / RIGUEUR XML :</strong> Si l'URL du flux contient un caractère <code>&amp;</code> (esperluette), vous devez <strong>obligatoirement</strong> l'écrire sous sa forme échappée <code>&amp;amp;</code> dans le fichier OPML pour éviter un crash silencieux du parseur XML.
-                </div>
+"leica geosystems": "materiel", "trimble geospatial": "materiel", "topcon positioning": "materiel", "techniques de l'ingénieur": "materiel", "release notes from cloudcompare": "materiel",
 
-                <h3>Opération 2 : Classification Métier (index.html)</h3>
-                <p>Ouvrez le fichier <code>index.html</code> sur GitHub, passez en mode édition et insérez le nom exact de votre source <strong>strictement en minuscules</strong> au sein de l'objet global <code>DICTIONNAIRE_CATEGORIES</code> (début de script) :</p>
-                <pre>"nom exact de la source en minuscules": "code_categorie",</pre>
-                
-                <p>Codes métiers réglementaires de routage à utiliser :</p>
-                <ul>
-                    <li><code>"sig"</code> : Dirige vers la ligne <strong>Logiciels & SIG</strong></li>
-                    <li><code>"materiel"</code> : Dirige vers la ligne <strong>Matériel & Capteurs</strong></li>
-                    <li><code>"institution"</code> : Dirige vers la ligne <strong>Institutions & Normes</strong></li>
-                    <li><code>"science"</code> : Dirige vers la ligne <strong>Sciences & Spatial</strong></li>
-                </ul>
+"réseau orphéon": "gnss", "réseau teria": "gnss", "copernicus": "gnss", "esa france": "gnss", "nasa": "gnss", "euspa pressroom": "gnss", "eu agency for the space programme - linking space to user needs": "gnss", "gps world": "gnss", "geospatial world": "gnss", "news": "gnss",
 
-                <h3>Opération 3 : Prise en compte immédiate</h3>
-                <p>Après avoir validé les modifications sur GitHub (<em>Commit changes</em>) et attendu une minute, rendez-vous sur l'application et cliquez sur le bouton <strong><code>🔄 Actualiser</code></strong> en haut à droite pour purger le cache local et forcer la découverte des nouveaux flux.</p>
-            </div>
-        </div>
-    </div>
+"ign kiosque": "geodesie", "infoterre": "geodesie", "epos-france": "geodesie", "institut de physique du globe de paris": "geodesie",
 
-    <script>
-        const DICTIONNAIRE_CATEGORIES = {
-            "qgis.org blog": "sig", "arcorama": "sig", "release notes from webodm": "sig", "release notes from cloudcompare": "sig", "agisoft photoscan": "sig",
-            "eu agency for the space programme - linking space to user needs": "materiel", "dronelife": "materiel", "lidar news": "materiel", "news": "materiel", "gps world": "materiel", "geospatial world": "materiel",
-            "flux rss des actualités": "institution", "conseil national de l'information géolocalisée - actualités": "institution", "cerema - actualité": "institution", "press releases": "institution", "ministère du partenariat avec les territoires et de la décentralisation ministère de la transition écologique, de l’énergie, du climat et de la prévention des risques ministère du logement et de la ré": "institution",
-            "epos-france": "science", "institut de physique du globe de paris": "science", "copernicus": "science", "theia": "science", "esa france": "science", "nasa": "science", "infoterre": "science", "\"collège de france\" - google actualités": "science",
-            "theia land": "science", "ign kiosque": "institution", "afigeo": "sig", "leica geosystems": "materiel", "trimble geospatial": "materiel", "topcon positioning": "materiel", "réseau orphéon": "materiel", "réseau teria": "materiel", "euspa pressroom": "science", "expertises territoires": "institution", "préventionbtp": "institution", "inrap": "science", "ordre des géomètres-experts": "institution", "techniques de l'ingénieur": "sig"
-        };
+"dronelife": "drone", "release notes from webodm": "drone", "lidar news": "drone", "helicomicro": "drone",
 
-        const NOMS_CATEGORIES = {
-            "sig": "Logiciels & SIG",
-            "materiel": "Matériel & Capteurs",
-            "institution": "Institutions & Normes",
-            "science": "Sciences & Spatial"
-        };
+"inrap": "archeo",
 
-        const CACHE_KEY_DATA = "veille_topo_data_v2";
-        const CACHE_KEY_TIME = "veille_topo_timestamp_v2";
-        const DUREE_CACHE = 3600000; 
+"theia land": "dd", "theia": "dd",
 
-        let baseArticlesGlobal = [];
-        let listeSourcesUniques = new Set();
-        let sourcesActives = new Set();
-        let termeRechercheGlobal = "";
-        let filtreDateSeuilGlobal = 0;
+"\"collège de france\" - google actualités": "ia"
+};
 
-        document.addEventListener("DOMContentLoaded", () => {
-            configurerCommutateurTheme();
-            configurerBarreRecherche();
-            configurerFiltresTemporels();
-            configurerBoutonRafraichissement();
-            configurerEvenementsModaleAide();
-            configurerBoutonsGlobauxEvaluation();
-            gererCycleDeVieDonnees();
-        });
+const NOMS_CATEGORIES = {
+"carto": "Cartographie – SIG – Toponymie",
+"institution": "Institutionnel – Associations",
+"materiel": "Matériels – Logiciels – Sociétés",
+"gnss": "GNSS – Spatial – Obs. aérienne",
+"geodesie": "Géodésie – Topographie",
+"drone": "Drone – Systèmes aéroportés",
+"archeo": "Archéologie – Patrimoine",
+"dd": "Développement Durable",
+"ia": "Intelligence artificielle"
+};
 
-        /* CONTROL INTERFACES */
-        function configurerCommutateurTheme() {
-            const btn = document.getElementById("btn-toggle-theme");
-            if (localStorage.getItem("theme_sombre") === "true") { document.body.classList.add("dark-theme"); }
-            btn.addEventListener("click", () => {
-                document.body.classList.toggle("dark-theme");
-                localStorage.setItem("theme_sombre", document.body.classList.contains("dark-theme"));
-            });
-        }
+const CACHE_KEY_DATA = "veille_topo_data_v2";
+const CACHE_KEY_TIME = "veille_topo_timestamp_v2";
+const DUREE_CACHE = 3600000;
+let baseArticlesGlobal = [];
+let listeSourcesUniques = new Set();
+let sourcesActives = new Set();
+let termeRechercheGlobal = "";
+let filtreDateSeuilGlobal = 0;
+let estModeSnapshot = true;
+let articlesVisiblesLimite = 12;
+let totalArticlesFiltrésActuels = 0;
 
-        function configurerBarreRecherche() {
-            document.getElementById("search-bar").addEventListener("input", (e) => {
-                termeRechercheGlobal = e.target.value.toLowerCase().trim();
-                genererRenduInterface();
-            });
-        }
+document.addEventListener("DOMContentLoaded", () => {
+configurerCommutateurTheme();
+configurerBarreRecherche();
+configurerFiltresTemporels();
+configurerBoutonRafraichissement();
+configurerEvenementsModaleAide();
+configurerBoutonsGlobauxEvaluation();
+configurerCapteurDefilementInfini();
+gererCycleDeVieDonnees();
+});
 
-        function configurerFiltresTemporels() {
-            const selectRange = document.getElementById("select-date-range");
-            const inputCalendar = document.getElementById("input-custom-date");
+function configurerCommutateurTheme() {
+const btn = document.getElementById("btn-toggle-theme");
+if (localStorage.getItem("theme_sombre") === "true") { document.body.classList.add("dark-theme"); }
+btn.addEventListener("click", () => {
+document.body.classList.toggle("dark-theme");
+localStorage.setItem("theme_sombre", document.body.classList.contains("dark-theme"));
+});
+}
 
-            selectRange.addEventListener("change", (e) => {
-                const choix = e.target.value;
-                const instantMaintenant = Date.now();
-                inputCalendar.style.display = (choix === "custom") ? "inline-block" : "none";
+function configurerBarreRecherche() {
+document.getElementById("search-bar").addEventListener("input", (e) => {
+termeRechercheGlobal = e.target.value.toLowerCase().trim();
+estModeSnapshot = false;
+articlesVisiblesLimite = 24; // Initialisation sécurisée à 24 pour remplir le plan de vue
+genererRenduInterface();
+});
+}
 
-                switch (choix) {
-                    case "all": filtreDateSeuilGlobal = 0; break;
-                    case "24h": filtreDateSeuilGlobal = instantMaintenant - (24 * 60 * 60 * 1000); break;
-                    case "3d": filtreDateSeuilGlobal = instantMaintenant - (3 * 24 * 60 * 60 * 1000); break;
-                    case "1w": filtreDateSeuilGlobal = instantMaintenant - (7 * 24 * 60 * 60 * 1000); break;
-                    case "1m": filtreDateSeuilGlobal = instantMaintenant - (30 * 24 * 60 * 60 * 1000); break;
-                    case "custom": evaluerCalendrierManuel(); return;
-                }
-                genererRenduInterface();
-            });
+function configurerFiltresTemporels() {
+const selectRange = document.getElementById("select-date-range");
+const inputCalendar = document.getElementById("input-custom-date");
+selectRange.addEventListener("change", (e) => {
+const choix = e.target.value;
+const instantMaintenant = Date.now();
+inputCalendar.style.display = (choix === "custom") ? "inline-block" : "none";
+estModeSnapshot = false;
+articlesVisiblesLimite = 24;
+switch (choix) {
+case "all": filtreDateSeuilGlobal = 0; break;
+case "24h": filtreDateSeuilGlobal = instantMaintenant - (24 * 60 * 60 * 1000); break;
+case "3d": filtreDateSeuilGlobal = instantMaintenant - (3 * 24 * 60 * 60 * 1000); break;
+case "1w": filtreDateSeuilGlobal = instantMaintenant - (7 * 24 * 60 * 60 * 1000); break;
+case "1m": filtreDateSeuilGlobal = instantMaintenant - (30 * 24 * 60 * 60 * 1000); break;
+case "custom": evaluerCalendrierManuel(); return;
+}
+genererRenduInterface();
+});
+inputCalendar.addEventListener("input", evaluerCalendrierManuel);
+function evaluerCalendrierManuel() {
+if (inputCalendar.value) {
+const dateSelectionnee = new Date(inputCalendar.value);
+filtreDateSeuilGlobal = dateSelectionnee.getTime();
+} else {
+filtreDateSeuilGlobal = 0;
+}
+estModeSnapshot = false;
+articlesVisiblesLimite = 24;
+genererRenduInterface();
+}
+}
 
-            inputCalendar.addEventListener("input", evaluerCalendrierManuel);
+function configurerBoutonRafraichissement() {
+document.getElementById("btn-refresh-cache").addEventListener("click", () => {
+localStorage.removeItem(CACHE_KEY_DATA);
+localStorage.removeItem(CACHE_KEY_TIME);
+location.reload();
+});
+}
 
-            function evaluerCalendrierManuel() {
-                if (inputCalendar.value) {
-                    const dateSelectionnee = new Date(inputCalendar.value);
-                    filtreDateSeuilGlobal = dateSelectionnee.getTime();
-                } else {
-                    filtreDateSeuilGlobal = 0;
-                }
-                genererRenduInterface();
-            }
-        }
+function configurerEvenementsModaleAide() {
+const modal = document.getElementById("help-modal");
+const btnOpen = document.getElementById("btn-open-help");
+const btnClose = document.getElementById("btn-close-help");
+btnOpen.addEventListener("click", () => modal.classList.add("open"));
+btnClose.addEventListener("click", () => modal.classList.remove("open"));
+modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.remove("open"); });
+}
 
-        function configurerBoutonRafraichissement() {
-            document.getElementById("btn-refresh-cache").addEventListener("click", () => {
-                localStorage.removeItem(CACHE_KEY_DATA);
-                localStorage.removeItem(CACHE_KEY_TIME);
-                location.reload();
-            });
-        }
+function configurerBoutonsGlobauxEvaluation() {
+document.getElementById("btn-copy-all").addEventListener("click", executerCopieEnMasse);
+document.getElementById("btn-reset-stars").addEventListener("click", purgerToutesLesEtoiles);
+document.getElementById("btn-share-guide").addEventListener("click", () => {
+alert("📋 MODE D'EMPLOI :\n1. Notez les articles pertinents (1 à 4 étoiles).\n2. Cliquez sur 'Copier le choix' pour extraire les fiches cochées.\n3. Collez directement le résultat dans un courriel.");
+});
+}
 
-        function configurerEvenementsModaleAide() {
-            const modal = document.getElementById("help-modal");
-            const btnOpen = document.getElementById("btn-open-help");
-            const btnClose = document.getElementById("btn-close-help");
+function configurerCapteurDefilementInfini() {
+const conteneurMosaïque = document.getElementById("timeline-container");
+conteneurMosaïque.addEventListener("scroll", () => {
+if (estModeSnapshot) return;
+const positionBasseActuelle = conteneurMosaïque.scrollTop + conteneurMosaïque.clientHeight;
+const seuilDeclenchement = conteneurMosaïque.scrollHeight - 200; // Déclenchement anticipé à 200px du bas
+if (positionBasseActuelle >= seuilDeclenchement) {
+if (articlesVisiblesLimite < totalArticlesFiltrésActuels) {
+articlesVisiblesLimite += 12; // Injection incrémentielle saine de 12 fiches supplémentaires
+genererRenduInterface();
+}
+}
+});
+}
 
-            btnOpen.addEventListener("click", () => modal.classList.add("open"));
-            btnClose.addEventListener("click", () => modal.classList.remove("open"));
-            
-            modal.addEventListener("click", (e) => {
-                if (e.target === modal) modal.classList.remove("open");
-            });
-        }
+async function gererCycleDeVieDonnees() {
+const cacheTimestamp = localStorage.getItem(CACHE_KEY_TIME);
+const cacheDonnees = localStorage.getItem(CACHE_KEY_DATA);
+const instantPresent = Date.now();
+if (cacheTimestamp && cacheDonnees && (instantPresent - cacheTimestamp < DUREE_CACHE)) {
+baseArticlesGlobal = JSON.parse(cacheDonnees);
+baseArticlesGlobal.forEach(art => listeSourcesUniques.add(art.titreSource));
+const mins = Math.round((DUREE_CACHE - (instantPresent - cacheTimestamp)) / 60000);
+document.getElementById("cache-status").textContent = `Données en mémoire (MàJ dans ${mins} min)`;
+genererStructureBoutonsCategories();
+genererRenduInterface();
+} else {
+document.getElementById("cache-status").textContent = `Synchronisation réseau...`;
+await initialiserCollecteReseau();
+}
+}
 
-        function configurerBoutonsGlobauxEvaluation() {
-            document.getElementById("btn-copy-all").addEventListener("click", executerCopieEnMasse);
-            document.getElementById("btn-reset-stars").addEventListener("click", purgerToutesLesEtoiles);
-            
-            document.getElementById("btn-share-guide").addEventListener("click", () => {
-                alert(
-                    "💡 PROTOCOLE DE PARTAGE COLLABORATIF DE LA SELECTION :\n\n" +
-                    "1. Évaluez la pertinence des articles en leur attribuant des étoiles (de 1 à 4).\n" +
-                    "2. Cliquez sur le bouton 'Copier le choix' pour compiler automatiquement les seuls articles étoilés visibles à l'écran.\n" +
-                    "3. Ouvrez votre logiciel de messagerie et collez directement (Ctrl+V) le catalogue formaté dans un nouveau courriel pour le transmettre à l'équipe."
-                );
-            });
-        }
+async function initialiserCollecteReseau() {
+try {
+const reponse = await fetch('feeds.opml');
+if (!reponse.ok) throw new Error("Fichier 'feeds.opml' introuvable.");
+const chaineDonnees = await reponse.text();
+const parseur = new DOMParser();
+const documentXML = parseur.parseFromString(chaineDonnees, "text/xml");
+const elementsOutline = documentXML.querySelectorAll("outline[xmlUrl]");
+const promessesCollecte = Array.from(elementsOutline).map(outline => {
+const titreSource = outline.getAttribute("title") || outline.getAttribute("text") || "Source";
+const urlFlux = outline.getAttribute("xmlUrl");
+return collecterDonneesFlux(titreSource, urlFlux);
+});
+await Promise.all(promessesCollecte);
+baseArticlesGlobal.sort((a, b) => b.dateTimestamp - a.dateTimestamp);
+try {
+localStorage.setItem(CACHE_KEY_DATA, JSON.stringify(baseArticlesGlobal));
+localStorage.setItem(CACHE_KEY_TIME, Date.now().toString());
+document.getElementById("cache-status").textContent = `Flux synchronisés.`;
+} catch (e) {}
+genererStructureBoutonsCategories();
+genererRenduInterface();
+} catch (erreur) {
+document.getElementById("timeline-container").innerHTML = `<div class="loader" style="color:#c53030;">Erreur : ${erreur.message}</div>`;
+}
+}
 
-        /* DATA PIPELINE */
-        async function gererCycleDeVieDonnees() {
-            const cacheTimestamp = localStorage.getItem(CACHE_KEY_TIME);
-            const cacheDonnees = localStorage.getItem(CACHE_KEY_DATA);
-            const instantPresent = Date.now();
+async function collecterDonneesFlux(titreSource, urlFlux) {
+const estUrlDistant = urlFlux.startsWith("http://") || urlFlux.startsWith("https://");
+const urlCibleFinale = estUrlDistant ? `https://corsproxy.io/?${encodeURIComponent(urlFlux)}` : urlFlux;
+try {
+const reponse = await fetch(urlCibleFinale);
+if (!reponse.ok) return;
+const texteBrut = await reponse.text();
+const parseur = new DOMParser();
+const xmlDoc = parseur.parseFromString(texteBrut, "text/xml");
+const estAtom = xmlDoc.querySelector("entry") !== null;
+const balisesArticles = estAtom ? xmlDoc.querySelectorAll("entry") : xmlDoc.querySelectorAll("item");
+if (balisesArticles.length > 0) { listeSourcesUniques.add(titreSource); }
+Array.from(balisesArticles).forEach(article => {
+const titreArticle = article.querySelector("title")?.textContent || "Sans titre";
+let lienArticle = estAtom ? article.querySelector("link")?.getAttribute("href") : article.querySelector("link")?.textContent;
+let chaineDate = article.querySelector("pubDate")?.textContent || article.querySelector("updated")?.textContent || article.querySelector("published")?.textContent || article.querySelector("date")?.textContent || "";
+if (!chaineDate) {
+const dcDate = article.getElementsByTagName("dc:date")[0];
+if (dcDate) chaineDate = dcDate.textContent;
+}
+const dateObjet = chaineDate ? new Date(chaineDate.trim()) : new Date(0);
+const dateEstValide = !isNaN(dateObjet.getTime()) && dateObjet.getTime() !== 0;
+let descriptionBrute = article.querySelector("description")?.textContent || article.querySelector("summary")?.textContent || "";
+const fauxDiv = document.createElement("div");
+fauxDiv.innerHTML = descriptionBrute;
+const extraitTexte = fauxDiv.textContent || fauxDiv.innerText || "";
+let urlImage = null;
+const enclosure = article.querySelector("enclosure[type^='image']");
+if (enclosure) urlImage = enclosure.getAttribute("url");
+if (!urlImage) {
+const correspondence = descriptionBrute.match(/<img[^>]+src="([^">]+)"/i);
+if (correspondence && correspondence[1]) urlImage = correspondence[1];
+}
+baseArticlesGlobal.push({
+titreSource: titreSource, titreArticle: titreArticle.trim(),
+lien: lienArticle ? lienArticle.trim() : "#", extrait: extraitTexte.trim(),
+dateTimestamp: dateEstValide ? dateObjet.getTime() : 0,
+dateAffichee: dateEstValide ? dateObjet.toLocaleDateString('fr-FR', {day: 'numeric', month: 'short', year: 'numeric'}) : "Date inconnue",
+urlImage: urlImage
+});
+});
+} catch (e) {}
+}
 
-            if (cacheTimestamp && cacheDonnees && (instantPresent - cacheTimestamp < DUREE_CACHE)) {
-                baseArticlesGlobal = JSON.parse(cacheDonnees);
-                baseArticlesGlobal.forEach(art => listeSourcesUniques.add(art.titreSource));
-                const mins = Math.round((DUREE_CACHE - (instantPresent - cacheTimestamp)) / 60000);
-                document.getElementById("cache-status").textContent = `Données locales (MàJ réseau dans ${mins} min)`;
-                genererStructureBoutonsCategories();
-                genererRenduInterface();
-            } else {
-                document.getElementById("cache-status").textContent = `Requêtage des serveurs distants en cours...`;
-                await initialiserCollecteReseau();
-            }
-        }
+function genererStructureBoutonsCategories() {
+const boitePrincipale = document.getElementById("categories-filter-box");
+boitePrincipale.innerHTML = "";
+let distribution = { "carto": [], "institution": [], "materiel": [], "gnss": [], "geodesie": [], "drone": [], "archeo": [], "dd": [], "ia": [], "autres": [] };
+listeSourcesUniques.forEach(source => {
+const sourceCle = source.toLowerCase().replace(/\s+/g, ' ').trim();
+const codeCat = DICTIONNAIRE_CATEGORIES[sourceCle] || "autres";
+distribution[codeCat].push(source);
+});
+for (const [idCategorie, tableauSources] of Object.entries(distribution)) {
+if (tableauSources.length === 0 || idCategorie === "autres") continue;
+const conteneurGroupe = document.createElement("div");
+conteneurGroupe.className = "category-group";
+const titreLabel = document.createElement("h3");
+titreLabel.className = "category-label";
+titreLabel.textContent = NOMS_CATEGORIES[idCategorie];
+conteneurGroupe.appendChild(titreLabel);
+const conteneurBoutons = document.createElement("div");
+conteneurBoutons.className = "category-buttons-block";
+tableauSources.sort().forEach(source => {
+const bouton = document.createElement("button");
+bouton.className = "filter-btn";
+bouton.textContent = source;
+bouton.addEventListener("click", () => {
+document.getElementById("btn-master-clear").classList.remove("active");
+estModeSnapshot = false;
+articlesVisiblesLimite = 24;
+if (sourcesActives.has(source)) {
+sourcesActives.delete(source);
+bouton.classList.remove("active");
+} else {
+sourcesActives.add(source);
+bouton.classList.add("active");
+}
+if (sourcesActives.size === 0) { document.getElementById("btn-master-clear").classList.add("active"); }
+genererRenduInterface();
+});
+conteneurBoutons.appendChild(bouton);
+});
+conteneurGroupe.appendChild(conteneurBoutons);
+boitePrincipale.appendChild(conteneurGroupe);
+}
+document.getElementById("btn-master-clear").addEventListener("click", function() {
+sourcesActives.clear();
+document.querySelectorAll(".sidebar-panel .filter-btn").forEach(b => b.classList.remove("active"));
+this.classList.add("active");
+/* LE CAPTEUR D'AMORÇAGE SÉCURISÉ INITIALISE LE FLUX À 24 ARTICLES */
+estModeSnapshot = false;
+articlesVisiblesLimite = 24;
+termeRechercheGlobal = "";
+document.getElementById("search-bar").value = "";
+genererRenduInterface();
+document.getElementById("timeline-container").scrollTop = 0;
+});
+}
 
-        async function initialiserCollecteReseau() {
-            try {
-                const reponse = await fetch('feeds.opml');
-                if (!reponse.ok) throw new Error("Fichier 'feeds.opml' absent.");
-                
-                const chaineDonnees = await reponse.text();
-                const parseur = new DOMParser();
-                const documentXML = parseur.parseFromString(chaineDonnees, "text/xml");
-                const elementsOutline = documentXML.querySelectorAll("outline[xmlUrl]");
-                
-                const promessesCollecte = Array.from(elementsOutline).map(outline => {
-                    const titreSource = outline.getAttribute("title") || outline.getAttribute("text") || "Source";
-                    const urlFlux = outline.getAttribute("xmlUrl");
-                    return collecterDonneesFlux(titreSource, urlFlux);
-                });
-                
-                await Promise.all(promessesCollecte);
-                baseArticlesGlobal.sort((a, b) => b.dateTimestamp - a.dateTimestamp);
-                
-                try {
-                    localStorage.setItem(CACHE_KEY_DATA, JSON.stringify(baseArticlesGlobal));
-                    localStorage.setItem(CACHE_KEY_TIME, Date.now().toString());
-                    document.getElementById("cache-status").textContent = `Flux synchronisés avec succès (Cache activé)`;
-                } catch (e) {}
-                
-                genererStructureBoutonsCategories();
-                genererRenduInterface();
-            } catch (erreur) {
-                document.getElementById("timeline-container").innerHTML = `<div class="loader" style="color:#c53030;">Erreur d'infrastructure : ${erreur.message}</div>`;
-            }
-        }
+function executerCopieEnMasse() {
+let articlesEtoilesVisibles = baseArticlesGlobal.filter(art => {
+const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
+const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
+const passeFiltreDate = filtreDateSeuilGlobal === 0 || art.dateTimestamp >= filtreDateSeuilGlobal;
+const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
+const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
+return passeFiltreSource && passeFiltreTexte && passeFiltreDate && noteActuelle > 0;
+});
+if (estModeSnapshot) {
+const categoriesVuExport = new Set();
+articlesEtoilesVisibles = articlesEtoilesVisibles.filter(art => {
+const sourceCle = art.titreSource.toLowerCase().replace(/\s+/g, ' ').trim();
+const codeCat = DICTIONNAIRE_CATEGORIES[sourceCle] || "autres";
+if (codeCat !== "autres" && !categoriesVuExport.has(codeCat)) {
+categoriesVuExport.add(codeCat);
+return true;
+}
+return false;
+});
+}
+const boutonCopie = document.getElementById("btn-copy-all");
+if (articlesEtoilesVisibles.length === 0) {
+const texteOriginal = boutonCopie.textContent;
+boutonCopie.textContent = "⚠️ Aucun choix étoilé";
+setTimeout(() => boutonCopie.textContent = texteOriginal, 2000);
+return;
+}
+let blocSyntheseTextuel = "==================================================\n SELECTION DE VEILLE TECHNOLOGIQUE ÉVALUÉE\n==================================================\n\n";
+articlesEtoilesVisibles.forEach((art, idx) => {
+const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
+const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
+const notationEtoiles = "★".repeat(noteActuelle) + "☆".repeat(4 - noteActuelle);
+blocSyntheseTextuel += `${idx + 1}. [${art.titreSource}] ${art.titreArticle}\n Évaluation : ${notationEtoiles} (${noteActuelle}/4)\n Lien : ${art.lien}\n\n`;
+});
+navigator.clipboard.writeText(blocSyntheseTextuel).then(() => {
+const texteOriginal = boutonCopie.textContent;
+boutonCopie.textContent = "✅ Sélection copiée !";
+setTimeout(() => boutonCopie.textContent = texteOriginal, 2000);
+});
+}
 
-        /**
-         * @function collecterDonneesFlux
-         * @description Analyse la nature de l'URL cible (locale ou distante) pour appliquer un routage réseau conditionnel,
-         * télécharge le document XML (Flux RSS ou fichier scrapé local) et peuple le catalogue d'articles global.
-         * @param {string} titreSource - Libellé officiel de la source documentaire.
-         * @param {string} urlFlux - Lien hypertexte ou chemin d'accès au fichier de données.
-         * @returns {Promise<void>}
-         */
-        async function collecterDonneesFlux(titreSource, urlFlux) {
-            // ALGORITHME DE ROUTAGE SÉCURISÉ : Détermine si la cible nécessite l'usage du serveur proxy CORS
-            const estUrlDistant = urlFlux.startsWith("http://") || urlFlux.startsWith("https://");
-            
-            // Si la source est locale (ex: 'theia_land.xml'), on l'interroge en direct sans proxy.
-            // Si la source est distante, le passage par le proxy est requis pour contourner la barrière des règles CORS.
-            const urlCibleFinale = estUrlDistant ? `https://corsproxy.io/?${encodeURIComponent(urlFlux)}` : urlFlux;
+function purgerToutesLesEtoiles() {
+if (confirm("Réinitialiser définitivement toutes les évaluations ?")) {
+Object.keys(localStorage).forEach(clef => { if (clef.startsWith("note_art_")) { localStorage.removeItem(clef); } });
+genererRenduInterface();
+}
+}
 
-            try {
-                const reponse = await fetch(urlCibleFinale);
-                if (!reponse.ok) return;
-                const texteBrut = await reponse.text();
-                const parseur = new DOMParser();
-                const xmlDoc = parseur.parseFromString(texteBrut, "text/xml");
-                const estAtom = xmlDoc.querySelector("entry") !== null;
-                const balisesArticles = estAtom ? xmlDoc.querySelectorAll("entry") : xmlDoc.querySelectorAll("item");
-                
-                if (balisesArticles.length > 0) { listeSourcesUniques.add(titreSource); }
+/**
+* @function genererRenduInterface
+* @description Construit le rendu linéaire des cartes au sein du DOM.
+* L'élimination complète de la récursion synchrone restaure la stabilité géométrique globale.
+*/
+function genererRenduInterface() {
+const conteneurGrid = document.getElementById("timeline-container");
+const loaderInitial = document.getElementById("main-loader");
+if (loaderInitial) loaderInitial.remove();
+// Étape 1 : Mémorisation de la position de l'ascenseur pour éviter les sauts visuels
+const memoireScroll = conteneurGrid.scrollTop;
+/* Étape 2 : Traitement des filtres de la base de données */
+let articlesFiltres = baseArticlesGlobal.filter(art => {
+const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
+const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
+const passeFiltreDate = filtreDateSeuilGlobal === 0 || art.dateTimestamp >= filtreDateSeuilGlobal;
+return passeFiltreSource && passeFiltreTexte && passeFiltreDate;
+});
+/* Étape 3 : Application des découpes de tableaux selon l'état structurel */
+if (estModeSnapshot) {
+const categoriesVuRendu = new Set();
+articlesFiltres = articlesFiltres.filter(art => {
+const sourceCle = art.titreSource.toLowerCase().replace(/\s+/g, ' ').trim();
+const codeCat = DICTIONNAIRE_CATEGORIES[sourceCle] || "autres";
+if (codeCat !== "autres" && !categoriesVuRendu.has(codeCat)) {
+categoriesVuRendu.add(codeCat);
+return true;
+}
+return false;
+});
+} else {
+totalArticlesFiltrésActuels = articlesFiltres.length;
+articlesFiltres = articlesFiltres.slice(0, articlesVisiblesLimite);
+}
+if (articlesFiltres.length === 0 && conteneurGrid.children.length === 0) {
+conteneurGrid.innerHTML = "<div class='loader'>Aucun article ne correspond aux critères.</div>";
+return;
+}
+/* Étape 4 : Ré-injection saine des éléments au sein de la grille Grid */
+conteneurGrid.innerHTML = "";
+articlesFiltres.forEach(art => {
+const elementCarte = document.createElement("div");
+elementCarte.className = "article-card";
+const jetonAleatoire = Math.random().toString(36).substring(2, 11);
+const idTitre = 't-' + jetonAleatoire;
+const idExtrait = 'e-' + jetonAleatoire;
+const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
+const noteEnregistree = parseInt(localStorage.getItem(noteCleStorage)) || 0;
+let blocMediaHTML = `<div class="card-image-placeholder"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>`;
+if (art.urlImage) { blocMediaHTML = `<img src="${art.urlImage}" class="card-image" alt="Illustration" loading="lazy">`; }
+elementCarte.innerHTML = `
+<div class="card-image-wrapper">${blocMediaHTML}</div>
+<div class="card-content">
+<span class="card-source">${art.titreSource}</span>
+<h2 class="card-title"><a href="${art.lien}" target="_blank" id="${idTitre}" data-url-origin="${art.lien}" style="color:inherit; text-decoration:none;">${art.titreArticle}</a></h2>
+<p class="card-excerpt" id="${idExtrait}">${art.extrait ? art.extrait : "Consulter la ressource d'origine."}</p>
+<div class="card-date">Publié le ${art.dateAffichee}</div>
+<div class="card-evaluation-row">
+<div class="star-rating-box" data-url="${art.lien}">
+<span class="star-item ${noteEnregistree >= 1 ? 'active' : ''}" data-value="1">★</span>
+<span class="star-item ${noteEnregistree >= 2 ? 'active' : ''}" data-value="2">★</span>
+<span class="star-item ${noteEnregistree >= 3 ? 'active' : ''}" data-value="3">★</span>
+<span class="star-item ${noteEnregistree >= 4 ? 'active' : ''}" data-value="4">★</span>
+</div>
+<button class="action-icon-btn btn-copy-fiche" data-source="${art.titreSource}" data-url="${art.lien}">📋 Copier</button>
+</div>
+</div>
+`;
+conteneurGrid.appendChild(elementCarte);
+const boiteEtoiles = elementCarte.querySelector(".star-rating-box");
+boiteEtoiles.querySelectorAll(".star-item").forEach(etoile => {
+etoile.addEventListener("click", (e) => {
+const valeurNote = parseInt(e.target.getAttribute("data-value"));
+localStorage.setItem(noteCleStorage, valeurNote);
+boiteEtoiles.querySelectorAll(".star-item").forEach(s => {
+const sVal = parseInt(s.getAttribute("data-value"));
+s.classList.toggle("active", sVal <= valeurNote);
+});
+});
+});
+elementCarte.querySelector(".btn-copy-fiche").addEventListener("click", (e) => {
+const btn = e.target;
+const src = btn.getAttribute("data-source");
+const titre = document.getElementById(idTitre).textContent.trim();
+const url = btn.getAttribute("data-url");
+const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
+const etoilesTexte = "★".repeat(noteActuelle) + "☆".repeat(4 - noteActuelle);
+navigator.clipboard.writeText(`[VEILLE] [${src}] ${titre} - Évaluation : ${etoilesTexte} - Lien : ${url}`).then(() => {
+const txt = btn.textContent; btn.textContent = "✅ Copié !"; setTimeout(() => btn.textContent = txt, 1500);
+});
+});
+/* Traduction asynchrone sécurisée des flux anglophones */
+const regexAnglais = /\b(the|and|of|in|to|for|with|on|at|by|from|new|release|software|drone|satellite|surveying|update|news|gps|world|lidar|geospatial)\b/i;
+if (art.titreArticle && regexAnglais.test(art.titreArticle)) { lancerTraductionAsynchrone(idTitre, art.titreArticle, true); }
+if (art.extrait && !art.extrait.startsWith("Consulter") && regexAnglais.test(art.extrait)) { lancerTraductionAsynchrone(idExtrait, art.extrait, false); }
+});
+// Étape 5 : Restauration de la position pour garantir la continuité du défilement infini
+if (!estModeSnapshot) {
+conteneurGrid.scrollTop = memoireScroll;
+}
+}
 
-                Array.from(balisesArticles).slice(0, 5).forEach(article => {
-                    const titreArticle = article.querySelector("title")?.textContent || "Sans titre";
-                    let lienArticle = estAtom ? article.querySelector("link")?.getAttribute("href") : article.querySelector("link")?.textContent;
-                    let chaineDate = article.querySelector("pubDate")?.textContent || article.querySelector("updated")?.textContent || article.querySelector("published")?.textContent || article.querySelector("date")?.textContent || "";
-                    
-                    if (!chaineDate) {
-                        const dcDate = article.getElementsByTagName("dc:date")[0];
-                        if (dcDate) chaineDate = dcDate.textContent;
-                    }
-                    const dateObjet = chaineDate ? new Date(chaineDate.trim()) : new Date(0);
-                    const dateEstValide = !isNaN(dateObjet.getTime()) && dateObjet.getTime() !== 0;
-                    let descriptionBrute = article.querySelector("description")?.textContent || article.querySelector("summary")?.textContent || "";
-                    const fauxDiv = document.createElement("div");
-                    fauxDiv.innerHTML = descriptionBrute;
-                    const extraitTexte = fauxDiv.textContent || fauxDiv.innerText || "";
-                    
-                    let urlImage = null;
-                    const enclosure = article.querySelector("enclosure[type^='image']");
-                    if (enclosure) urlImage = enclosure.getAttribute("url");
-                    if (!urlImage) {
-                        const mediaContent = article.getElementsByTagName("media:content")[0] || article.getElementsByTagName("media:thumbnail")[0];
-                        if (mediaContent) urlImage = mediaContent.getAttribute("url");
-                    }
-                    if (!urlImage) {
-                        const correspondence = descriptionBrute.match(/<img[^>]+src="([^">]+)"/i);
-                        if (correspondence && correspondence[1]) urlImage = correspondence[1];
-                    }
-
-                    baseArticlesGlobal.push({
-                        titreSource: titreSource, titreArticle: titreArticle.trim(),
-                        lien: lienArticle ? lienArticle.trim() : "#", extrait: extraitTexte.trim(),
-                        dateTimestamp: dateEstValide ? dateObjet.getTime() : 0,
-                        dateAffichee: dateEstValide ? dateObjet.toLocaleDateString('fr-FR', {day: 'numeric', month: 'short', year: 'numeric'}) : "Date inconnue",
-                        urlImage: urlImage
-                    });
-                });
-            } catch (e) {}
-        }
-
-        /* FILTERS INTERFACE BUILDING */
-        function genererStructureBoutonsCategories() {
-            const boitePrincipale = document.getElementById("categories-filter-box");
-            let distribution = { "sig": [], "materiel": [], "institution": [], "science": [], "autres": [] };
-            
-            listeSourcesUniques.forEach(source => {
-                const sourceCle = source.toLowerCase().replace(/\s+/g, ' ').trim();
-                const codeCat = DICTIONNAIRE_CATEGORIES[sourceCle] || "autres";
-                distribution[codeCat].push(source);
-            });
-
-            for (const [idCategorie, tableauSources] of Object.entries(distribution)) {
-                if (tableauSources.length === 0 || idCategorie === "autres") continue;
-                const conteneurLigne = document.createElement("div");
-                conteneurLigne.className = "category-group";
-                const étiquette = document.createElement("span");
-                étiquette.className = "category-label";
-                étiquette.textContent = NOMS_CATEGORIES[idCategorie] + " :";
-                conteneurLigne.appendChild(étiquette);
-                
-                tableauSources.sort().forEach(source => {
-                    const bouton = document.createElement("button");
-                    bouton.className = "filter-btn";
-                    bouton.textContent = source;
-                    bouton.addEventListener("click", () => {
-                        document.getElementById("btn-master-clear").classList.remove("active");
-                        if (sourcesActives.has(source)) {
-                            sourcesActives.delete(source);
-                            bouton.classList.remove("active");
-                        } else {
-                            sourcesActives.add(source);
-                            bouton.classList.add("active");
-                        }
-                        if (sourcesActives.size === 0) { document.getElementById("btn-master-clear").classList.add("active"); }
-                        genererRenduInterface();
-                    });
-                    conteneurLigne.appendChild(bouton);
-                });
-                boitePrincipale.appendChild(conteneurLigne);
-            }
-
-            document.getElementById("btn-master-clear").addEventListener("click", function() {
-                sourcesActives.clear();
-                document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-                this.classList.add("active");
-                genererRenduInterface();
-            });
-        }
-
-        /* ORECHESTRATION ET COMPILATION EN BULK */
-        function executerCopieEnMasse() {
-            const articlesEtoilesVisibles = baseArticlesGlobal.filter(art => {
-                const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
-                const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
-                const passeFiltreDate = filtreDateSeuilGlobal === 0 || art.dateTimestamp >= filtreDateSeuilGlobal;
-                
-                const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
-                const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
-                
-                return passeFiltreSource && passeFiltreTexte && passeFiltreDate && noteActuelle > 0;
-            });
-
-            const boutonCopie = document.getElementById("btn-copy-all");
-
-            if (articlesEtoilesVisibles.length === 0) {
-                const texteOriginal = boutonCopie.textContent;
-                boutonCopie.textContent = "⚠️ Aucun article étoilé";
-                setTimeout(() => boutonCopie.textContent = texteOriginal, 2500);
-                return;
-            }
-
-            let blocSyntheseTextuel = "==================================================\n";
-            blocSyntheseTextuel += `    SELECTION DE VEILLE TECHNOLOGIQUE ÉVALUÉE\n`;
-            blocSyntheseTextuel += `    Rapport généré le ${new Date().toLocaleDateString('fr-FR')} - Total : ${articlesEtoilesVisibles.length} fiches\n`;
-            blocSyntheseTextuel += "==================================================\n\n";
-
-            articlesEtoilesVisibles.forEach((art, idx) => {
-                const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
-                const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
-                const notationEtoiles = "★".repeat(noteActuelle) + "☆".repeat(4 - noteActuelle);
-
-                const nœudVirtuelTitre = document.querySelector(`[data-url-origin="${art.lien}"]`);
-                const texteFinalTitre = nœudVirtuelTitre ? nœudVirtuelTitre.textContent.replace(/✨/g, "").trim() : art.titreArticle;
-
-                blocSyntheseTextuel += `${idx + 1}. [${art.titreSource}] ${texteFinalTitre}\n`;
-                blocSyntheseTextuel += `   Évaluation de l'équipe : ${notationEtoiles} (${noteActuelle}/4)\n`;
-                blocSyntheseTextuel += `   Lien d'analyse : ${art.lien}\n\n`;
-            });
-
-            navigator.clipboard.writeText(blocSyntheseTextuel).then(() => {
-                const texteOriginal = boutonCopie.textContent;
-                boutonCopie.textContent = "✅ Choix copié !";
-                setTimeout(() => boutonCopie.textContent = texteOriginal, 2500);
-            });
-        }
-
-        function purgerToutesLesEtoiles() {
-            const confirmationEnseignante = confirm("Voulez-vous réinitialiser définitivement toutes les évaluations attribuées par l'équipe pédagogique ?");
-            if (confirmationEnseignante) {
-                Object.keys(localStorage).forEach(clef => {
-                    if (clef.startsWith("note_art_")) { localStorage.removeItem(clef); }
-                });
-                genererRenduInterface();
-            }
-        }
-
-        /* INTERFACE RENDERING & TRANSLATION ENGINE */
-        function genererRenduInterface() {
-            const conteneurGrid = document.getElementById("timeline-container");
-            const loaderInitial = document.getElementById("main-loader");
-            if (loaderInitial) loaderInitial.remove();
-            conteneurGrid.innerHTML = "";
-            
-            const articlesFiltres = baseArticlesGlobal.filter(art => {
-                const passeFiltreSource = sourcesActives.size === 0 || sourcesActives.has(art.titreSource);
-                const passeFiltreTexte = !termeRechercheGlobal || art.titreArticle.toLowerCase().includes(termeRechercheGlobal) || art.extrait.toLowerCase().includes(termeRechercheGlobal);
-                const passeFiltreDate = filtreDateSeuilGlobal === 0 || art.dateTimestamp >= filtreDateSeuilGlobal;
-                return passeFiltreSource && passeFiltreTexte && passeFiltreDate;
-            });
-            
-            if (articlesFiltres.length === 0) {
-                conteneurGrid.innerHTML = "<div class='loader'>Aucun article ne correspond aux critères temporels ou textuels sélectionnés.</div>";
-                return;
-            }
-            
-            articlesFiltres.forEach(art => {
-                const elementCarte = document.createElement("div");
-                elementCarte.className = "article-card";
-                
-                const jetonAleatoire = Math.random().toString(36).substring(2, 11);
-                const idTitre = 't-' + jetonAleatoire;
-                const idExtrait = 'e-' + jetonAleatoire;
-                
-                const noteCleStorage = `note_art_${btoa(art.lien).replace(/=/g, "")}`;
-                const noteEnregistree = parseInt(localStorage.getItem(noteCleStorage)) || 0;
-
-                let blocMediaHTML = `
-                    <div class="card-image-placeholder">
-                        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                    </div>`;
-                if (art.urlImage) { blocMediaHTML = `<img src="${art.urlImage}" class="card-image" alt="Illustration" loading="lazy">`; }
-                
-                elementCarte.innerHTML = `
-                    <div class="card-image-wrapper">
-                        ${blocMediaHTML}
-                    </div>
-                    <div class="card-content">
-                        <span class="card-source">${art.titreSource}</span>
-                        <h2 class="card-title"><a href="${art.lien}" target="_blank" id="${idTitre}" data-url-origin="${art.lien}" style="color:inherit; text-decoration:none;">${art.titreArticle}</a></h2>
-                        <p class="card-excerpt" id="${idExtrait}">${art.extrait ? art.extrait : "Consulter la plateforme d'origine pour analyser cette ressource."}</p>
-                        
-                        <div class="card-date">Publié le ${art.dateAffichee}</div>
-                        
-                        <div class="card-evaluation-row">
-                            <div class="star-rating-box" data-url="${art.lien}">
-                                <span class="star-item ${noteEnregistree >= 1 ? 'active' : ''}" data-value="1">★</span>
-                                <span class="star-item ${noteEnregistree >= 2 ? 'active' : ''}" data-value="2">★</span>
-                                <span class="star-item ${noteEnregistree >= 3 ? 'active' : ''}" data-value="3">★</span>
-                                <span class="star-item ${noteEnregistree >= 4 ? 'active' : ''}" data-value="4">★</span>
-                            </div>
-                            <button class="action-icon-btn btn-copy-fiche" data-source="${art.titreSource}" data-title="${art.titreArticle}" data-url="${art.lien}">📋 Copier la fiche</button>
-                        </div>
-                    </div>
-                `;
-                conteneurGrid.appendChild(elementCarte);
-
-                const boiteEtoiles = elementCarte.querySelector(".star-rating-box");
-                boiteEtoiles.querySelectorAll(".star-item").forEach(etoile => {
-                    etoile.addEventListener("click", (e) => {
-                        const valeurNote = parseInt(e.target.getAttribute("data-value"));
-                        localStorage.setItem(noteCleStorage, valeurNote);
-                        boiteEtoiles.querySelectorAll(".star-item").forEach(s => {
-                            const sVal = parseInt(s.getAttribute("data-value"));
-                            s.classList.toggle("active", sVal <= valeurNote);
-                        });
-                    });
-                });
-
-                elementCarte.querySelector(".btn-copy-fiche").addEventListener("click", (e) => {
-                    const btn = e.target;
-                    const src = btn.getAttribute("data-source");
-                    const titre = document.getElementById(idTitre).textContent.replace(/✨/g, "").trim();
-                    const url = btn.getAttribute("data-url");
-                    const noteActuelle = parseInt(localStorage.getItem(noteCleStorage)) || 0;
-                    
-                    const etoilesTexte = "★".repeat(noteActuelle) + "☆".repeat(4 - noteActuelle);
-                    const chaineDeVeille = `[VEILLE] [${src}] ${titre} - Évaluation : ${etoilesTexte} (${noteActuelle}/4) - Lien : ${url}`;
-                    
-                    navigator.clipboard.writeText(chaineDeVeille).then(() => {
-                        const texteOrigine = btn.textContent;
-                        btn.textContent = "✅ Copié !";
-                        setTimeout(() => btn.textContent = texteOrigine, 2000);
-                    });
-                });
-
-                const regexAnglais = /\b(the|and|of|in|to|for|with|on|at|by|from|new|release|software|drone|satellite|surveying|update|news|gps|world|lidar|geospatial)\b/i;
-
-                if (art.titreArticle && regexAnglais.test(art.titreArticle)) { lancerTraductionAsynchrone(idTitre, art.titreArticle, true); }
-                if (art.extrait && !art.extrait.startsWith("Consulter") && regexAnglais.test(art.extrait)) { lancerTraductionAsynchrone(idExtrait, art.extrait, false); }
-            });
-        }
-
-        async function lancerTraductionAsynchrone(idDOM, texteOriginal, estUnTitre) {
-            const urlTraduction = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=fr&dt=t&q=${encodeURIComponent(texteOriginal)}`;
-            try {
-                const reponse = await fetch(urlTraduction);
-                if (!reponse.ok) return;
-                const structureJson = await reponse.json();
-                let texteTraduitUnifie = "";
-                if (structureJson && structureJson[0]) {
-                    structureJson[0].forEach(segment => { if (segment[0]) texteTraduitUnifie += segment[0]; });
-                }
-                if (texteTraduitUnifie && texteTraduitUnifie.trim() !== texteOriginal.trim()) {
-                    const noeudCible = document.getElementById(idDOM);
-                    if (noeudCible) {
-                        const classeAppliquee = estUnTitre ? 'translated-title' : 'translated-text';
-                        noeudCible.innerHTML = `<span class="${classeAppliquee}" title="Traduit automatiquement du texte original">${texteTraduitUnifie} ✨</span>`;
-                    }
-                }
-            } catch (erreur) {}
-        }
-    </script>
+async function lancerTraductionAsynchrone(idDOM, texteOriginal, estUnTitre) {
+const urlTraduction = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=fr&dt=t&q=${encodeURIComponent(texteOriginal)}`;
+try {
+const reponse = await fetch(urlTraduction);
+if (!reponse.ok) return;
+const structureJson = await reponse.json();
+let texteTraduitUnifie = "";
+if (structureJson && structureJson[0]) { structureJson[0].forEach(segment => { if (segment[0]) texteTraduitUnifie += segment[0]; }); }
+if (texteTraduitUnifie && texteTraduitUnifie.trim() !== texteOriginal.trim()) {
+const noeudCible = document.getElementById(idDOM);
+if (noeudCible) {
+const classeAppliquee = estUnTitre ? 'translated-title' : 'translated-text';
+noeudCible.innerHTML = `<span class="${classeAppliquee}" title="Traduit automatiquement">${texteTraduitUnifie} ✨</span>`;
+}
+}
+} catch (e) {}
+}
+</script>
 </body>
 </html>
