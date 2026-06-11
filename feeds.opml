@@ -45,5 +45,6 @@
     <outline text="Ordre des Géomètres-Experts" title="Ordre des Géomètres-Experts" type="rss" xmlUrl="ordre_des_géomètres-experts.xml" htmlUrl="https://www.geometre-expert.fr/actus-infos/"/>
     <outline text="Techniques de l'Ingénieur" title="Techniques de l'Ingénieur" type="rss" xmlUrl="techniques_de_l_ingénieur.xml" htmlUrl="https://www.techniques-ingenieur.fr/actualite/"/>
     <outline text="Helicomicro" title="Helicomicro" type="rss" xmlUrl="https://www.helicomicro.com/feed/" htmlUrl="https://www.helicomicro.com/news/"/>
+    <outline text="Observatoire national DT DICT" title="Observatoire national DT DICT" type="rss" xmlUrl="https://www.observatoire-national-dt-dict.fr/actualites/" htmlUrl="https://www.observatoire-national-dt-dict.fr/actualites/"/>
   </body>
 </opml>
