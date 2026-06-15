@@ -46,5 +46,6 @@
     <outline text="Techniques de l'Ingénieur" title="Techniques de l'Ingénieur" type="rss" xmlUrl="techniques_de_l_ingénieur.xml" htmlUrl="https://www.techniques-ingenieur.fr/actualite/"/>
     <outline text="Helicomicro" title="Helicomicro" type="rss" xmlUrl="https://www.helicomicro.com/feed/" htmlUrl="https://www.helicomicro.com/news/"/>
     <outline text="Observatoire national DT DICT" title="Observatoire national DT DICT" type="rss" xmlUrl="https://rss.app/feeds/Qp0A1WnjbPQ8YJJk.xml" htmlUrl="https://www.observatoire-national-dt-dict.fr/actualites/"/>
+    <outline text="OpenStreetMap" title="OpenStreetMap" type="rss" xmlUrl="https://rss.app/feeds/qB2eV3tDU38oKAGT.xml" htmlUrl="https://www.openstreetmap.fr/actualites/"/>
   </body>
 </opml>
