@@ -47,5 +47,6 @@
     <outline text="Helicomicro" title="Helicomicro" type="rss" xmlUrl="https://www.helicomicro.com/feed/" htmlUrl="https://www.helicomicro.com/news/"/>
     <outline text="Observatoire national DT DICT" title="Observatoire national DT DICT" type="rss" xmlUrl="https://rss.app/feeds/Qp0A1WnjbPQ8YJJk.xml" htmlUrl="https://www.observatoire-national-dt-dict.fr/actualites/"/>
     <outline text="OpenStreetMap" title="OpenStreetMap" type="rss" xmlUrl="https://rss.app/feeds/qB2eV3tDU38oKAGT.xml" htmlUrl="https://www.openstreetmap.fr/actualites/"/>
+    <outline text="INRAP" title="INRAP" type="rss" xmlUrl="https://www.inrap.fr/rss.xml" htmlUrl="https://www.inrap.fr/actualites/recherche"/>
   </body>
 </opml>
